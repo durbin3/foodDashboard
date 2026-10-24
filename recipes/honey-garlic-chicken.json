@@ -1,0 +1,109 @@
+{
+  "id": "honey-garlic-chicken",
+  "name": "Honey Garlic Chicken",
+  "source": "https://www.budgetbytes.com/honey-garlic-chicken/",
+  "servings": 4,
+  "tags": ["chicken", "quick", "stovetop"],
+  "ingredients": [
+    {
+      "id": "honey",
+      "group": "Sauce",
+      "original": { "quantity": "1/3", "unit": "cup", "item": "honey", "note": "" },
+      "modified": { "quantity": "1/2", "unit": "cup", "item": "honey", "note": "" }
+    },
+    {
+      "id": "soy-sauce",
+      "group": "Sauce",
+      "original": { "quantity": "2", "unit": "tbsp", "item": "soy sauce", "note": "" },
+      "modified": { "quantity": "3", "unit": "tbsp", "item": "soy sauce", "note": "" }
+    },
+    {
+      "id": "rice-vinegar",
+      "group": "Sauce",
+      "original": { "quantity": "1", "unit": "tbsp", "item": "rice vinegar", "note": "" },
+      "modified": { "quantity": "3", "unit": "tsp", "item": "rice vinegar", "note": "" }
+    },
+    {
+      "id": "sriracha",
+      "group": "Sauce",
+      "original": { "quantity": "1", "unit": "tsp", "item": "sriracha", "note": "" },
+      "modified": { "quantity": "1 1/2", "unit": "tsp", "item": "sriracha", "note": "" }
+    },
+    {
+      "id": "sesame-oil",
+      "group": "Sauce",
+      "original": { "quantity": "2", "unit": "tsp", "item": "toasted sesame oil", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "cornstarch",
+      "group": "Sauce",
+      "original": { "quantity": "1", "unit": "tbsp", "item": "cornstarch", "note": "" },
+      "modified": { "quantity": "1 1/2", "unit": "tbsp", "item": "cornstarch", "note": "" }
+    },
+    {
+      "id": "chicken-breast",
+      "group": "Chicken",
+      "original": { "quantity": "2", "unit": "", "item": "chicken breast", "note": "boneless, skinless" },
+      "modified": null
+    },
+    {
+      "id": "salt",
+      "group": "Chicken",
+      "original": { "quantity": "1", "unit": "tsp", "item": "salt", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "black-pepper",
+      "group": "Chicken",
+      "original": { "quantity": "1/2", "unit": "tsp", "item": "black pepper", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "garlic-powder",
+      "group": "Chicken",
+      "original": { "quantity": "1/2", "unit": "tsp", "item": "garlic powder", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "flour",
+      "group": "Chicken",
+      "original": { "quantity": "2", "unit": "tbsp", "item": "all-purpose flour", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "olive-oil",
+      "group": "Chicken",
+      "original": { "quantity": "3", "unit": "tbsp", "item": "olive oil", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "butter",
+      "group": "Chicken",
+      "original": { "quantity": "2", "unit": "tbsp", "item": "butter", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "garlic",
+      "group": "Chicken",
+      "original": { "quantity": "4", "unit": "clove", "item": "garlic", "note": "minced" },
+      "modified": null
+    },
+    {
+      "id": "green-onion",
+      "group": "Chicken",
+      "original": { "quantity": "2", "unit": "", "item": "green onion", "note": "sliced" },
+      "modified": null
+    }
+  ],
+  "steps": [
+    "Start by making the sauce. Combine the honey, soy sauce, rice vinegar, sriracha, toasted sesame oil, and cornstarch together in a small bowl. Set the sauce aside.",
+    "Cut the chicken breasts into small 1/2 inch sized pieces. Season with salt, black pepper and garlic powder. Then toss the chicken pieces in the flour until each piece is evenly coated.",
+    "Heat a large skillet over medium-high heat and add 2 Tbsp of oil. Swirl to coat the surface of the skillet. Once the skillet is hot, add half of the chicken and cook until browned on all sides and cooked through. Remove the chicken from the skillet onto a separate plate and set aside. Add the remaining 1 Tbsp of oil and repeat with cooking the 2nd batch of chicken until cooked through. Set all of the chicken aside.",
+    "In the same skillet add the butter and lower the heat down to medium-low heat. Add the minced garlic cloves and saute for 30-60 seconds until fragrant.",
+    "Next give the sauce another brief stir, then pour the sauce into the skillet with the garlic. Stir the sauce and scrape up any browned bits that are stuck at the bottom of the skillet. Let the sauce simmer for about 2 minutes to allow the cornstarch to activate and thicken the sauce.",
+    "Now add the cooked chicken back to the skillet and stir with the sauce until all of the pieces are evenly coated. Continue to cook for 1-2 more minutes to allow the chicken to heat through.",
+    "Remove the skillet from the heat, top with sliced green onions, and enjoy!"
+  ],
+  "notes": "1.5x sauce\n3 tsp rice vinegar\n2 tsp sesame oil\nDon't forget the flour step"
+}

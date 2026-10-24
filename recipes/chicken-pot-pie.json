@@ -1,0 +1,106 @@
+{
+  "id": "chicken-pot-pie",
+  "name": "Chicken Pot Pie",
+  "source": "https://www.budgetbytes.com/chicken-pot-pie/",
+  "servings": 8,
+  "tags": ["chicken", "baked", "comfort food"],
+  "ingredients": [
+    {
+      "id": "chicken-breast",
+      "group": "",
+      "original": { "quantity": "1", "unit": "", "item": "chicken breast", "note": "boneless, skinless (about 2/3 lb)" },
+      "modified": null
+    },
+    {
+      "id": "cooking-oil",
+      "group": "",
+      "original": { "quantity": "1", "unit": "tbsp", "item": "cooking oil", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "yellow-onion",
+      "group": "",
+      "original": { "quantity": "1", "unit": "", "item": "yellow onion", "note": "diced" },
+      "modified": null
+    },
+    {
+      "id": "butter",
+      "group": "",
+      "original": { "quantity": "4", "unit": "tbsp", "item": "butter", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "flour",
+      "group": "",
+      "original": { "quantity": "4", "unit": "tbsp", "item": "all-purpose flour", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "chicken-broth",
+      "group": "",
+      "original": { "quantity": "1", "unit": "cup", "item": "chicken broth", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "whole-milk",
+      "group": "",
+      "original": { "quantity": "1/2", "unit": "cup", "item": "whole milk", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "dried-thyme",
+      "group": "",
+      "original": { "quantity": "1/4", "unit": "tsp", "item": "dried thyme", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "rubbed-sage",
+      "group": "",
+      "original": { "quantity": "1/4", "unit": "tsp", "item": "rubbed sage", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "black-pepper",
+      "group": "",
+      "original": { "quantity": "1/4", "unit": "tsp", "item": "black pepper", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "salt",
+      "group": "",
+      "original": { "quantity": "3/4", "unit": "tsp", "item": "salt", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "frozen-mixed-vegetables",
+      "group": "",
+      "original": { "quantity": "12", "unit": "oz", "item": "frozen mixed vegetables", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "double-pie-crust",
+      "group": "",
+      "original": { "quantity": "1", "unit": "", "item": "double pie crust", "note": "store-bought or homemade" },
+      "modified": null
+    },
+    {
+      "id": "egg",
+      "group": "",
+      "original": { "quantity": "1", "unit": "", "item": "egg", "note": "optional, whisked for brushing the crust" },
+      "modified": null
+    }
+  ],
+  "steps": [
+    "Preheat the oven to 350ºF. Cut the chicken breast into ½-inch pieces.",
+    "Heat a deep skillet or Dutch oven over medium heat. Once hot, add the cooking oil and diced chicken. Cook just until the chicken is cooked through. Remove the chicken from the skillet.",
+    "While the chicken is cooking, dice the onion. After removing the chicken from the skillet, add the diced onion and butter. Sauté the onions in the butter until softened.",
+    "Sprinkle the flour over the onions in the skillet and continue to cook and stir for two minutes more. It's okay if the flour begins to coat the surface of the skillet, but don't let it burn.",
+    "Add the chicken broth and milk to the skillet. Whisk to combine and dissolve any flour off the bottom of the skillet. Let the liquid come up to a simmer, at which point it will thicken into a gravy.",
+    "Add the cooked chicken back to the skillet along with the thyme, sage, salt, and pepper. Stir to combine.",
+    "Finally, add the frozen mixed vegetables and allow them to heat through in the gravy, stirring occasionally, just until the gravy begins to simmer again. Remove the skillet from the heat.",
+    "Place your bottom crust in a 9-inch pie plate. Prick the bottom several times with a fork. Transfer the chicken, vegetable, and gravy mixture into the pie crust.",
+    "Add the top crust and crimp the edges closed. Brush a light layer of whisked egg over the surface of the pie crust (optional). Use a knife to cut large vents in the top of the crust.",
+    "Bake the chicken pot pie for 45-50 minutes, or until the crust is golden brown and flakey. The baking time may vary depending on the type of crust and pie plate used."
+  ],
+  "notes": ""
+}

@@ -1,0 +1,22 @@
+{
+  "entries": [
+    {
+      "id": "ad99cfcd-7a2b-44e0-92ff-54f5e76606fd",
+      "recipeId": "chicken-pot-pie",
+      "day": "",
+      "scale": 1
+    },
+    {
+      "id": "a10d3d3c-6015-4c44-96cc-cae824a9fad8",
+      "recipeId": "creamy-pesto-chicken",
+      "day": "",
+      "scale": 1
+    },
+    {
+      "id": "d2c455e7-2865-43c6-863a-28adf67805b2",
+      "recipeId": "slow-cooker-carnitas",
+      "day": "",
+      "scale": 1
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "id": "quick-creamy-chicken-enchiladas",
+  "name": "Quick Creamy Chicken Enchiladas",
+  "source": "",
+  "servings": 2,
+  "tags": [
+    "chicken",
+    "mexican",
+    "baked",
+    "quick"
+  ],
+  "ingredients": [
+    {
+      "id": "cream-of-chicken-soup",
+      "group": "",
+      "original": {
+        "quantity": "2/3",
+        "unit": "cup",
+        "item": "cream of chicken soup",
+        "note": "condensed, undiluted"
+      },
+      "modified": null
+    },
+    {
+      "id": "sour-cream",
+      "group": "",
+      "original": {
+        "quantity": "2/3",
+        "unit": "cup",
+        "item": "sour cream",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "chicken-breast",
+      "group": "",
+      "original": {
+        "quantity": "2",
+        "unit": "cup",
+        "item": "chicken breast",
+        "note": "shredded, cooked"
+      },
+      "modified": null
+    },
+    {
+      "id": "shredded-cheese",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "cup",
+        "item": "shredded cheese",
+        "note": "Monterey Jack, divided"
+      },
+      "modified": null
+    },
+    {
+      "id": "flour-tortilla",
+      "group": "",
+      "original": {
+        "quantity": "4",
+        "unit": "",
+        "item": "flour tortilla",
+        "note": "6 inches, warmed"
+      },
+      "modified": null
+    }
+  ],
+  "steps": [
+    "In a small bowl, combine soup and sour cream. Spread half over the bottom of an 8-in. square baking dish coated with cooking spray.",
+    "Place 1/2 cup chicken and 1 tablespoon cheese down the center of each tortilla; roll up and place in the baking dish. Top with remaining soup mixture; sprinkle with remaining cheese.",
+    "Bake, uncovered, at 350° for 18-22 minutes or until heated through."
+  ],
+  "notes": ""
+}

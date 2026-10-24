@@ -1,0 +1,97 @@
+{
+  "id": "no-bake-cookies",
+  "name": "No-Bake Cookies",
+  "source": "",
+  "servings": null,
+  "tags": [
+    "dessert",
+    "stovetop",
+    "quick"
+  ],
+  "ingredients": [
+    {
+      "id": "granulated-sugar",
+      "group": "",
+      "original": {
+        "quantity": "1 1/2",
+        "unit": "cup",
+        "item": "granulated sugar",
+        "note": "300g"
+      },
+      "modified": null
+    },
+    {
+      "id": "whole-milk",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "cup",
+        "item": "whole milk",
+        "note": "120ml"
+      },
+      "modified": null
+    },
+    {
+      "id": "butter",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "cup",
+        "item": "butter",
+        "note": "unsalted, 113g"
+      },
+      "modified": null
+    },
+    {
+      "id": "cocoa-powder",
+      "group": "",
+      "original": {
+        "quantity": "1/4",
+        "unit": "cup",
+        "item": "cocoa powder",
+        "note": "unsweetened, 25g"
+      },
+      "modified": null
+    },
+    {
+      "id": "quick-oats",
+      "group": "",
+      "original": {
+        "quantity": "2 1/2",
+        "unit": "cup",
+        "item": "quick oats",
+        "note": "250g"
+      },
+      "modified": null
+    },
+    {
+      "id": "peanut-butter",
+      "group": "",
+      "original": {
+        "quantity": "3/4",
+        "unit": "cup",
+        "item": "peanut butter",
+        "note": "creamy, no-stir, 200g"
+      },
+      "modified": null
+    },
+    {
+      "id": "vanilla-extract",
+      "group": "",
+      "original": {
+        "quantity": "2",
+        "unit": "tsp",
+        "item": "vanilla extract",
+        "note": ""
+      },
+      "modified": null
+    }
+  ],
+  "steps": [
+    "Line two baking sheets with parchment paper or wax paper.",
+    "In a medium saucepan, whisk together the sugar, milk, butter, and cocoa powder and place over medium heat. Stir occasionally until the mixture reaches a boil.",
+    "Once it's boiling, stop stirring and allow the mixture to boil for exactly 60 seconds (set a timer!), then remove from heat. Add the oats, peanut butter, and vanilla. Stir together with a silicone spatula until well combined.",
+    "Use a cookie scoop or spoon to drop heaps of the mixture onto the lined baking sheets (about 2 tablespoons each). Let the cookies cool until set, 20 to 30 minutes."
+  ],
+  "notes": ""
+}

@@ -1,0 +1,57 @@
+{
+  "id": "freezer-steak-burritos",
+  "name": "Freezer Steak Burritos",
+  "source": "https://carmyy.com/freezer-friendly-steak-burritos/",
+  "servings": 7,
+  "tags": ["beef", "mexican", "freezer-friendly"],
+  "ingredients": [
+    {
+      "id": "large-tortilla",
+      "group": "",
+      "original": { "quantity": "7", "unit": "", "item": "large tortilla", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "rice",
+      "group": "",
+      "original": { "quantity": "2", "unit": "cup", "item": "rice", "note": "cooked (the author uses lemon garlic rice)" },
+      "modified": null
+    },
+    {
+      "id": "cooked-steak",
+      "group": "",
+      "original": { "quantity": "3", "unit": "cup", "item": "cooked steak", "note": "cubed (2-3 cups)" },
+      "modified": null
+    },
+    {
+      "id": "corn",
+      "group": "",
+      "original": { "quantity": "1", "unit": "cup", "item": "corn", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "red-onion",
+      "group": "",
+      "original": { "quantity": "1", "unit": "", "item": "red onion", "note": "diced" },
+      "modified": null
+    },
+    {
+      "id": "shredded-cheese",
+      "group": "",
+      "original": { "quantity": "1", "unit": "cup", "item": "shredded cheese", "note": "" },
+      "modified": null
+    },
+    {
+      "id": "navy-beans",
+      "group": "",
+      "original": { "quantity": "1", "unit": "can", "item": "navy beans", "note": "540 mL" },
+      "modified": null
+    }
+  ],
+  "steps": [
+    "In a large tortilla, place your rice in the middle first before the rest of your toppings.",
+    "Next, fold the bottom of your tortilla up so it covers the ingredients but not to the top of the tortilla. Fold in the sides before rolling the burrito in.",
+    "If freezing, wrap them individually in saran wrap or parchment paper so they do not stick together before storing it in the freezer."
+  ],
+  "notes": ""
+}

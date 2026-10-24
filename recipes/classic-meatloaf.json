@@ -1,0 +1,175 @@
+{
+  "id": "classic-meatloaf",
+  "name": "Classic Meatloaf",
+  "source": "https://www.budgetbytes.com/classic-homemade-meatloaf/",
+  "servings": 7,
+  "tags": [
+    "beef",
+    "baked",
+    "comfort food"
+  ],
+  "ingredients": [
+    {
+      "id": "egg",
+      "group": "Meatloaf",
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "item": "egg",
+        "note": "large"
+      },
+      "modified": null
+    },
+    {
+      "id": "whole-milk",
+      "group": "Meatloaf",
+      "original": {
+        "quantity": "1/3",
+        "unit": "cup",
+        "item": "whole milk",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "worcestershire-sauce",
+      "group": "Meatloaf",
+      "original": {
+        "quantity": "1",
+        "unit": "tsp",
+        "item": "worcestershire sauce",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "breadcrumbs",
+      "group": "Meatloaf",
+      "original": {
+        "quantity": "1/2",
+        "unit": "cup",
+        "item": "plain breadcrumbs",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "italian-seasoning",
+      "group": "Meatloaf",
+      "original": {
+        "quantity": "1",
+        "unit": "tsp",
+        "item": "italian seasoning",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "garlic-powder",
+      "group": "Meatloaf",
+      "original": {
+        "quantity": "1/2",
+        "unit": "tsp",
+        "item": "garlic powder",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "salt",
+      "group": "Meatloaf",
+      "original": {
+        "quantity": "1",
+        "unit": "tsp",
+        "item": "salt",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "black-pepper",
+      "group": "Meatloaf",
+      "original": {
+        "quantity": "1/4",
+        "unit": "tsp",
+        "item": "black pepper",
+        "note": "freshly cracked"
+      },
+      "modified": null
+    },
+    {
+      "id": "yellow-onion",
+      "group": "Meatloaf",
+      "original": {
+        "quantity": "1/2",
+        "unit": "cup",
+        "item": "yellow onion",
+        "note": "minced"
+      },
+      "modified": null
+    },
+    {
+      "id": "ground-beef",
+      "group": "Meatloaf",
+      "original": {
+        "quantity": "1 1/2",
+        "unit": "lb",
+        "item": "ground beef",
+        "note": "80/20"
+      },
+      "modified": null
+    },
+    {
+      "id": "ketchup",
+      "group": "Glaze",
+      "original": {
+        "quantity": "1/2",
+        "unit": "cup",
+        "item": "ketchup",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "brown-sugar",
+      "group": "Glaze",
+      "original": {
+        "quantity": "1",
+        "unit": "tbsp",
+        "item": "brown sugar",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "glaze-worcestershire-sauce",
+      "group": "Glaze",
+      "original": {
+        "quantity": "1",
+        "unit": "tbsp",
+        "item": "worcestershire sauce",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "yellow-mustard",
+      "group": "Glaze",
+      "original": {
+        "quantity": "1",
+        "unit": "tsp",
+        "item": "yellow mustard",
+        "note": ""
+      },
+      "modified": null
+    }
+  ],
+  "steps": [
+    "Preheat the oven to 350ºF. In a small bowl whisk together the egg, milk, and Worcestershire sauce. In a separate small bowl, stir together the breadcrumbs, Italian seasoning, garlic powder, salt, and pepper. Mince the onion.",
+    "Add the ground beef, egg mixture, breadcrumb mixture, and minced onion to a large bowl. Use your hands to mix the ingredients together until evenly combined. Avoid over mixing.",
+    "Place the meatloaf mixture on a rimmed baking dish and shape it into a loaf that is approximately 4-inches wide, 8-inches long, and 2-inches tall.",
+    "In a separate small bowl, stir together the glaze ingredients (ketchup, brown sugar, Worcestershire sauce, and mustard). Spread the glaze evenly over the top and sides of the meatloaf.",
+    "Bake the meatloaf for 50-55 minutes, or until the internal temperature reaches 165ºF. Allow the meatloaf to rest for 5-10 minutes after baking, then slice and serve."
+  ],
+  "notes": ""
+}

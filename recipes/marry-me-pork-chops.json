@@ -1,0 +1,29 @@
+{
+  "id": "marry-me-pork-chops",
+  "name": "Marry Me Pork Chops",
+  "source": "https://www.allrecipes.com/marry-me-pork-chops-recipe-11993270",
+  "servings": 4,
+  "tags": ["pork", "baked", "comfort food"],
+  "ingredients": [
+    { "id": "orzo", "group": "", "original": { "quantity": "1", "unit": "cup", "item": "orzo", "note": "dry" }, "modified": null },
+    { "id": "chicken-broth", "group": "", "original": { "quantity": "2 1/2", "unit": "cup", "item": "chicken broth", "note": "bone broth" }, "modified": null },
+    { "id": "heavy-cream", "group": "", "original": { "quantity": "3/4", "unit": "cup", "item": "heavy cream", "note": "" }, "modified": null },
+    { "id": "garlic", "group": "", "original": { "quantity": "4", "unit": "clove", "item": "garlic", "note": "minced" }, "modified": null },
+    { "id": "sundried-tomatoes", "group": "", "original": { "quantity": "1/2", "unit": "cup", "item": "sundried tomatoes", "note": "chopped" }, "modified": null },
+    { "id": "spinach", "group": "", "original": { "quantity": "3", "unit": "cup", "item": "spinach", "note": "" }, "modified": null },
+    { "id": "parmesan", "group": "", "original": { "quantity": "3/4", "unit": "cup", "item": "parmesan cheese", "note": "divided" }, "modified": null },
+    { "id": "italian-seasoning", "group": "", "original": { "quantity": "1", "unit": "tsp", "item": "italian seasoning", "note": "divided" }, "modified": null },
+    { "id": "smoked-paprika", "group": "", "original": { "quantity": "1/2", "unit": "tsp", "item": "smoked paprika", "note": "divided" }, "modified": null },
+    { "id": "black-pepper", "group": "", "original": { "quantity": "1/4", "unit": "tsp", "item": "black pepper", "note": "freshly ground, divided" }, "modified": null },
+    { "id": "pork-chop", "group": "", "original": { "quantity": "4", "unit": "", "item": "pork chop", "note": "bone-in, 3/4 to 1 inch thick" }, "modified": null },
+    { "id": "salt", "group": "", "original": { "quantity": "1", "unit": "pinch", "item": "salt", "note": "" }, "modified": null },
+    { "id": "red-pepper-flakes", "group": "", "original": { "quantity": "1", "unit": "pinch", "item": "red pepper flakes", "note": "optional" }, "modified": null }
+  ],
+  "steps": [
+    "Preheat the oven to 375 degrees F (190 degrees C).",
+    "In a lightly greased casserole dish mix together orzo, chicken bone broth, cream, garlic, sundried tomatoes, spinach, half the Parmesan, half each of Italian seasoning, smoked paprika, and pepper.",
+    "Nestle pork chops into the casserole so that the bottom halves of chops sit in the broth mixture. Season tops with remaining Italian seasoning, smoked paprika, and pepper; sprinkle with salt and red pepper flakes. Cover tightly with foil.",
+    "Bake in the preheated oven for 30 to 35 minutes. Uncover and add remaining Parmesan cheese. Bake for another 10 minutes. An instant read thermometer inserted in the center of pork chops should reach 145 degrees F (63 degrees C)."
+  ],
+  "notes": ""
+}

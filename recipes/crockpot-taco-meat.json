@@ -1,0 +1,162 @@
+{
+  "id": "crockpot-taco-meat",
+  "name": "Crockpot Taco Meat",
+  "source": "https://tastyoven.com/crockpot-ground-beef-taco-meat/",
+  "servings": 8,
+  "tags": [
+    "beef",
+    "mexican",
+    "slow cooker"
+  ],
+  "ingredients": [
+    {
+      "id": "ground-beef",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "lb",
+        "item": "ground beef",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "water",
+      "group": "",
+      "original": {
+        "quantity": "1/3",
+        "unit": "cup",
+        "item": "water",
+        "note": "or beef broth"
+      },
+      "modified": null
+    },
+    {
+      "id": "chili-powder",
+      "group": "",
+      "original": {
+        "quantity": "1 1/2",
+        "unit": "tbsp",
+        "item": "chili powder",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "cumin",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "tbsp",
+        "item": "cumin",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "paprika",
+      "group": "",
+      "original": {
+        "quantity": "1 1/2",
+        "unit": "tsp",
+        "item": "paprika",
+        "note": "Spanish"
+      },
+      "modified": null
+    },
+    {
+      "id": "garlic-powder",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "tsp",
+        "item": "garlic powder",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "salt",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "tsp",
+        "item": "salt",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "black-pepper",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "tsp",
+        "item": "black pepper",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "onion-powder",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "tsp",
+        "item": "onion powder",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "dried-oregano",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "tsp",
+        "item": "dried oregano",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "red-pepper-flakes",
+      "group": "",
+      "original": {
+        "quantity": "1/4",
+        "unit": "tsp",
+        "item": "red pepper flakes",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "tortilla",
+      "group": "",
+      "original": {
+        "quantity": "8",
+        "unit": "",
+        "item": "tortilla",
+        "note": "corn or flour"
+      },
+      "modified": null
+    },
+    {
+      "id": "toppings",
+      "group": "",
+      "original": {
+        "quantity": "",
+        "unit": "",
+        "item": "taco toppings",
+        "note": "cheese, lettuce, salsa, diced tomatoes, etc."
+      },
+      "modified": null
+    }
+  ],
+  "steps": [
+    "Add the ground beef, water (or beef broth), chili powder, cumin, paprika, garlic powder, onion powder, oregano, red pepper flakes, black pepper and salt to the slow cooker. Mix well, chopping up the ground beef into small pieces. If using frozen beef, start it without the seasonings, then break it up and add the seasonings and water about 30 minutes in; add 1 hour to the cook time.",
+    "Set to LOW for 4 hours or HIGH for 2 hours.",
+    "Stir well when done, chopping up the beef further. Serve inside taco shells with your favorite toppings. Alternatively, use as the stuffing for burritos, burrito and rice bowls, enchiladas, quesadillas and on tostadas."
+  ],
+  "notes": ""
+}
