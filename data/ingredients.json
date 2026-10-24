@@ -1,0 +1,293 @@
+{
+  "conversions": [],
+  "ingredients": {
+    "2-greek-yogurt": {
+      "name": "2% greek yogurt"
+    },
+    "black-pepper": {
+      "name": "black pepper",
+      "staple": true
+    },
+    "bread-flour": {
+      "name": "bread flour"
+    },
+    "brown-sugar": {
+      "name": "brown sugar"
+    },
+    "butter": {
+      "name": "butter",
+      "staple": true
+    },
+    "carrot": {
+      "name": "carrot"
+    },
+    "celery": {
+      "name": "celery"
+    },
+    "chicken-breast": {
+      "name": "chicken breast"
+    },
+    "chicken-broth": {
+      "name": "chicken broth"
+    },
+    "chili-powder": {
+      "name": "chili powder"
+    },
+    "chipotle-pepper-powder": {
+      "name": "chipotle pepper powder",
+      "staple": true
+    },
+    "cinnamon": {
+      "name": "cinnamon"
+    },
+    "cinnamon-stick": {
+      "name": "cinnamon stick"
+    },
+    "cocoa-powder": {
+      "name": "cocoa powder"
+    },
+    "cooked-chicken": {
+      "name": "cooked chicken"
+    },
+    "cooked-steak": {
+      "name": "cooked steak"
+    },
+    "cooking-oil": {
+      "name": "cooking oil",
+      "staple": true
+    },
+    "corn": {
+      "name": "corn"
+    },
+    "cornstarch": {
+      "name": "cornstarch"
+    },
+    "cream-cheese": {
+      "name": "cream cheese"
+    },
+    "cream-of-chicken-soup": {
+      "name": "cream of chicken soup"
+    },
+    "cumin": {
+      "name": "cumin",
+      "staple": true
+    },
+    "double-pie-crust": {
+      "name": "double pie crust"
+    },
+    "dried-basil": {
+      "name": "dried basil"
+    },
+    "dried-oregano": {
+      "name": "dried oregano",
+      "staple": true
+    },
+    "dried-thyme": {
+      "name": "dried thyme",
+      "staple": true
+    },
+    "egg": {
+      "name": "egg"
+    },
+    "flour": {
+      "name": "flour",
+      "staple": true
+    },
+    "flour-tortilla": {
+      "name": "flour tortilla"
+    },
+    "four-cheese-blend": {
+      "name": "four-cheese blend"
+    },
+    "fresh-parsley": {
+      "name": "fresh parsley"
+    },
+    "frozen-chopped-spinach": {
+      "name": "frozen chopped spinach"
+    },
+    "frozen-mixed-vegetables": {
+      "name": "frozen mixed vegetables"
+    },
+    "garlic": {
+      "name": "garlic",
+      "staple": true
+    },
+    "garlic-powder": {
+      "name": "garlic powder",
+      "staple": true
+    },
+    "granulated-sugar": {
+      "name": "granulated sugar"
+    },
+    "grape-tomato": {
+      "name": "grape tomato"
+    },
+    "green-onion": {
+      "name": "green onion"
+    },
+    "ground-beef": {
+      "name": "ground beef"
+    },
+    "heavy-cream": {
+      "name": "heavy cream",
+      "staple": true
+    },
+    "honey": {
+      "name": "honey"
+    },
+    "instant-dry-yeast": {
+      "name": "instant dry yeast"
+    },
+    "italian-seasoning": {
+      "name": "italian seasoning"
+    },
+    "ketchup": {
+      "name": "ketchup"
+    },
+    "kosher-salt": {
+      "name": "kosher salt"
+    },
+    "large-tortilla": {
+      "name": "large tortilla"
+    },
+    "lasagna-noodle": {
+      "name": "lasagna noodle"
+    },
+    "lemon": {
+      "name": "lemon"
+    },
+    "maple-extract": {
+      "name": "maple extract"
+    },
+    "margarine": {
+      "name": "margarine"
+    },
+    "navy-beans": {
+      "name": "navy beans"
+    },
+    "olive-oil": {
+      "name": "olive oil",
+      "staple": true
+    },
+    "onion-powder": {
+      "name": "onion powder"
+    },
+    "orange": {
+      "name": "orange"
+    },
+    "orzo": {
+      "name": "orzo"
+    },
+    "paprika": {
+      "name": "paprika"
+    },
+    "parmesan-cheese": {
+      "name": "parmesan cheese"
+    },
+    "peanut-butter": {
+      "name": "peanut butter"
+    },
+    "pesto": {
+      "name": "pesto"
+    },
+    "plain-breadcrumbs": {
+      "name": "plain breadcrumbs"
+    },
+    "pork-butt-roast": {
+      "name": "pork butt roast"
+    },
+    "pork-chop": {
+      "name": "pork chop"
+    },
+    "pork-tenderloin": {
+      "name": "pork tenderloin"
+    },
+    "potato": {
+      "name": "potato"
+    },
+    "powdered-sugar": {
+      "name": "powdered sugar"
+    },
+    "quick-oats": {
+      "name": "quick oats"
+    },
+    "red-onion": {
+      "name": "red onion"
+    },
+    "red-pepper-flakes": {
+      "name": "red pepper flakes"
+    },
+    "rice": {
+      "name": "rice"
+    },
+    "rice-vinegar": {
+      "name": "rice vinegar"
+    },
+    "ricotta-cheese": {
+      "name": "ricotta cheese"
+    },
+    "rubbed-sage": {
+      "name": "rubbed sage",
+      "staple": true
+    },
+    "salt": {
+      "name": "salt",
+      "staple": true
+    },
+    "salted-butter": {
+      "name": "salted butter"
+    },
+    "shredded-cheese": {
+      "name": "shredded cheese"
+    },
+    "smoked-paprika": {
+      "name": "smoked paprika"
+    },
+    "sour-cream": {
+      "name": "sour cream"
+    },
+    "soy-sauce": {
+      "name": "soy sauce"
+    },
+    "spinach": {
+      "name": "spinach"
+    },
+    "sriracha": {
+      "name": "sriracha"
+    },
+    "steak-seasoning": {
+      "name": "steak seasoning"
+    },
+    "sundried-tomatoes": {
+      "name": "sundried tomatoes"
+    },
+    "taco-toppings": {
+      "name": "taco toppings"
+    },
+    "toasted-sesame-oil": {
+      "name": "toasted sesame oil"
+    },
+    "tortilla": {
+      "name": "tortilla"
+    },
+    "vanilla-extract": {
+      "name": "vanilla extract"
+    },
+    "water": {
+      "name": "water"
+    },
+    "whole-milk": {
+      "name": "whole milk",
+      "staple": true
+    },
+    "worcestershire-sauce": {
+      "name": "worcestershire sauce"
+    },
+    "yellow-mustard": {
+      "name": "yellow mustard"
+    },
+    "yellow-onion": {
+      "name": "yellow onion"
+    }
+  }
+}

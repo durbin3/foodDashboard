@@ -3,54 +3,98 @@
   "name": "Creamy Pesto Chicken",
   "source": "https://www.budgetbytes.com/creamy-pesto-chicken/",
   "servings": 4,
-  "tags": ["chicken", "quick", "stovetop"],
+  "tags": [
+    "chicken",
+    "quick",
+    "stovetop"
+  ],
   "ingredients": [
     {
       "id": "chicken-breast",
       "group": "",
-      "original": { "quantity": "2", "unit": "", "item": "chicken breast", "note": "boneless, skinless (about 1.3 lb total)" },
+      "original": {
+        "quantity": "2",
+        "unit": "",
+        "ingredientId": "chicken-breast",
+        "note": "boneless, skinless (about 1.3 lb total)"
+      },
       "modified": null
     },
     {
       "id": "salt",
       "group": "",
-      "original": { "quantity": "1/8", "unit": "tsp", "item": "salt", "note": "" },
+      "original": {
+        "quantity": "1/8",
+        "unit": "tsp",
+        "ingredientId": "salt",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "black-pepper",
       "group": "",
-      "original": { "quantity": "1/8", "unit": "tsp", "item": "black pepper", "note": "" },
+      "original": {
+        "quantity": "1/8",
+        "unit": "tsp",
+        "ingredientId": "black-pepper",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "olive-oil",
       "group": "",
-      "original": { "quantity": "2", "unit": "tbsp", "item": "olive oil", "note": "divided" },
+      "original": {
+        "quantity": "2",
+        "unit": "tbsp",
+        "ingredientId": "olive-oil",
+        "note": "divided"
+      },
       "modified": null
     },
     {
       "id": "garlic",
       "group": "",
-      "original": { "quantity": "2", "unit": "clove", "item": "garlic", "note": "minced" },
+      "original": {
+        "quantity": "2",
+        "unit": "clove",
+        "ingredientId": "garlic",
+        "note": "minced"
+      },
       "modified": null
     },
     {
       "id": "grape-tomato",
       "group": "",
-      "original": { "quantity": "1", "unit": "pint", "item": "grape tomato", "note": "sliced in half" },
+      "original": {
+        "quantity": "1",
+        "unit": "pint",
+        "ingredientId": "grape-tomato",
+        "note": "sliced in half"
+      },
       "modified": null
     },
     {
       "id": "heavy-cream",
       "group": "",
-      "original": { "quantity": "1/2", "unit": "cup", "item": "heavy cream", "note": "" },
+      "original": {
+        "quantity": "1/2",
+        "unit": "cup",
+        "ingredientId": "heavy-cream",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "pesto",
       "group": "",
-      "original": { "quantity": "1/4", "unit": "cup", "item": "pesto", "note": "basil or red pesto" },
+      "original": {
+        "quantity": "1/4",
+        "unit": "cup",
+        "ingredientId": "pesto",
+        "note": "basil or red pesto"
+      },
       "modified": null
     }
   ],

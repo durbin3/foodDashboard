@@ -16,7 +16,7 @@
       "original": {
         "quantity": "5",
         "unit": "",
-        "item": "potato",
+        "ingredientId": "potato",
         "note": "peeled and cubed"
       },
       "modified": null
@@ -27,7 +27,7 @@
       "original": {
         "quantity": "1",
         "unit": "",
-        "item": "carrot",
+        "ingredientId": "carrot",
         "note": "small, finely chopped"
       },
       "modified": null
@@ -38,7 +38,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "",
-        "item": "celery",
+        "ingredientId": "celery",
         "note": "stalk, finely chopped"
       },
       "modified": null
@@ -49,7 +49,7 @@
       "original": {
         "quantity": "1 1/2",
         "unit": "cup",
-        "item": "water",
+        "ingredientId": "water",
         "note": ""
       },
       "modified": null
@@ -60,7 +60,7 @@
       "original": {
         "quantity": "1",
         "unit": "tsp",
-        "item": "salt",
+        "ingredientId": "salt",
         "note": ""
       },
       "modified": null
@@ -71,7 +71,7 @@
       "original": {
         "quantity": "2 1/2",
         "unit": "cup",
-        "item": "whole milk",
+        "ingredientId": "whole-milk",
         "note": "recipe says just \"milk\""
       },
       "modified": null
@@ -82,7 +82,7 @@
       "original": {
         "quantity": "3",
         "unit": "tbsp",
-        "item": "margarine",
+        "ingredientId": "margarine",
         "note": "melted"
       },
       "modified": null
@@ -93,7 +93,7 @@
       "original": {
         "quantity": "3",
         "unit": "tbsp",
-        "item": "all-purpose flour",
+        "ingredientId": "flour",
         "note": ""
       },
       "modified": null
@@ -104,7 +104,7 @@
       "original": {
         "quantity": "1 1/2",
         "unit": "tsp",
-        "item": "steak seasoning",
+        "ingredientId": "steak-seasoning",
         "note": ""
       },
       "modified": null
@@ -115,7 +115,7 @@
       "original": {
         "quantity": "1",
         "unit": "tsp",
-        "item": "black pepper",
+        "ingredientId": "black-pepper",
         "note": "ground"
       },
       "modified": null
@@ -126,7 +126,7 @@
       "original": {
         "quantity": "2",
         "unit": "cup",
-        "item": "four-cheese blend",
+        "ingredientId": "four-cheese-blend",
         "note": "shredded"
       },
       "modified": null

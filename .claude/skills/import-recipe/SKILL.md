@@ -56,6 +56,8 @@ For images and PDFs, set `source` to the original web URL if one is visible. If 
 
 Write `recipes/<id>.json`, where `id` is the kebab-case recipe name. If that file already exists, stop and ask before overwriting it.
 
+Write each ingredient with an `item` **name**, as below. Stored recipes refer to ingredients by id from the registry `data/ingredients.json`, and step 3b converts the names to ids.
+
 ```json
 {
   "id": "honey-garlic-chicken",
@@ -78,13 +80,13 @@ Write `recipes/<id>.json`, where `id` is the kebab-case recipe name. If that fil
 
 Ingredient rules. These matter because the grocery list combines ingredients by exact `item` name and `unit`.
 
-**Before naming items, list the names already in use** and reuse one whenever it's the same thing you'd buy:
+**Before naming items, list the names in the ingredient registry** and reuse one whenever it's the same thing you'd buy:
 
 ```sh
-node -e "const fs=require('fs');const s=new Set();for(const f of fs.readdirSync('recipes'))for(const i of JSON.parse(fs.readFileSync('recipes/'+f)).ingredients)s.add((i.modified??i.original).item);console.log([...s].sort().join('\n'))"
+node -e "const r=require('./data/ingredients.json');console.log(Object.values(r.ingredients).map(i=>i.name).sort().join('\n'))"
 ```
 
-For example, "milk" becomes `whole milk`, "pepper" becomes `black pepper`, "oregano" becomes `dried oregano`, "grated parmesan" becomes `parmesan cheese` with note "grated", and "flour" becomes `all-purpose flour`. Keep a different name only when it's a different purchase: `kosher salt`, `salted butter`, `bread flour`.
+For example, "milk" becomes `whole milk`, "pepper" becomes `black pepper`, "oregano" becomes `dried oregano`, "grated parmesan" becomes `parmesan cheese` with note "grated", and "all-purpose flour" becomes `flour`. Keep a different name only when it's a different purchase: `kosher salt`, `salted butter`, `bread flour`.
 
 - **quantity**: a string. Use fractions as written: `"1/3"`, `"1 1/2"`, `"2"`. For a range ("1-2"), use the larger number. Use `""` for "to taste" or for no amount, and put the wording in `note`.
 - **unit**: lowercase and singular, from this set where possible: `tsp`, `tbsp`, `cup`, `lb`, `oz`, `g`, `clove`, `can`, `pinch`. Use `""` for counted items (2 chicken breasts, 1 onion).
@@ -104,6 +106,18 @@ For example, "milk" becomes `whole milk`, "pepper" becomes `black pepper`, "oreg
   - If a tweak works out to the same amount as the original, leave `modified` as `null`.
 - To remove an ingredient, add `"removed": true`. For an ingredient the user adds, set `"original": null` and put it in `modified`.
 - If a note is ambiguous, ask before encoding it as a modification. It's always safe to keep it in `notes`.
+
+## 3b. Link ingredients to the registry
+
+From the project root, run:
+
+```sh
+node .claude/skills/import-recipe/link-ingredients.mjs recipes/<id>.json
+```
+
+The script replaces each `item` with an `ingredientId` and adds any new names to `data/ingredients.json`. It prints which ingredients matched and which were created. Check the created ones: if one is really an existing ingredient under a different name (e.g. "parmesan" next to an existing "parmesan cheese"), fix the `item` in the recipe and re-run the script. Re-running is safe, because versions that already have an `ingredientId` are left alone. To re-link a changed name, put `item` back on that version.
+
+Two imports must not run this script at the same time, because both write `data/ingredients.json`. When several agents import in parallel, have them stop after step 3, then run the link script for each recipe one after another.
 
 ## 4. Report back
 

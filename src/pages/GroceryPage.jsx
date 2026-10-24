@@ -1,21 +1,14 @@
 import { useState } from 'react'
 import { buildGroceryList, groceryListText } from '../lib/grocery.js'
 
-export default function GroceryPage({ plan, recipesById, pantry, actions }) {
+export default function GroceryPage({ plan, recipesById, registry, actions }) {
   const [copied, setCopied] = useState(false)
-  const list = buildGroceryList(plan, recipesById, pantry.staples)
+  const list = buildGroceryList(plan, recipesById, registry)
 
   async function copy() {
     await navigator.clipboard.writeText(groceryListText(list))
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
-  }
-
-  function toggleStaple(name, makeStaple) {
-    const staples = makeStaple
-      ? [...pantry.staples, name].sort()
-      : pantry.staples.filter((s) => s.trim().toLowerCase() !== name)
-    actions.savePantry({ ...pantry, staples })
   }
 
   if (!plan.entries.length) return <p className="muted">Add meals to the plan to build a grocery list.</p>
@@ -26,13 +19,24 @@ export default function GroceryPage({ plan, recipesById, pantry, actions }) {
       {lines.length === 0 && <p className="muted small">Nothing here.</p>}
       <ul className="grocery">
         {lines.map((l) => (
-          <li key={l.name}>
-            <span className="g-name">{l.name}</span>
-            <span className="g-amount">{l.amount}</span>
+          <li key={l.id}>
+            <a className="g-name" href={`#/ingredients/${encodeURIComponent(l.id)}`} title="Ingredient settings">
+              {l.name}
+            </a>
+            <span className="g-amount">
+              {l.amount}
+              {l.unconverted && (
+                <a className="small add-conv" href={`#/ingredients/${encodeURIComponent(l.id)}`}>
+                  add conversion
+                </a>
+              )}
+            </span>
             <span className="muted small g-sources">{l.sources.join(', ')}</span>
-            <button className="link small" onClick={() => toggleStaple(l.name, !staple)}>
-              {staple ? 'Not a staple' : 'Mark as staple'}
-            </button>
+            {registry.ingredients[l.id] && (
+              <button className="link small" onClick={() => actions.updateIngredient(l.id, { staple: !staple || undefined })}>
+                {staple ? 'Not a staple' : 'Mark as staple'}
+              </button>
+            )}
           </li>
         ))}
       </ul>

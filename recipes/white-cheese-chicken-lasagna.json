@@ -16,7 +16,7 @@
       "original": {
         "quantity": "9",
         "unit": "",
-        "item": "lasagna noodle",
+        "ingredientId": "lasagna-noodle",
         "note": ""
       },
       "modified": null
@@ -27,7 +27,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "cup",
-        "item": "butter",
+        "ingredientId": "butter",
         "note": ""
       },
       "modified": null
@@ -38,7 +38,7 @@
       "original": {
         "quantity": "1",
         "unit": "",
-        "item": "yellow onion",
+        "ingredientId": "yellow-onion",
         "note": "chopped"
       },
       "modified": null
@@ -49,7 +49,7 @@
       "original": {
         "quantity": "1",
         "unit": "clove",
-        "item": "garlic",
+        "ingredientId": "garlic",
         "note": "minced"
       },
       "modified": null
@@ -60,7 +60,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "cup",
-        "item": "all-purpose flour",
+        "ingredientId": "flour",
         "note": ""
       },
       "modified": null
@@ -71,7 +71,7 @@
       "original": {
         "quantity": "2",
         "unit": "cup",
-        "item": "chicken broth",
+        "ingredientId": "chicken-broth",
         "note": ""
       },
       "modified": null
@@ -82,7 +82,7 @@
       "original": {
         "quantity": "1 1/2",
         "unit": "cup",
-        "item": "whole milk",
+        "ingredientId": "whole-milk",
         "note": ""
       },
       "modified": null
@@ -93,7 +93,7 @@
       "original": {
         "quantity": "1",
         "unit": "tsp",
-        "item": "salt",
+        "ingredientId": "salt",
         "note": ""
       },
       "modified": null
@@ -104,7 +104,7 @@
       "original": {
         "quantity": "4",
         "unit": "cup",
-        "item": "shredded cheese",
+        "ingredientId": "shredded-cheese",
         "note": "mozzarella, divided"
       },
       "modified": null
@@ -115,7 +115,7 @@
       "original": {
         "quantity": "1",
         "unit": "cup",
-        "item": "parmesan cheese",
+        "ingredientId": "parmesan-cheese",
         "note": "grated, divided"
       },
       "modified": null
@@ -126,7 +126,7 @@
       "original": {
         "quantity": "1",
         "unit": "tsp",
-        "item": "dried basil",
+        "ingredientId": "dried-basil",
         "note": ""
       },
       "modified": null
@@ -137,7 +137,7 @@
       "original": {
         "quantity": "1",
         "unit": "tsp",
-        "item": "dried oregano",
+        "ingredientId": "dried-oregano",
         "note": ""
       },
       "modified": null
@@ -148,7 +148,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "tsp",
-        "item": "black pepper",
+        "ingredientId": "black-pepper",
         "note": "ground"
       },
       "modified": null
@@ -159,7 +159,7 @@
       "original": {
         "quantity": "2",
         "unit": "cup",
-        "item": "ricotta cheese",
+        "ingredientId": "ricotta-cheese",
         "note": ""
       },
       "modified": null
@@ -170,7 +170,7 @@
       "original": {
         "quantity": "2",
         "unit": "cup",
-        "item": "cooked chicken",
+        "ingredientId": "cooked-chicken",
         "note": "cubed"
       },
       "modified": null
@@ -181,7 +181,7 @@
       "original": {
         "quantity": "20",
         "unit": "oz",
-        "item": "frozen chopped spinach",
+        "ingredientId": "frozen-chopped-spinach",
         "note": "two 10 oz packages, thawed and drained"
       },
       "modified": null
@@ -192,7 +192,7 @@
       "original": {
         "quantity": "1",
         "unit": "tbsp",
-        "item": "fresh parsley",
+        "ingredientId": "fresh-parsley",
         "note": "chopped"
       },
       "modified": null

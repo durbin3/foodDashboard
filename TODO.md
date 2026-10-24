@@ -10,13 +10,15 @@
 - [x] "Copy as text" button on the grocery list (for sending to Discord)
 - [x] `import-recipe` skill (URL or image → recipe file)
 - [x] Imported Honey Garlic Chicken with notes and sauce modifications
+- [x] Import skill handles WPRM print pages, PDFs, and images; 14 recipes imported
+- [x] Create recipes by hand; edit name, source, servings, groups, and steps; delete recipes
+- [x] Ingredients tab: rename/merge ingredients across all recipes, manage pantry staples, set a "buy as" unit
+- [x] Unit conversions: built-in (tsp/tbsp/cup, oz/lb, metric) plus custom shared and per-ingredient conversions, used by the grocery list
 
 ## Next
 
-- [ ] Unit conversions (tsp ↔ tbsp ↔ cup, etc.) so mixed units combine
-- [ ] Create a recipe by hand in the UI (currently only through the skill)
-- [ ] Edit recipe name, servings, and steps in the UI
-- [ ] Manage the pantry staples list directly (currently toggled from grocery list rows)
+- [ ] Move an ingredient between groups in the recipe editor
+- [ ] Warn before leaving a recipe page with unsaved changes (currently only on tab close/refresh)
 
 ## Later / maybe
 

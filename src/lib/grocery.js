@@ -1,13 +1,15 @@
 import { formatQuantity, normalizeUnit, parseQuantity } from './quantity.js'
 import { activeIngredients } from './recipe.js'
+import { BUILTIN_CONVERSIONS, combineAmounts, unitGraph } from './units.js'
 
-const itemKey = (item) => String(item ?? '').trim().toLowerCase()
+export const itemKey = (item) => String(item ?? '').trim().toLowerCase()
 
 /**
- * Combine ingredients across planned meals. Amounts with the same unit are
- * summed; different units are listed side by side ("1 + 1 cup").
+ * Combine ingredients across planned meals. Amounts are converted and summed
+ * where conversions allow (built-in, global custom, then per-ingredient);
+ * anything left unconvertible is listed side by side ("1 + 1 cup").
  */
-export function buildGroceryList(plan, recipesById, staples) {
+export function buildGroceryList(plan, recipesById, registry) {
   const items = new Map()
 
   for (const entry of plan.entries) {
@@ -16,10 +18,10 @@ export function buildGroceryList(plan, recipesById, staples) {
     const scale = Number(entry.scale) || 1
 
     for (const ing of activeIngredients(recipe)) {
-      const name = itemKey(ing.item)
-      if (!name) continue
-      if (!items.has(name)) items.set(name, { name, amounts: new Map(), other: new Set(), sources: new Set() })
-      const agg = items.get(name)
+      const key = ing.ingredientId ?? itemKey(ing.item)
+      if (!key) continue
+      if (!items.has(key)) items.set(key, { id: key, name: itemKey(ing.item), amounts: new Map(), other: new Set(), sources: new Set() })
+      const agg = items.get(key)
 
       const qty = parseQuantity(ing.quantity)
       const unit = normalizeUnit(ing.unit)
@@ -33,14 +35,22 @@ export function buildGroceryList(plan, recipesById, staples) {
     }
   }
 
-  const stapleSet = new Set(staples.map(itemKey))
+  const sharedConversions = [...BUILTIN_CONVERSIONS, ...(registry?.conversions ?? [])]
   const lines = [...items.values()]
-    .map((agg) => ({
-      name: agg.name,
-      amount: formatAmounts(agg),
-      sources: [...agg.sources],
-      staple: stapleSet.has(agg.name),
-    }))
+    .map((agg) => {
+      const info = registry?.ingredients?.[agg.id] ?? {}
+      const edges = unitGraph([...sharedConversions, ...(info.conversions ?? [])])
+      const preferred = info.buyUnit == null ? null : normalizeUnit(info.buyUnit)
+      const amounts = combineAmounts(agg.amounts, edges, preferred)
+      return {
+        id: agg.id,
+        name: agg.name,
+        amount: formatAmounts(amounts, agg.other),
+        unconverted: amounts.length > 1,
+        sources: [...agg.sources],
+        staple: !!info.staple,
+      }
+    })
     .sort((a, b) => a.name.localeCompare(b.name))
 
   return {
@@ -49,11 +59,11 @@ export function buildGroceryList(plan, recipesById, staples) {
   }
 }
 
-function formatAmounts(agg) {
+function formatAmounts(amounts, other) {
   // Unitless counts first ("2"), then units alphabetically.
-  const units = [...agg.amounts.keys()].sort((a, b) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b)))
-  const parts = units.map((u) => `${formatQuantity(agg.amounts.get(u))} ${u}`.trim())
-  return [...parts, ...agg.other].join(' + ')
+  const sorted = [...amounts].sort((a, b) => (a.unit === '' ? -1 : b.unit === '' ? 1 : a.unit.localeCompare(b.unit)))
+  const parts = sorted.map((a) => `${formatQuantity(a.qty)} ${a.unit}`.trim())
+  return [...parts, ...other].join(' + ')
 }
 
 export function groceryListText({ groceries, pantry }) {

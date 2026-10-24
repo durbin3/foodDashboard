@@ -3,36 +3,65 @@
   "name": "Greek Pork Tenderloin (Slow Cooker)",
   "source": "https://realfoodwholelife.com/recipes/greek-pork/",
   "servings": 6,
-  "tags": ["pork", "slow cooker", "greek"],
+  "tags": [
+    "pork",
+    "slow cooker",
+    "greek"
+  ],
   "ingredients": [
     {
       "id": "greek-yogurt",
       "group": "",
-      "original": { "quantity": "1", "unit": "cup", "item": "2% greek yogurt", "note": "" },
+      "original": {
+        "quantity": "1",
+        "unit": "cup",
+        "ingredientId": "2-greek-yogurt",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "garlic",
       "group": "",
-      "original": { "quantity": "4", "unit": "clove", "item": "garlic", "note": "minced or finely grated" },
+      "original": {
+        "quantity": "4",
+        "unit": "clove",
+        "ingredientId": "garlic",
+        "note": "minced or finely grated"
+      },
       "modified": null
     },
     {
       "id": "lemon",
       "group": "",
-      "original": { "quantity": "1", "unit": "", "item": "lemon", "note": "large, zested and juiced (about 2 teaspoons zest and 2 tablespoons juice)" },
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "lemon",
+        "note": "large, zested and juiced (about 2 teaspoons zest and 2 tablespoons juice)"
+      },
       "modified": null
     },
     {
       "id": "kosher-salt",
       "group": "",
-      "original": { "quantity": "2", "unit": "tsp", "item": "kosher salt", "note": "divided" },
+      "original": {
+        "quantity": "2",
+        "unit": "tsp",
+        "ingredientId": "kosher-salt",
+        "note": "divided"
+      },
       "modified": null
     },
     {
       "id": "pork-tenderloin",
       "group": "",
-      "original": { "quantity": "2", "unit": "lb", "item": "pork tenderloin", "note": "silver skin removed" },
+      "original": {
+        "quantity": "2",
+        "unit": "lb",
+        "ingredientId": "pork-tenderloin",
+        "note": "silver skin removed"
+      },
       "modified": null
     }
   ],

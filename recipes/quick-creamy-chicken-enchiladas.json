@@ -16,7 +16,7 @@
       "original": {
         "quantity": "2/3",
         "unit": "cup",
-        "item": "cream of chicken soup",
+        "ingredientId": "cream-of-chicken-soup",
         "note": "condensed, undiluted"
       },
       "modified": null
@@ -27,7 +27,7 @@
       "original": {
         "quantity": "2/3",
         "unit": "cup",
-        "item": "sour cream",
+        "ingredientId": "sour-cream",
         "note": ""
       },
       "modified": null
@@ -38,7 +38,7 @@
       "original": {
         "quantity": "2",
         "unit": "cup",
-        "item": "chicken breast",
+        "ingredientId": "chicken-breast",
         "note": "shredded, cooked"
       },
       "modified": null
@@ -49,7 +49,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "cup",
-        "item": "shredded cheese",
+        "ingredientId": "shredded-cheese",
         "note": "Monterey Jack, divided"
       },
       "modified": null
@@ -60,7 +60,7 @@
       "original": {
         "quantity": "4",
         "unit": "",
-        "item": "flour tortilla",
+        "ingredientId": "flour-tortilla",
         "note": "6 inches, warmed"
       },
       "modified": null

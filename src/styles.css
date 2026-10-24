@@ -153,3 +153,70 @@ button.link { border: none; background: none; color: var(--accent); padding: 4px
   .ing-table .original { grid-column: 1 / -1; }
   .grocery li { grid-template-columns: 1fr 1fr; }
 }
+
+/* Forms and editing */
+.inline-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.inline-form h4 { margin: 0; }
+button.danger { color: #b3261e; border-color: #b3261e; }
+.danger-zone { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+.title-input {
+  font-size: 28px;
+  font-weight: 700;
+  border-color: transparent;
+  background: transparent;
+  padding: 4px 6px;
+  flex: 1;
+  min-width: 240px;
+}
+.title-input:hover, .title-input:focus { border-color: var(--border); background: var(--surface); }
+
+.detail-grid { display: grid; grid-template-columns: 2fr 1fr 2fr auto; gap: 12px; align-items: end; margin: 12px 0 8px; }
+.detail-grid .field { margin-bottom: 0; }
+.with-action { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+.with-action input { flex: 1; margin-top: 0; }
+
+.group-input {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-color: transparent;
+  background: transparent;
+  padding: 4px 6px;
+  margin: 8px 0 4px -6px;
+}
+.group-input:hover, .group-input:focus { border-color: var(--border); background: var(--surface); }
+
+.step-row { display: flex; gap: 8px; align-items: flex-start; }
+.step-row textarea { flex: 1; }
+.step-actions { display: flex; flex-direction: column; gap: 2px; }
+.step-actions button { padding: 0 8px; font-size: 13px; }
+
+/* Ingredients tab */
+.ing-index { width: 100%; border-collapse: collapse; }
+.ing-index th { text-align: left; font-weight: 500; font-size: 12px; color: var(--muted); padding: 4px 8px; }
+.ing-index td { padding: 4px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.ing-index tr.open td { background: var(--surface); border-bottom-color: transparent; }
+.ing-index tr.detail td { background: var(--surface); }
+.ing-index button.link { color: var(--text); text-align: left; }
+.detail-panel { display: grid; gap: 12px; padding: 8px 4px 12px 20px; }
+.detail-panel h4 { margin: 0 0 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.detail-panel p { margin: 0; }
+
+.conversions { margin-bottom: 8px; }
+.conversion-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.conversion-row .num { width: 70px; }
+.conversion-row .unit { width: 100px; }
+
+.g-name { color: var(--text); text-decoration: none; }
+.g-name:hover { color: var(--accent); }
+.add-conv { margin-left: 8px; }
+
+@media (max-width: 700px) {
+  .detail-grid { grid-template-columns: 1fr; }
+  .ing-index thead { display: none; }
+  .ing-index tr:not(.detail) { display: grid; grid-template-columns: 1fr auto; }
+  .ing-index tr:not(.detail) td:nth-child(n+2):not(:nth-child(4)) { display: none; }
+}

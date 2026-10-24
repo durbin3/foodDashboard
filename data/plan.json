@@ -3,7 +3,7 @@
     {
       "id": "ad99cfcd-7a2b-44e0-92ff-54f5e76606fd",
       "recipeId": "chicken-pot-pie",
-      "day": "",
+      "day": "Mon",
       "scale": 1
     },
     {
@@ -15,6 +15,12 @@
     {
       "id": "d2c455e7-2865-43c6-863a-28adf67805b2",
       "recipeId": "slow-cooker-carnitas",
+      "day": "Wed",
+      "scale": 1
+    },
+    {
+      "id": "227f009a-54a7-41c0-aadb-80a2f8ed7cf0",
+      "recipeId": "white-cheese-chicken-lasagna",
       "day": "",
       "scale": 1
     }

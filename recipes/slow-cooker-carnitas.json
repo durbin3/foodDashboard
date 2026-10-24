@@ -15,7 +15,7 @@
       "original": {
         "quantity": "1",
         "unit": "",
-        "item": "yellow onion",
+        "ingredientId": "yellow-onion",
         "note": "diced"
       },
       "modified": null
@@ -26,7 +26,7 @@
       "original": {
         "quantity": "4",
         "unit": "clove",
-        "item": "garlic",
+        "ingredientId": "garlic",
         "note": "peeled"
       },
       "modified": null
@@ -37,7 +37,7 @@
       "original": {
         "quantity": "2",
         "unit": "",
-        "item": "cinnamon stick",
+        "ingredientId": "cinnamon-stick",
         "note": "small"
       },
       "modified": null
@@ -48,7 +48,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "tbsp",
-        "item": "dried oregano",
+        "ingredientId": "dried-oregano",
         "note": ""
       },
       "modified": null
@@ -59,7 +59,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "tbsp",
-        "item": "cumin",
+        "ingredientId": "cumin",
         "note": ""
       },
       "modified": null
@@ -70,7 +70,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "tsp",
-        "item": "salt",
+        "ingredientId": "salt",
         "note": ""
       },
       "modified": null
@@ -81,7 +81,7 @@
       "original": {
         "quantity": "",
         "unit": "",
-        "item": "black pepper",
+        "ingredientId": "black-pepper",
         "note": "freshly cracked, to taste"
       },
       "modified": null
@@ -92,7 +92,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "tsp",
-        "item": "chipotle pepper powder",
+        "ingredientId": "chipotle-pepper-powder",
         "note": ""
       },
       "modified": null
@@ -103,7 +103,7 @@
       "original": {
         "quantity": "3",
         "unit": "lb",
-        "item": "pork butt roast",
+        "ingredientId": "pork-butt-roast",
         "note": "cut into 2-inch cubes"
       },
       "modified": null
@@ -114,7 +114,7 @@
       "original": {
         "quantity": "2",
         "unit": "",
-        "item": "orange",
+        "ingredientId": "orange",
         "note": "small"
       },
       "modified": null

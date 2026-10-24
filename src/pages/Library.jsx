@@ -1,9 +1,18 @@
 import { useMemo, useState } from 'react'
-import { activeIngredients, modificationCount } from '../lib/recipe.js'
+import { activeIngredients, modificationCount, newRecipe } from '../lib/recipe.js'
 
 export default function Library({ recipes, plan, actions }) {
   const [query, setQuery] = useState('')
   const [activeTags, setActiveTags] = useState([])
+  const [newName, setNewName] = useState('')
+
+  async function create(e) {
+    e.preventDefault()
+    if (!newName.trim()) return
+    const created = await actions.createRecipe(newRecipe(newName, new Set(recipes.map((r) => r.id))))
+    setNewName('')
+    window.location.hash = `#/recipe/${created.id}`
+  }
 
   const allTags = useMemo(() => [...new Set(recipes.flatMap((r) => r.tags ?? []))].sort(), [recipes])
 
@@ -31,6 +40,12 @@ export default function Library({ recipes, plan, actions }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        <form className="inline-form" onSubmit={create}>
+          <input placeholder="New recipe name…" value={newName} onChange={(e) => setNewName(e.target.value)} />
+          <button className="primary" disabled={!newName.trim()}>
+            + New recipe
+          </button>
+        </form>
       </div>
       {allTags.length > 0 && (
         <div className="tags">
@@ -47,7 +62,7 @@ export default function Library({ recipes, plan, actions }) {
       )}
 
       {recipes.length === 0 && (
-        <p className="muted">No recipes yet. Ask Claude to import one with the import-recipe skill.</p>
+        <p className="muted">No recipes yet. Create one above, or ask Claude to import one with the import-recipe skill.</p>
       )}
 
       <div className="cards">

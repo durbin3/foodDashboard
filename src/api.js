@@ -11,9 +11,12 @@ async function request(method, url, body) {
 
 export const api = {
   listRecipes: () => request('GET', '/api/recipes'),
+  createRecipe: (recipe) => request('POST', '/api/recipes', recipe),
   saveRecipe: (recipe) => request('PUT', `/api/recipes/${recipe.id}`, recipe),
+  deleteRecipe: (id) => request('DELETE', `/api/recipes/${id}`),
   getPlan: () => request('GET', '/api/plan'),
   savePlan: (plan) => request('PUT', '/api/plan', plan),
-  getPantry: () => request('GET', '/api/pantry'),
-  savePantry: (pantry) => request('PUT', '/api/pantry', pantry),
+  getIngredients: () => request('GET', '/api/ingredients'),
+  saveIngredients: (data) => request('PUT', '/api/ingredients', data),
+  mergeIngredient: (from, into) => request('POST', '/api/ingredients/merge', { from, into }),
 }

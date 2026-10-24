@@ -3,90 +3,164 @@
   "name": "Chicken Pot Pie",
   "source": "https://www.budgetbytes.com/chicken-pot-pie/",
   "servings": 8,
-  "tags": ["chicken", "baked", "comfort food"],
+  "tags": [
+    "chicken",
+    "baked",
+    "comfort food"
+  ],
   "ingredients": [
     {
       "id": "chicken-breast",
       "group": "",
-      "original": { "quantity": "1", "unit": "", "item": "chicken breast", "note": "boneless, skinless (about 2/3 lb)" },
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "chicken-breast",
+        "note": "boneless, skinless (about 2/3 lb)"
+      },
       "modified": null
     },
     {
       "id": "cooking-oil",
       "group": "",
-      "original": { "quantity": "1", "unit": "tbsp", "item": "cooking oil", "note": "" },
+      "original": {
+        "quantity": "1",
+        "unit": "tbsp",
+        "ingredientId": "cooking-oil",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "yellow-onion",
       "group": "",
-      "original": { "quantity": "1", "unit": "", "item": "yellow onion", "note": "diced" },
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "yellow-onion",
+        "note": "diced"
+      },
       "modified": null
     },
     {
       "id": "butter",
       "group": "",
-      "original": { "quantity": "4", "unit": "tbsp", "item": "butter", "note": "" },
+      "original": {
+        "quantity": "4",
+        "unit": "tbsp",
+        "ingredientId": "butter",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "flour",
       "group": "",
-      "original": { "quantity": "4", "unit": "tbsp", "item": "all-purpose flour", "note": "" },
+      "original": {
+        "quantity": "4",
+        "unit": "tbsp",
+        "ingredientId": "flour",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "chicken-broth",
       "group": "",
-      "original": { "quantity": "1", "unit": "cup", "item": "chicken broth", "note": "" },
+      "original": {
+        "quantity": "1",
+        "unit": "cup",
+        "ingredientId": "chicken-broth",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "whole-milk",
       "group": "",
-      "original": { "quantity": "1/2", "unit": "cup", "item": "whole milk", "note": "" },
+      "original": {
+        "quantity": "1/2",
+        "unit": "cup",
+        "ingredientId": "whole-milk",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "dried-thyme",
       "group": "",
-      "original": { "quantity": "1/4", "unit": "tsp", "item": "dried thyme", "note": "" },
+      "original": {
+        "quantity": "1/4",
+        "unit": "tsp",
+        "ingredientId": "dried-thyme",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "rubbed-sage",
       "group": "",
-      "original": { "quantity": "1/4", "unit": "tsp", "item": "rubbed sage", "note": "" },
+      "original": {
+        "quantity": "1/4",
+        "unit": "tsp",
+        "ingredientId": "rubbed-sage",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "black-pepper",
       "group": "",
-      "original": { "quantity": "1/4", "unit": "tsp", "item": "black pepper", "note": "" },
+      "original": {
+        "quantity": "1/4",
+        "unit": "tsp",
+        "ingredientId": "black-pepper",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "salt",
       "group": "",
-      "original": { "quantity": "3/4", "unit": "tsp", "item": "salt", "note": "" },
+      "original": {
+        "quantity": "3/4",
+        "unit": "tsp",
+        "ingredientId": "salt",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "frozen-mixed-vegetables",
       "group": "",
-      "original": { "quantity": "12", "unit": "oz", "item": "frozen mixed vegetables", "note": "" },
+      "original": {
+        "quantity": "12",
+        "unit": "oz",
+        "ingredientId": "frozen-mixed-vegetables",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "double-pie-crust",
       "group": "",
-      "original": { "quantity": "1", "unit": "", "item": "double pie crust", "note": "store-bought or homemade" },
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "double-pie-crust",
+        "note": "store-bought or homemade"
+      },
       "modified": null
     },
     {
       "id": "egg",
       "group": "",
-      "original": { "quantity": "1", "unit": "", "item": "egg", "note": "optional, whisked for brushing the crust" },
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "egg",
+        "note": "optional, whisked for brushing the crust"
+      },
       "modified": null
     }
   ],

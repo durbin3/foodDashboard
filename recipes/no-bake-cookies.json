@@ -15,7 +15,7 @@
       "original": {
         "quantity": "1 1/2",
         "unit": "cup",
-        "item": "granulated sugar",
+        "ingredientId": "granulated-sugar",
         "note": "300g"
       },
       "modified": null
@@ -26,7 +26,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "cup",
-        "item": "whole milk",
+        "ingredientId": "whole-milk",
         "note": "120ml"
       },
       "modified": null
@@ -37,7 +37,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "cup",
-        "item": "butter",
+        "ingredientId": "butter",
         "note": "unsalted, 113g"
       },
       "modified": null
@@ -48,7 +48,7 @@
       "original": {
         "quantity": "1/4",
         "unit": "cup",
-        "item": "cocoa powder",
+        "ingredientId": "cocoa-powder",
         "note": "unsweetened, 25g"
       },
       "modified": null
@@ -59,7 +59,7 @@
       "original": {
         "quantity": "2 1/2",
         "unit": "cup",
-        "item": "quick oats",
+        "ingredientId": "quick-oats",
         "note": "250g"
       },
       "modified": null
@@ -70,7 +70,7 @@
       "original": {
         "quantity": "3/4",
         "unit": "cup",
-        "item": "peanut butter",
+        "ingredientId": "peanut-butter",
         "note": "creamy, no-stir, 200g"
       },
       "modified": null
@@ -81,7 +81,7 @@
       "original": {
         "quantity": "2",
         "unit": "tsp",
-        "item": "vanilla extract",
+        "ingredientId": "vanilla-extract",
         "note": ""
       },
       "modified": null

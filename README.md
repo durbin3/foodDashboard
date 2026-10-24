@@ -15,13 +15,15 @@ It opens at http://localhost:5173. Every edit in the UI is written straight to J
 
 | Path | What it holds |
 | --- | --- |
-| `recipes/<id>.json` | One file per recipe. Each ingredient keeps the imported `original` next to your `modified` version, plus free-text `notes`. |
+| `recipes/<id>.json` | One file per recipe. Each ingredient keeps the imported `original` next to your `modified` version, plus free-text `notes`. Ingredients are referenced by `ingredientId`. |
+| `data/ingredients.json` | The ingredient registry: every known ingredient by id, with its display name, `staple` flag (pantry section on the grocery list), "buy as" unit, and per-ingredient conversions. Also the shared custom conversions. |
 | `data/plan.json` | The current meal plan: recipe, day, and scale factor. |
-| `data/pantry.json` | Pantry staples. These show in a separate "check before buying" section of the grocery list. |
+
+Renaming an ingredient only changes its `name` in the registry; recipes keep pointing at the same id. Merging two ingredients is the one operation that rewrites recipe files.
 
 **Scaling** multiplies a recipe's ingredient amounts (1.5 = 1.5× everything); it ignores the recipe's stated servings.
 
-**Grocery list** groups items by name. Amounts with the same unit are added together, and other units are listed alongside (`garlic: 1 + 8 clove`). There's no unit conversion yet.
+**Grocery list** groups items by name and converts units where it can. It uses the built-in conversions (tsp/tbsp/cup, oz/lb, metric) plus any you add on the Ingredients tab (e.g. 1 each chicken breast = 1/2 lb). Amounts that still can't be converted are listed side by side (`garlic: 1 + 8 clove`).
 
 ## Adding recipes
 

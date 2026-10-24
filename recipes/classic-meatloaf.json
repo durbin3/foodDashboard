@@ -15,7 +15,7 @@
       "original": {
         "quantity": "1",
         "unit": "",
-        "item": "egg",
+        "ingredientId": "egg",
         "note": "large"
       },
       "modified": null
@@ -26,7 +26,7 @@
       "original": {
         "quantity": "1/3",
         "unit": "cup",
-        "item": "whole milk",
+        "ingredientId": "whole-milk",
         "note": ""
       },
       "modified": null
@@ -37,7 +37,7 @@
       "original": {
         "quantity": "1",
         "unit": "tsp",
-        "item": "worcestershire sauce",
+        "ingredientId": "worcestershire-sauce",
         "note": ""
       },
       "modified": null
@@ -48,7 +48,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "cup",
-        "item": "plain breadcrumbs",
+        "ingredientId": "plain-breadcrumbs",
         "note": ""
       },
       "modified": null
@@ -59,7 +59,7 @@
       "original": {
         "quantity": "1",
         "unit": "tsp",
-        "item": "italian seasoning",
+        "ingredientId": "italian-seasoning",
         "note": ""
       },
       "modified": null
@@ -70,7 +70,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "tsp",
-        "item": "garlic powder",
+        "ingredientId": "garlic-powder",
         "note": ""
       },
       "modified": null
@@ -81,7 +81,7 @@
       "original": {
         "quantity": "1",
         "unit": "tsp",
-        "item": "salt",
+        "ingredientId": "salt",
         "note": ""
       },
       "modified": null
@@ -92,7 +92,7 @@
       "original": {
         "quantity": "1/4",
         "unit": "tsp",
-        "item": "black pepper",
+        "ingredientId": "black-pepper",
         "note": "freshly cracked"
       },
       "modified": null
@@ -103,7 +103,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "cup",
-        "item": "yellow onion",
+        "ingredientId": "yellow-onion",
         "note": "minced"
       },
       "modified": null
@@ -114,7 +114,7 @@
       "original": {
         "quantity": "1 1/2",
         "unit": "lb",
-        "item": "ground beef",
+        "ingredientId": "ground-beef",
         "note": "80/20"
       },
       "modified": null
@@ -125,7 +125,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "cup",
-        "item": "ketchup",
+        "ingredientId": "ketchup",
         "note": ""
       },
       "modified": null
@@ -136,7 +136,7 @@
       "original": {
         "quantity": "1",
         "unit": "tbsp",
-        "item": "brown sugar",
+        "ingredientId": "brown-sugar",
         "note": ""
       },
       "modified": null
@@ -147,7 +147,7 @@
       "original": {
         "quantity": "1",
         "unit": "tbsp",
-        "item": "worcestershire sauce",
+        "ingredientId": "worcestershire-sauce",
         "note": ""
       },
       "modified": null
@@ -158,7 +158,7 @@
       "original": {
         "quantity": "1",
         "unit": "tsp",
-        "item": "yellow mustard",
+        "ingredientId": "yellow-mustard",
         "note": ""
       },
       "modified": null

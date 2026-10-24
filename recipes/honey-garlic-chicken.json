@@ -3,96 +3,200 @@
   "name": "Honey Garlic Chicken",
   "source": "https://www.budgetbytes.com/honey-garlic-chicken/",
   "servings": 4,
-  "tags": ["chicken", "quick", "stovetop"],
+  "tags": [
+    "chicken",
+    "quick",
+    "stovetop"
+  ],
   "ingredients": [
     {
       "id": "honey",
       "group": "Sauce",
-      "original": { "quantity": "1/3", "unit": "cup", "item": "honey", "note": "" },
-      "modified": { "quantity": "1/2", "unit": "cup", "item": "honey", "note": "" }
+      "original": {
+        "quantity": "1/3",
+        "unit": "cup",
+        "ingredientId": "honey",
+        "note": ""
+      },
+      "modified": {
+        "quantity": "1/2",
+        "unit": "cup",
+        "ingredientId": "honey",
+        "note": ""
+      }
     },
     {
       "id": "soy-sauce",
       "group": "Sauce",
-      "original": { "quantity": "2", "unit": "tbsp", "item": "soy sauce", "note": "" },
-      "modified": { "quantity": "3", "unit": "tbsp", "item": "soy sauce", "note": "" }
+      "original": {
+        "quantity": "2",
+        "unit": "tbsp",
+        "ingredientId": "soy-sauce",
+        "note": ""
+      },
+      "modified": {
+        "quantity": "3",
+        "unit": "tbsp",
+        "ingredientId": "soy-sauce",
+        "note": ""
+      }
     },
     {
       "id": "rice-vinegar",
       "group": "Sauce",
-      "original": { "quantity": "1", "unit": "tbsp", "item": "rice vinegar", "note": "" },
-      "modified": { "quantity": "3", "unit": "tsp", "item": "rice vinegar", "note": "" }
+      "original": {
+        "quantity": "1",
+        "unit": "tbsp",
+        "ingredientId": "rice-vinegar",
+        "note": ""
+      },
+      "modified": {
+        "quantity": "3",
+        "unit": "tsp",
+        "ingredientId": "rice-vinegar",
+        "note": ""
+      }
     },
     {
       "id": "sriracha",
       "group": "Sauce",
-      "original": { "quantity": "1", "unit": "tsp", "item": "sriracha", "note": "" },
-      "modified": { "quantity": "1 1/2", "unit": "tsp", "item": "sriracha", "note": "" }
+      "original": {
+        "quantity": "1",
+        "unit": "tsp",
+        "ingredientId": "sriracha",
+        "note": ""
+      },
+      "modified": {
+        "quantity": "1 1/2",
+        "unit": "tsp",
+        "ingredientId": "sriracha",
+        "note": ""
+      }
     },
     {
       "id": "sesame-oil",
       "group": "Sauce",
-      "original": { "quantity": "2", "unit": "tsp", "item": "toasted sesame oil", "note": "" },
+      "original": {
+        "quantity": "2",
+        "unit": "tsp",
+        "ingredientId": "toasted-sesame-oil",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "cornstarch",
       "group": "Sauce",
-      "original": { "quantity": "1", "unit": "tbsp", "item": "cornstarch", "note": "" },
-      "modified": { "quantity": "1 1/2", "unit": "tbsp", "item": "cornstarch", "note": "" }
+      "original": {
+        "quantity": "1",
+        "unit": "tbsp",
+        "ingredientId": "cornstarch",
+        "note": ""
+      },
+      "modified": {
+        "quantity": "1 1/2",
+        "unit": "tbsp",
+        "ingredientId": "cornstarch",
+        "note": ""
+      }
     },
     {
       "id": "chicken-breast",
       "group": "Chicken",
-      "original": { "quantity": "2", "unit": "", "item": "chicken breast", "note": "boneless, skinless" },
+      "original": {
+        "quantity": "2",
+        "unit": "",
+        "ingredientId": "chicken-breast",
+        "note": "boneless, skinless"
+      },
       "modified": null
     },
     {
       "id": "salt",
       "group": "Chicken",
-      "original": { "quantity": "1", "unit": "tsp", "item": "salt", "note": "" },
+      "original": {
+        "quantity": "1",
+        "unit": "tsp",
+        "ingredientId": "salt",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "black-pepper",
       "group": "Chicken",
-      "original": { "quantity": "1/2", "unit": "tsp", "item": "black pepper", "note": "" },
+      "original": {
+        "quantity": "1/2",
+        "unit": "tsp",
+        "ingredientId": "black-pepper",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "garlic-powder",
       "group": "Chicken",
-      "original": { "quantity": "1/2", "unit": "tsp", "item": "garlic powder", "note": "" },
+      "original": {
+        "quantity": "1/2",
+        "unit": "tsp",
+        "ingredientId": "garlic-powder",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "flour",
       "group": "Chicken",
-      "original": { "quantity": "2", "unit": "tbsp", "item": "all-purpose flour", "note": "" },
+      "original": {
+        "quantity": "2",
+        "unit": "tbsp",
+        "ingredientId": "flour",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "olive-oil",
       "group": "Chicken",
-      "original": { "quantity": "3", "unit": "tbsp", "item": "olive oil", "note": "" },
+      "original": {
+        "quantity": "3",
+        "unit": "tbsp",
+        "ingredientId": "olive-oil",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "butter",
       "group": "Chicken",
-      "original": { "quantity": "2", "unit": "tbsp", "item": "butter", "note": "" },
+      "original": {
+        "quantity": "2",
+        "unit": "tbsp",
+        "ingredientId": "butter",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "garlic",
       "group": "Chicken",
-      "original": { "quantity": "4", "unit": "clove", "item": "garlic", "note": "minced" },
+      "original": {
+        "quantity": "4",
+        "unit": "clove",
+        "ingredientId": "garlic",
+        "note": "minced"
+      },
       "modified": null
     },
     {
       "id": "green-onion",
       "group": "Chicken",
-      "original": { "quantity": "2", "unit": "", "item": "green onion", "note": "sliced" },
+      "original": {
+        "quantity": "2",
+        "unit": "",
+        "ingredientId": "green-onion",
+        "note": "sliced"
+      },
       "modified": null
     }
   ],

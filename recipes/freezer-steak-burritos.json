@@ -3,48 +3,87 @@
   "name": "Freezer Steak Burritos",
   "source": "https://carmyy.com/freezer-friendly-steak-burritos/",
   "servings": 7,
-  "tags": ["beef", "mexican", "freezer-friendly"],
+  "tags": [
+    "beef",
+    "mexican",
+    "freezer-friendly"
+  ],
   "ingredients": [
     {
       "id": "large-tortilla",
       "group": "",
-      "original": { "quantity": "7", "unit": "", "item": "large tortilla", "note": "" },
+      "original": {
+        "quantity": "7",
+        "unit": "",
+        "ingredientId": "large-tortilla",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "rice",
       "group": "",
-      "original": { "quantity": "2", "unit": "cup", "item": "rice", "note": "cooked (the author uses lemon garlic rice)" },
+      "original": {
+        "quantity": "2",
+        "unit": "cup",
+        "ingredientId": "rice",
+        "note": "cooked (the author uses lemon garlic rice)"
+      },
       "modified": null
     },
     {
       "id": "cooked-steak",
       "group": "",
-      "original": { "quantity": "3", "unit": "cup", "item": "cooked steak", "note": "cubed (2-3 cups)" },
+      "original": {
+        "quantity": "3",
+        "unit": "cup",
+        "ingredientId": "cooked-steak",
+        "note": "cubed (2-3 cups)"
+      },
       "modified": null
     },
     {
       "id": "corn",
       "group": "",
-      "original": { "quantity": "1", "unit": "cup", "item": "corn", "note": "" },
+      "original": {
+        "quantity": "1",
+        "unit": "cup",
+        "ingredientId": "corn",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "red-onion",
       "group": "",
-      "original": { "quantity": "1", "unit": "", "item": "red onion", "note": "diced" },
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "red-onion",
+        "note": "diced"
+      },
       "modified": null
     },
     {
       "id": "shredded-cheese",
       "group": "",
-      "original": { "quantity": "1", "unit": "cup", "item": "shredded cheese", "note": "" },
+      "original": {
+        "quantity": "1",
+        "unit": "cup",
+        "ingredientId": "shredded-cheese",
+        "note": ""
+      },
       "modified": null
     },
     {
       "id": "navy-beans",
       "group": "",
-      "original": { "quantity": "1", "unit": "can", "item": "navy beans", "note": "540 mL" },
+      "original": {
+        "quantity": "1",
+        "unit": "can",
+        "ingredientId": "navy-beans",
+        "note": "540 mL"
+      },
       "modified": null
     }
   ],
