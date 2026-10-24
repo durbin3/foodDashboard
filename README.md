@@ -9,21 +9,21 @@ npm install
 npm run dev
 ```
 
-It opens at http://localhost:5173. Every edit in the UI is written straight to JSON files in the repo, so changes survive a refresh and can be committed.
+It opens at http://127.0.0.1:5173 (use that address rather than localhost; see the note in `vite.config.js`). Every edit in the UI is written straight to JSON files in the repo, so changes survive a refresh and can be committed.
 
 ## Data
 
 | Path | What it holds |
 | --- | --- |
 | `recipes/<id>.json` | One file per recipe. Each ingredient keeps the imported `original` next to your `modified` version, plus free-text `notes`. Ingredients are referenced by `ingredientId`. |
-| `data/ingredients.json` | The ingredient registry: every known ingredient by id, with its display name, `staple` flag (pantry section on the grocery list), "buy as" unit, and per-ingredient conversions. Also the shared custom conversions. |
+| `data/ingredients.json` | The ingredient registry: every known ingredient by id, with its display name, `staple` flag (pantry section on the grocery list), "buy as" unit, and its unit conversions. |
 | `data/plan.json` | The current meal plan: recipe, day, and scale factor. |
 
 Renaming an ingredient only changes its `name` in the registry; recipes keep pointing at the same id. Merging two ingredients is the one operation that rewrites recipe files.
 
 **Scaling** multiplies a recipe's ingredient amounts (1.5 = 1.5× everything); it ignores the recipe's stated servings.
 
-**Grocery list** groups items by name and converts units where it can. It uses the built-in conversions (tsp/tbsp/cup, oz/lb, metric) plus any you add on the Ingredients tab (e.g. 1 each chicken breast = 1/2 lb). Amounts that still can't be converted are listed side by side (`garlic: 1 + 8 clove`).
+**Grocery list** groups items by ingredient and converts units using each ingredient's own conversion list. Standard conversions (tsp/tbsp/cup, oz/lb, metric, pinch) are added to an ingredient automatically once recipes use it in more than one unit; anything else (e.g. 1 each chicken breast = 1/2 lb) you add on the Ingredients tab, where unconvertible ingredients are flagged "needs conversion". Amounts that still can't be converted are listed side by side (`garlic: 1 + 8 clove`).
 
 ## Adding recipes
 

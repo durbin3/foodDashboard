@@ -1,22 +1,48 @@
 {
-  "conversions": [],
   "ingredients": {
     "2-greek-yogurt": {
-      "name": "2% greek yogurt"
+      "name": "greek yogurt"
     },
     "black-pepper": {
-      "name": "black pepper",
+      "name": "pepper",
       "staple": true
     },
-    "bread-flour": {
-      "name": "bread flour"
-    },
     "brown-sugar": {
-      "name": "brown sugar"
+      "name": "brown sugar",
+      "staple": true,
+      "conversions": [
+        {
+          "qty": "1",
+          "unit": "cup",
+          "equals": "16",
+          "toUnit": "tbsp"
+        }
+      ]
     },
     "butter": {
       "name": "butter",
-      "staple": true
+      "staple": true,
+      "buyUnit": "stick",
+      "conversions": [
+        {
+          "qty": "1/2",
+          "unit": "cup",
+          "equals": "1",
+          "toUnit": "stick"
+        },
+        {
+          "qty": "8",
+          "unit": "tbsp",
+          "equals": "1",
+          "toUnit": "stick"
+        },
+        {
+          "qty": "1",
+          "unit": "",
+          "equals": "",
+          "toUnit": ""
+        }
+      ]
     },
     "carrot": {
       "name": "carrot"
@@ -60,7 +86,8 @@
       "name": "corn"
     },
     "cornstarch": {
-      "name": "cornstarch"
+      "name": "cornstarch",
+      "staple": true
     },
     "cream-cheese": {
       "name": "cream cheese"
@@ -80,7 +107,15 @@
     },
     "dried-oregano": {
       "name": "dried oregano",
-      "staple": true
+      "staple": true,
+      "conversions": [
+        {
+          "qty": "1",
+          "unit": "tbsp",
+          "equals": "3",
+          "toUnit": "tsp"
+        }
+      ]
     },
     "dried-thyme": {
       "name": "dried thyme",
@@ -91,7 +126,15 @@
     },
     "flour": {
       "name": "flour",
-      "staple": true
+      "staple": true,
+      "conversions": [
+        {
+          "qty": "1",
+          "unit": "cup",
+          "equals": "16",
+          "toUnit": "tbsp"
+        }
+      ]
     },
     "flour-tortilla": {
       "name": "flour tortilla"
@@ -124,6 +167,9 @@
     },
     "green-onion": {
       "name": "green onion"
+    },
+    "green-pepper": {
+      "name": "green pepper"
     },
     "ground-beef": {
       "name": "ground beef"
@@ -162,12 +208,21 @@
     "margarine": {
       "name": "margarine"
     },
+    "meatballs": {
+      "name": "meatballs"
+    },
+    "mexican-cheese": {
+      "name": "mexican cheese"
+    },
     "navy-beans": {
       "name": "navy beans"
     },
     "olive-oil": {
       "name": "olive oil",
       "staple": true
+    },
+    "onion": {
+      "name": "onion"
     },
     "onion-powder": {
       "name": "onion powder"
@@ -214,8 +269,19 @@
     "red-onion": {
       "name": "red onion"
     },
+    "red-pepper": {
+      "name": "red pepper"
+    },
     "red-pepper-flakes": {
-      "name": "red pepper flakes"
+      "name": "red pepper flakes",
+      "conversions": [
+        {
+          "qty": "1",
+          "unit": "tsp",
+          "equals": "16",
+          "toUnit": "pinch"
+        }
+      ]
     },
     "rice": {
       "name": "rice"
@@ -232,7 +298,15 @@
     },
     "salt": {
       "name": "salt",
-      "staple": true
+      "staple": true,
+      "conversions": [
+        {
+          "qty": "1",
+          "unit": "tsp",
+          "equals": "16",
+          "toUnit": "pinch"
+        }
+      ]
     },
     "salted-butter": {
       "name": "salted butter"
@@ -249,11 +323,20 @@
     "soy-sauce": {
       "name": "soy sauce"
     },
+    "spaghetti": {
+      "name": "spaghetti"
+    },
+    "spaghetti-sauce": {
+      "name": "spaghetti sauce"
+    },
     "spinach": {
       "name": "spinach"
     },
     "sriracha": {
       "name": "sriracha"
+    },
+    "steak": {
+      "name": "steak"
     },
     "steak-seasoning": {
       "name": "steak seasoning"
@@ -281,7 +364,15 @@
       "staple": true
     },
     "worcestershire-sauce": {
-      "name": "worcestershire sauce"
+      "name": "worcestershire sauce",
+      "conversions": [
+        {
+          "qty": "1",
+          "unit": "tbsp",
+          "equals": "3",
+          "toUnit": "tsp"
+        }
+      ]
     },
     "yellow-mustard": {
       "name": "yellow mustard"

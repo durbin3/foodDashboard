@@ -1,0 +1,79 @@
+{
+  "id": "quesadilla",
+  "name": "Steak Quesadilla",
+  "source": "",
+  "servings": 2,
+  "tags": [
+    "dinner"
+  ],
+  "ingredients": [
+    {
+      "id": "custom-mvms9d5d",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "steak",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvmsak8j",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "4",
+        "unit": "",
+        "ingredientId": "large-tortilla",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvmsas7a",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "bag",
+        "ingredientId": "mexican-cheese",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvmsb36d",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1/2",
+        "unit": "",
+        "ingredientId": "onion",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvmsbc4j",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "green-pepper",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvmsbnfn",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "red-pepper",
+        "note": ""
+      }
+    }
+  ],
+  "steps": [],
+  "notes": ""
+}

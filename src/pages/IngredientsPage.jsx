@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { itemKey } from '../lib/grocery.js'
-import { normalizeUnit } from '../lib/quantity.js'
+import { normalizeUnit, parseQuantity } from '../lib/quantity.js'
 import { activeIngredients } from '../lib/recipe.js'
-import { BUILTIN_CONVERSIONS, KNOWN_UNITS } from '../lib/units.js'
+import { KNOWN_UNITS, unitGroupCount } from '../lib/units.js'
 
 const unitLabel = (u) => (u === '' ? 'each' : u)
 const formatConversion = (c) => `${c.qty} ${unitLabel(c.unit)} = ${c.equals} ${unitLabel(c.toUnit)}`
@@ -26,7 +26,7 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
         if (!usage.has(ing.ingredientId)) usage.set(ing.ingredientId, { recipes: new Set(), units: new Set() })
         const u = usage.get(ing.ingredientId)
         u.recipes.add(r.name)
-        u.units.add(normalizeUnit(ing.unit))
+        if (parseQuantity(ing.quantity) != null) u.units.add(normalizeUnit(ing.unit))
       }
     }
     return Object.entries(registry.ingredients)
@@ -42,6 +42,47 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
   const q = query.trim().toLowerCase()
   const visible = index.filter((e) => !q || e.info.name.includes(q) || e.id.includes(q))
 
+  const table = (title, entries, emptyText) => (
+    <>
+      <h2>
+        {title} <span className="muted small">({entries.length})</span>
+      </h2>
+      {entries.length === 0 ? (
+        <p className="muted small">{emptyText}</p>
+      ) : (
+        <table className="ing-index">
+          <thead>
+            <tr>
+              <th>Ingredient</th>
+              <th>Used in</th>
+              <th>Units seen</th>
+              <th>Staple</th>
+              <th>Buy as</th>
+              <th>Conversions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((e) => {
+              const open = expanded === e.id
+              return (
+                <IngredientRow
+                  key={e.id}
+                  entry={e}
+                  open={open}
+                  index={index}
+                  onToggleOpen={() => setExpanded(open ? null : e.id)}
+                  onUpdate={(patch) => actions.updateIngredient(e.id, patch)}
+                  onMerge={(into) => actions.mergeIngredient(e.id, into).then(() => setExpanded(into))}
+                  onDelete={() => actions.deleteIngredient(e.id)}
+                />
+              )
+            })}
+          </tbody>
+        </table>
+      )}
+    </>
+  )
+
   return (
     <section>
       <datalist id="unit-options">
@@ -50,54 +91,19 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
         ))}
       </datalist>
 
-      <h2>Unit conversions for all ingredients</h2>
-      <p className="muted small">Built in: {BUILTIN_CONVERSIONS.map(formatConversion).join(' · ')}</p>
-      <ConversionEditor
-        conversions={registry.conversions ?? []}
-        onChange={(conversions) => actions.saveRegistry({ ...registry, conversions })}
-        emptyText="No custom shared conversions yet."
-      />
-
-      <h2>Ingredients</h2>
       <p className="muted small">
         Recipes refer to ingredients by id, so renaming here changes the name everywhere at once. Renaming to a name
-        that already exists merges the two. Conversions here apply to one ingredient only (e.g. 1 each chicken breast =
-        1/2 lb).
+        that already exists merges the two. Standard conversions (tsp/tbsp/cup, oz/lb, metric) are added to an
+        ingredient automatically once recipes use it in more than one unit. Add your own for anything else, e.g. 1 each
+        chicken breast = 1/2 lb.
       </p>
       <div className="toolbar">
         <input type="search" placeholder="Filter ingredients…" value={query} onChange={(e) => setQuery(e.target.value)} />
         <span className="muted small">{index.length} ingredients</span>
       </div>
 
-      <table className="ing-index">
-        <thead>
-          <tr>
-            <th>Ingredient</th>
-            <th>Used in</th>
-            <th>Units seen</th>
-            <th>Staple</th>
-            <th>Buy as</th>
-            <th>Conversions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {visible.map((e) => {
-            const open = expanded === e.id
-            return (
-              <IngredientRow
-                key={e.id}
-                entry={e}
-                open={open}
-                index={index}
-                onToggleOpen={() => setExpanded(open ? null : e.id)}
-                onUpdate={(patch) => actions.updateIngredient(e.id, patch)}
-                onMerge={(into) => actions.mergeIngredient(e.id, into).then(() => setExpanded(into))}
-                onDelete={() => actions.deleteIngredient(e.id)}
-              />
-            )
-          })}
-        </tbody>
-      </table>
+      {table('Staples', visible.filter((e) => e.info.staple), 'No staples match.')}
+      {table('Other ingredients', visible.filter((e) => !e.info.staple), 'No ingredients match.')}
     </section>
   )
 }
@@ -108,6 +114,7 @@ function IngredientRow({ entry, open, index, onToggleOpen, onUpdate, onMerge, on
   useEffect(() => setNewName(info.name), [info.name])
   const conversions = info.conversions ?? []
   const units = [...entry.units].sort()
+  const needsConversion = unitGroupCount(units, conversions) > 1
   const buyOptions = [...new Set(['', ...units, ...conversions.flatMap((c) => [normalizeUnit(c.unit), normalizeUnit(c.toUnit)]), 'lb', 'oz', 'cup'])]
 
   function rename(e) {
@@ -147,6 +154,11 @@ function IngredientRow({ entry, open, index, onToggleOpen, onUpdate, onMerge, on
         </td>
         <td className="small">
           {conversions.length ? conversions.map(formatConversion).join('; ') : <span className="muted">—</span>}
+          {needsConversion && (
+            <button className="link small warn" onClick={onToggleOpen} title={`Used as ${units.map(unitLabel).join(' and ')}, which don't combine yet`}>
+              needs conversion
+            </button>
+          )}
         </td>
       </tr>
       {open && (

@@ -2,7 +2,17 @@
 // straight into the repo (recipes/*.json, data/*.json) and can be committed.
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { RECIPES_DIR, ROOT, linkRecipe, readJson, readRegistry, writeJson, writeRegistry } from './ingredientStore.js'
+import {
+  RECIPES_DIR,
+  ROOT,
+  fillKnownConversions,
+  linkRecipe,
+  listRecipes,
+  readJson,
+  readRegistry,
+  writeJson,
+  writeRegistry,
+} from './ingredientStore.js'
 
 const DATA_DIR = path.join(ROOT, 'data')
 const ID_RE = /^[a-z0-9-]+$/
@@ -32,18 +42,16 @@ function send(res, status, body) {
   res.end(JSON.stringify(body))
 }
 
-async function listRecipes() {
-  await fs.mkdir(RECIPES_DIR, { recursive: true })
-  const files = (await fs.readdir(RECIPES_DIR)).filter((f) => f.endsWith('.json'))
-  const recipes = await Promise.all(files.map((f) => readJson(path.join(RECIPES_DIR, f))))
-  return recipes.sort((a, b) => a.name.localeCompare(b.name))
-}
-
-/** Link ingredient names in a recipe to registry ids, saving the registry if new ingredients were added. */
+/**
+ * Link ingredient names in a recipe to registry ids, and add any standard
+ * conversions its ingredients now need. Saves the registry if either changed.
+ */
 async function linkAndPersistRegistry(recipe) {
   const registry = await readRegistry()
   const { created } = linkRecipe(recipe, registry)
-  if (created.length) await writeRegistry(registry)
+  const others = (await listRecipes()).filter((r) => r.id !== recipe.id)
+  const added = fillKnownConversions(registry, [...others, recipe])
+  if (created.length || added) await writeRegistry(registry)
   return registry
 }
 
@@ -79,6 +87,7 @@ async function mergeIngredient(from, into) {
     conversions: [...(target.conversions ?? []), ...(source.conversions ?? [])],
   }
   delete registry.ingredients[from]
+  fillKnownConversions(registry, await listRecipes())
   await writeRegistry(registry)
   return { recipesChanged, ingredients: registry }
 }

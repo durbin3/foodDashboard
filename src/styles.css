@@ -220,3 +220,44 @@ button.danger { color: #b3261e; border-color: #b3261e; }
   .ing-index tr:not(.detail) { display: grid; grid-template-columns: 1fr auto; }
   .ing-index tr:not(.detail) td:nth-child(n+2):not(:nth-child(4)) { display: none; }
 }
+
+.warn { color: #b26b00; margin-left: 6px; }
+
+/* Recipes table */
+.recipe-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.recipe-table th { text-align: left; font-weight: 500; font-size: 12px; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.recipe-table th.sortable button { color: var(--muted); font-size: 12px; font-weight: 500; padding: 0; }
+.recipe-table th.sortable button:hover { color: var(--text); }
+.recipe-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.recipe-table tbody tr:last-child td { border-bottom: none; }
+.recipe-table tbody tr:hover td { background: var(--bg); }
+.recipe-link { font-weight: 600; color: var(--text); text-decoration: none; }
+.recipe-link:hover { color: var(--accent); }
+.recipe-table .col-name { min-width: 180px; }
+.recipe-table .col-key { max-width: 280px; }
+.recipe-table .col-num { text-align: right; width: 1%; white-space: nowrap; }
+.recipe-table th.col-num button { text-align: right; }
+.recipe-table .col-changes { white-space: nowrap; }
+.recipe-table .col-plan { white-space: nowrap; }
+.recipe-table .col-plan button { padding: 2px 10px; font-size: 13px; }
+.planned { margin-left: 6px; }
+.clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tags.compact { margin: 0; gap: 4px; }
+.tags.compact .tag { padding: 0 8px; font-size: 12px; }
+
+@media (max-width: 800px) {
+  .recipe-table .col-key, .recipe-table .col-changes, .recipe-table th:nth-child(4), .recipe-table td:nth-child(4), .recipe-table th:nth-child(5), .recipe-table td:nth-child(5) { display: none; }
+}
+
+/* Links styled as buttons */
+a.button {
+  display: inline-block;
+  font: inherit;
+  text-decoration: none;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+a.button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }

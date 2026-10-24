@@ -16,9 +16,10 @@ export const BUILTIN_CONVERSIONS = [
   { qty: '1', unit: 'lb', equals: '16', toUnit: 'oz' },
   { qty: '1', unit: 'oz', equals: '28.35', toUnit: 'g' },
   { qty: '1', unit: 'kg', equals: '1000', toUnit: 'g' },
+  { qty: '1', unit: 'tsp', equals: '16', toUnit: 'pinch' },
 ]
 
-export const KNOWN_UNITS = ['', ...new Set(BUILTIN_CONVERSIONS.flatMap((c) => [c.unit, c.toUnit])), 'clove', 'can', 'pinch']
+export const KNOWN_UNITS = ['', ...new Set(BUILTIN_CONVERSIONS.flatMap((c) => [c.unit, c.toUnit])), 'clove', 'can']
 
 /** Adjacency map: unit -> [[otherUnit, k]] meaning 1 unit = k otherUnit. */
 export function unitGraph(conversions) {
@@ -40,7 +41,7 @@ export function unitGraph(conversions) {
 }
 
 /** Every unit reachable from `root`, with its size in roots (1 unit = size root). */
-function reachable(edges, root) {
+export function reachable(edges, root) {
   const size = new Map([[root, 1]])
   const queue = [root]
   while (queue.length) {
@@ -86,4 +87,41 @@ function pickUnit(total, members, size, preferredUnit) {
   const nice = atLeastOne.find((u) => isNiceQuantity(total / size.get(u)))
   if (nice && total / size.get(nice) <= 12) return nice
   return atLeastOne[0] ?? largestFirst[largestFirst.length - 1]
+}
+
+/** How many groups `units` fall into under `conversions` (1 means they all combine). */
+export function unitGroupCount(units, conversions) {
+  const edges = unitGraph(conversions)
+  const left = new Set(units.map(normalizeUnit))
+  let groups = 0
+  for (const u of [...left]) {
+    if (!left.has(u)) continue
+    groups++
+    for (const reached of reachable(edges, u).keys()) left.delete(reached)
+  }
+  return groups
+}
+
+const roundFactor = (n) => String(Math.round(n * 1000) / 1000)
+
+/**
+ * Conversions from the standard table that an ingredient needs but doesn't have:
+ * for units it's used in that the table can relate (and its own list can't yet),
+ * add "1 <largest unit> = n <unit>". Returns only the new conversions.
+ */
+export function knownConversionsFor(units, existing = []) {
+  const standard = unitGraph(BUILTIN_CONVERSIONS)
+  const added = []
+  const pending = [...new Set(units.map(normalizeUnit))]
+  while (pending.length) {
+    const size = reachable(standard, pending[0])
+    const related = pending.filter((u) => size.has(u)).sort((a, b) => size.get(b) - size.get(a))
+    pending.splice(0, pending.length, ...pending.filter((u) => !size.has(u)))
+    const [largest, ...rest] = related
+    for (const u of rest) {
+      if (reachable(unitGraph([...existing, ...added]), largest).has(u)) continue
+      added.push({ qty: '1', unit: largest, equals: roundFactor(size.get(largest) / size.get(u)), toUnit: u })
+    }
+  }
+  return added
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { formatIngredient } from '../lib/quantity.js'
-import { effectiveIngredient, sameIngredient } from '../lib/recipe.js'
+import { effectiveIngredient, newRecipe, sameIngredient } from '../lib/recipe.js'
 import { KNOWN_UNITS } from '../lib/units.js'
 
 const FIELDS = [
@@ -10,7 +10,11 @@ const FIELDS = [
   ['note', 'Note', 'note'],
 ]
 
-export default function RecipePage({ recipe, knownItems, actions }) {
+/**
+ * Edits a saved recipe, or, with `isNew`, a blank unsaved one that's created
+ * (and given an id from its name) on the first save.
+ */
+export default function RecipePage({ recipe, isNew = false, takenIds, knownItems, actions }) {
   const [draft, setDraft] = useState(recipe)
   const [tagText, setTagText] = useState('')
   const [newGroup, setNewGroup] = useState('')
@@ -69,6 +73,11 @@ export default function RecipePage({ recipe, knownItems, actions }) {
   async function save() {
     setStatus('Saving…')
     try {
+      if (isNew) {
+        const created = await actions.createRecipe({ ...draft, id: newRecipe(draft.name, takenIds).id })
+        window.location.hash = `#/recipe/${created.id}`
+        return
+      }
       await actions.saveRecipe(draft)
       setStatus('Saved')
     } catch {
@@ -96,12 +105,28 @@ export default function RecipePage({ recipe, knownItems, actions }) {
       </datalist>
 
       <div className="recipe-head">
-        <input className="title-input" value={draft.name} onChange={(e) => update({ name: e.target.value })} aria-label="Recipe name" />
+        <input
+          className="title-input"
+          value={draft.name}
+          onChange={(e) => update({ name: e.target.value })}
+          aria-label="Recipe name"
+          placeholder={isNew ? 'New recipe name' : 'Recipe name'}
+          autoFocus={isNew}
+        />
         <div className="save-bar">
           {status && !dirty && <span className="muted small">{status}</span>}
-          {dirty && <button onClick={() => setDraft(recipe)}>Discard</button>}
-          <button className="primary" disabled={!dirty || !draft.name.trim()} onClick={save}>
-            Save changes
+          {isNew ? (
+            <a href="#/">Cancel</a>
+          ) : (
+            dirty && <button onClick={() => setDraft(recipe)}>Discard</button>
+          )}
+          <button
+            className="primary"
+            disabled={!draft.name.trim() || (!isNew && !dirty)}
+            title={!draft.name.trim() ? 'Give the recipe a name first' : undefined}
+            onClick={save}
+          >
+            {isNew ? 'Create recipe' : 'Save changes'}
           </button>
         </div>
       </div>
@@ -137,10 +162,12 @@ export default function RecipePage({ recipe, knownItems, actions }) {
             }}
           />
         </label>
-        <div className="field">
-          <span>&nbsp;</span>
-          <button onClick={() => actions.addToPlan(draft.id)}>+ Add to plan</button>
-        </div>
+        {!isNew && (
+          <div className="field">
+            <span>&nbsp;</span>
+            <button onClick={() => actions.addToPlan(draft.id)}>+ Add to plan</button>
+          </div>
+        )}
       </div>
 
       <h2>Ingredients</h2>
@@ -270,11 +297,13 @@ export default function RecipePage({ recipe, knownItems, actions }) {
         + Add step
       </button>
 
-      <div className="danger-zone">
-        <button className="danger" onClick={remove}>
-          Delete recipe
-        </button>
-      </div>
+      {!isNew && (
+        <div className="danger-zone">
+          <button className="danger" onClick={remove}>
+            Delete recipe
+          </button>
+        </div>
+      )}
     </section>
   )
 }

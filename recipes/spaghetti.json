@@ -1,0 +1,57 @@
+{
+  "id": "spaghetti",
+  "name": "Spaghetti",
+  "source": "",
+  "servings": null,
+  "tags": [
+    "dinner"
+  ],
+  "ingredients": [
+    {
+      "id": "custom-mvmnz9sh",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1/2",
+        "unit": "box",
+        "ingredientId": "spaghetti",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvmnzi0e",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1/2",
+        "unit": "jar",
+        "ingredientId": "spaghetti-sauce",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvmnzp36",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "lil",
+        "unit": "bit",
+        "ingredientId": "heavy-cream",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvmo0l8q",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "12",
+        "unit": "",
+        "ingredientId": "meatballs",
+        "note": ""
+      }
+    }
+  ],
+  "steps": [],
+  "notes": ""
+}

@@ -1,13 +1,14 @@
 import { formatQuantity, normalizeUnit, parseQuantity } from './quantity.js'
 import { activeIngredients } from './recipe.js'
-import { BUILTIN_CONVERSIONS, combineAmounts, unitGraph } from './units.js'
+import { combineAmounts, unitGraph } from './units.js'
 
 export const itemKey = (item) => String(item ?? '').trim().toLowerCase()
 
 /**
  * Combine ingredients across planned meals. Amounts are converted and summed
- * where conversions allow (built-in, global custom, then per-ingredient);
- * anything left unconvertible is listed side by side ("1 + 1 cup").
+ * using each ingredient's own conversion list (standard ones are filled in
+ * automatically when recipes are saved); anything left unconvertible is listed
+ * side by side ("1 + 1 cup").
  */
 export function buildGroceryList(plan, recipesById, registry) {
   const items = new Map()
@@ -35,11 +36,10 @@ export function buildGroceryList(plan, recipesById, registry) {
     }
   }
 
-  const sharedConversions = [...BUILTIN_CONVERSIONS, ...(registry?.conversions ?? [])]
   const lines = [...items.values()]
     .map((agg) => {
       const info = registry?.ingredients?.[agg.id] ?? {}
-      const edges = unitGraph([...sharedConversions, ...(info.conversions ?? [])])
+      const edges = unitGraph(info.conversions ?? [])
       const preferred = info.buyUnit == null ? null : normalizeUnit(info.buyUnit)
       const amounts = combineAmounts(agg.amounts, edges, preferred)
       return {

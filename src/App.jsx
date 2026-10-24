@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from './api.js'
-import { withNames } from './lib/recipe.js'
+import { newRecipe, withNames } from './lib/recipe.js'
 import Library from './pages/Library.jsx'
 import RecipePage from './pages/RecipePage.jsx'
 import PlanPage from './pages/PlanPage.jsx'
@@ -29,7 +29,7 @@ const byName = (a, b) => a.name.localeCompare(b.name)
 export default function App() {
   const [storedRecipes, setStoredRecipes] = useState(null)
   const [plan, setPlan] = useState({ entries: [] })
-  const [registry, setRegistry] = useState({ conversions: [], ingredients: {} })
+  const [registry, setRegistry] = useState({ ingredients: {} })
   const [error, setError] = useState(null)
   const [page, param] = useHashRoute()
 
@@ -50,6 +50,8 @@ export default function App() {
   // Recipes store ingredient ids; the UI works with names resolved from the registry.
   const recipes = useMemo(() => storedRecipes && storedRecipes.map((r) => withNames(r, registry)), [storedRecipes, registry])
   const recipesById = useMemo(() => Object.fromEntries((recipes ?? []).map((r) => [r.id, r])), [recipes])
+  // Stable so the editor doesn't reset its draft on every render.
+  const blankRecipe = useMemo(() => newRecipe('', new Set()), [])
   const knownItems = useMemo(() => Object.values(registry.ingredients).map((i) => i.name).sort(), [registry])
 
   function run(promise) {
@@ -103,6 +105,17 @@ export default function App() {
 
   let content
   if (!recipes) content = <p className="muted">Loading…</p>
+  else if (page === 'new')
+    content = (
+      <RecipePage
+        key="new"
+        recipe={blankRecipe}
+        isNew
+        takenIds={new Set(recipes.map((r) => r.id))}
+        knownItems={knownItems}
+        actions={actions}
+      />
+    )
   else if (page === 'recipe')
     content = <RecipePage key={param} recipe={recipesById[param]} knownItems={knownItems} actions={actions} />
   else if (page === 'plan') content = <PlanPage plan={plan} recipes={recipes} recipesById={recipesById} actions={actions} />
@@ -110,7 +123,7 @@ export default function App() {
     content = <GroceryPage plan={plan} recipesById={recipesById} registry={registry} actions={actions} />
   else if (page === 'ingredients')
     content = <IngredientsPage recipes={recipes} registry={registry} focus={param} actions={actions} />
-  else content = <Library recipes={recipes} plan={plan} actions={actions} />
+  else content = <Library recipes={recipes} plan={plan} registry={registry} actions={actions} />
 
   return (
     <div className="app">
