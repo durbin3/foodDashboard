@@ -170,6 +170,9 @@ export default function App() {
       updatePlan((p) => ({ ...p, meals: [...p.meals, meal] }))
       return meal.id
     },
+    /** Put several meals on days at once: { mealId: date }. */
+    placeMeals: (dates) => updatePlan((p) => ({ ...p, meals: p.meals.map((m) => (m.id in dates ? { ...m, date: dates[m.id] } : m)) })),
+    setRecommendation: (cycleStart, rec) => updatePlan((p) => ({ ...p, recommendations: { ...p.recommendations, [cycleStart]: rec } })),
     updateMeal: (id, patch) => updatePlan((p) => ({ ...p, meals: p.meals.map((m) => (m.id === id ? { ...m, ...patch } : m)) })),
     removeMeal: (meal) => {
       notify(`Removed ${recipeName(meal.recipeId)} from the plan.`, { undo: () => restoreMeals([meal]) })
@@ -245,10 +248,10 @@ export default function App() {
     content = <RecipeView key={param} recipe={recipesById[param]} recipes={recipes} recipesById={recipesById} plan={plan} actions={actions} />
   } else if (page === 'plan') {
     title = 'Meal plan'
-    content = <PlanPage plan={plan} cycle={cycle} settings={settings} recipes={recipes} recipesById={recipesById} actions={actions} />
+    content = <PlanPage plan={plan} cycle={cycle} settings={settings} recipes={recipes} recipesById={recipesById} registry={registry} actions={actions} />
   } else if (page === 'grocery') {
     title = 'Grocery list'
-    content = <GroceryPage plan={plan} cycle={cycle} anchor={anchor} recipesById={recipesById} registry={registry} actions={actions} />
+    content = <GroceryPage plan={plan} cycle={cycle} settings={settings} recipesById={recipesById} registry={registry} actions={actions} />
   } else if (page === 'ingredients') {
     title = 'Ingredients'
     content = <IngredientsPage recipes={recipes} registry={registry} focus={param} actions={actions} />

@@ -1,6 +1,7 @@
 // The plan is a list of meals, each picked for one two-week shopping cycle:
 //   { id, recipeId, cycle: 'YYYY-MM-DD' (the cycle's first Monday), date: 'YYYY-MM-DD' | null,
-//     scale, ratings?: { [person]: 1-5 }, ratingNote? }
+//     scale, sides?, ratings?: { [person]: 1-5 }, ratingNote? }
+// plus `recommendations`: the scheduler's saved suggestion per cycle (see schedule.js).
 // A null date means picked for the cycle but not on a day yet. Past meals stay
 // in the file as history: "last made" and ratings come from them.
 
@@ -85,7 +86,7 @@ export function normalizePlan(plan, anchor) {
     const cycle = date ? cycleStart(anchor, date) : isISODate(m.cycle) ? cycleStart(anchor, m.cycle) : current
     return { ...m, cycle, date, scale: Number(m.scale) > 0 ? Number(m.scale) : 1 }
   })
-  return { meals }
+  return { meals, recommendations: plan?.recommendations ?? {} }
 }
 
 export const mealsForCycle = (plan, start) => plan.meals.filter((m) => m.cycle === start)

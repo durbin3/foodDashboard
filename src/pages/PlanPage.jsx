@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { formatQuantity } from '../lib/quantity.js'
-import { addDays, CYCLE_DAYS, cycleDates, cycleStart, formatCycle, formatDay, formatShortDay, mealsForCycle, today, weekdayKey } from '../lib/plan.js'
+import { addDays, CYCLE_DAYS, cycleStart, formatCycle, formatDay, formatShortDay, mealsForCycle, today } from '../lib/plan.js'
 import { mealEffort, pairedSides } from '../lib/meals.js'
 import { categoryOf, formatMinutes, totalMinutes } from '../lib/recipe.js'
+import { buildRecommendation, cycleDays, cycleWarnings, freeDays, recommendationStillFits } from '../lib/schedule.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 
 /**
@@ -10,15 +11,33 @@ import { EFFORT_LABELS } from '../lib/settings.js'
  * into. Clicking a meal opens a panel with the same moves (for touch screens
  * and keyboards), its scale, and ratings once it's been made.
  */
-export default function PlanPage({ plan, cycle, settings, recipes, recipesById, actions }) {
+export default function PlanPage({ plan, cycle, settings, recipes, recipesById, registry, actions }) {
   const [recipeText, setRecipeText] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const [dropTarget, setDropTarget] = useState(null)
   const recipeInput = useRef(null)
-  const days = cycleDates(cycle)
+  const cycleInfo = cycleDays(cycle, settings)
+  const days = cycleInfo.map((d) => d.date)
   const now = today()
   const current = cycleStart(settings.cycleStart)
   const meals = mealsForCycle(plan, cycle)
+
+  // The saved recommendation, unless something besides following it has changed since.
+  const stored = plan.recommendations?.[cycle]
+  const context = { meals, days: cycleInfo, now, recipesById, registry, settings }
+  const fits = recommendationStillFits(stored, context)
+  const fresh = useMemo(
+    () => (fits || !meals.some((m) => !m.date) || !freeDays(cycleInfo, meals, now).length ? null : buildRecommendation(context)),
+    [fits, plan, cycle, settings, recipesById, registry, now],
+  )
+  const rec = fits ? stored : fresh
+  useEffect(() => {
+    if (fresh) actions.setRecommendation(cycle, fresh)
+  }, [fresh])
+  const suggestionFor = (m) => (rec && !m.date ? rec.days[m.id] : undefined)
+  const suggestedOn = (date) => meals.find((m) => suggestionFor(m) === date)
+  const suggestions = meals.filter((m) => suggestionFor(m))
+  const warnings = cycleWarnings(context)
   const unplaced = meals.filter((m) => !m.date)
   const selected = meals.find((m) => m.id === selectedId)
   // Sides get attached to a meal rather than planned on their own.
@@ -44,7 +63,7 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
     recipeInput.current?.focus()
   }
 
-  const budget = (date) => (settings.noCookDays.includes(weekdayKey(date)) ? null : settings.dayEffort[weekdayKey(date)])
+  const budget = (date) => cycleInfo.find((d) => d.date === date)?.budget ?? null
   const needsRating = (m) => m.date && m.date < now && settings.people.some((p) => m.ratings?.[p] == null)
 
   /** Drop handlers for a day (`date`) or the Meals section (`date` null). */
@@ -70,7 +89,10 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
       recipe={recipesById[m.recipeId]}
       recipesById={recipesById}
       budget={date ? budget(date) : null}
+      noCook={!!date && budget(date) == null}
       needsRating={needsRating(m)}
+      warnings={warnings.byMeal[m.id]}
+      suggestion={suggestionFor(m)}
       selected={m.id === selectedId}
       onSelect={() => setSelectedId(m.id === selectedId ? null : m.id)}
     />
@@ -87,6 +109,7 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
           {dates.map((d) => {
             const b = budget(d)
             const dayMeals = meals.filter((m) => m.date === d)
+            const suggested = !dayMeals.length && suggestedOn(d)
             const classes = ['slot', d < now && 'past', d === now && 'today', b == null && 'no-cook', dropTarget === d && 'drop']
             return (
               <div key={d} className={classes.filter(Boolean).join(' ')} {...dropZone(d, d)}>
@@ -96,7 +119,22 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
                     {b == null ? 'no cooking' : `effort ≤ ${b}`}
                   </span>
                 </div>
+                {warnings.thaw[d]?.map((t) => (
+                  <p key={t} className="thaw-note">
+                    ❄ {t}
+                  </p>
+                ))}
                 {dayMeals.map((m) => card(m, d))}
+                {suggested && (
+                  <button
+                    className="meal-card suggested"
+                    title="Suggested for this day. Click to put it here."
+                    onClick={() => actions.updateMeal(suggested.id, { date: d })}
+                  >
+                    <span className="meal-name">{recipesById[suggested.recipeId]?.name ?? suggested.recipeId}</span>
+                    <span className="meal-meta">Suggested · click to place</span>
+                  </button>
+                )}
               </div>
             )
           })}
@@ -158,7 +196,19 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
           </form>
         </div>
         {unplaced.length > 0 ? (
-          <div className="pool-cards">{unplaced.map((m) => card(m, null))}</div>
+          <>
+            <div className="pool-cards">{unplaced.map((m) => card(m, null))}</div>
+            {suggestions.length > 0 && (
+              <p className="small pool-actions">
+                <button onClick={() => actions.placeMeals(Object.fromEntries(suggestions.map((m) => [m.id, suggestionFor(m)])))}>
+                  Place {suggestions.length === unplaced.length ? 'all' : suggestions.length} as suggested
+                </button>{' '}
+                <span className="muted">
+                  Suggestions fit each day's effort, use perishable ingredients early, and keep the same protein off back-to-back days.
+                </span>
+              </p>
+            )}
+          </>
         ) : (
           <p className="muted small pool-empty">
             {meals.length ? 'Drag a meal here to take it off its day.' : 'Pick the meals that sound good for these two weeks, then drag each onto a day.'}
@@ -189,6 +239,8 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
           sides={sides}
           days={days}
           budget={budget}
+          warnings={warnings.byMeal[selected.id]}
+          suggestion={suggestionFor(selected)}
           people={settings.people}
           now={now}
           actions={actions}
@@ -199,7 +251,7 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   )
 }
 
-function MealCard({ meal, recipe, recipesById, budget, needsRating, selected, onSelect }) {
+function MealCard({ meal, recipe, recipesById, budget, noCook, needsRating, warnings, suggestion, selected, onSelect }) {
   const effort = mealEffort(meal, recipesById)
   const over = budget != null && effort > budget
   const minutes = recipe && totalMinutes(recipe)
@@ -207,12 +259,12 @@ function MealCard({ meal, recipe, recipesById, budget, needsRating, selected, on
   const sideNames = (meal.sides ?? []).map((s) => recipesById[s.recipeId]?.name).filter(Boolean)
   return (
     <div
-      className={`meal-card ${selected ? 'selected' : ''} ${over ? 'over' : ''}`}
+      className={`meal-card ${selected ? 'selected' : ''} ${over ? 'over' : ''} ${warnings ? 'stale' : ''}`}
       draggable
       role="button"
       tabIndex={0}
       aria-pressed={selected}
-      title={over ? `Effort ${effort} is more than this day's ${budget}` : 'Drag to a day, or click for options'}
+      title={[over && `Effort ${effort} is more than this day's ${budget}.`, ...(warnings ?? []), 'Drag to a day, or click for options.'].filter(Boolean).join('\n')}
       onDragStart={(e) => {
         e.dataTransfer.setData('text/plain', meal.id)
         e.dataTransfer.effectAllowed = 'move'
@@ -230,13 +282,17 @@ function MealCard({ meal, recipe, recipesById, budget, needsRating, selected, on
       <span className="meal-meta muted">
         {meta.filter(Boolean).join(' · ')}
         {over && <span className="warn"> · over</span>}
+        {noCook && <span className="warn"> · no-cook day</span>}
+        {warnings && <span className="warn"> · ⚠ freshness</span>}
+        {suggestion && <span> · suggested {formatShortDay(suggestion)}</span>}
+        {suggestion === null && <span> · no free day</span>}
         {needsRating && <span className="pill">rate</span>}
       </span>
     </div>
   )
 }
 
-function MealPanel({ meal, recipe, recipesById, sides, days, budget, people, now, actions, onClose }) {
+function MealPanel({ meal, recipe, recipesById, sides, days, budget, warnings, suggestion, people, now, actions, onClose }) {
   const madeIt = meal.date && meal.date <= now
   const name = recipe?.name ?? meal.recipeId
   return (
@@ -255,6 +311,11 @@ function MealPanel({ meal, recipe, recipesById, sides, days, budget, people, now
             ))}
           </select>
         </label>
+        {suggestion && (
+          <button className="small" onClick={() => actions.updateMeal(meal.id, { date: suggestion })}>
+            Place on {formatDay(suggestion)} (suggested)
+          </button>
+        )}
         <ScaleInput meal={meal} recipe={recipe} actions={actions} />
         <span className="spacer" />
         <button
@@ -269,6 +330,11 @@ function MealPanel({ meal, recipe, recipesById, sides, days, budget, people, now
           ×
         </button>
       </div>
+      {warnings?.map((w) => (
+        <p key={w} className="panel-row warn small">
+          ⚠ {w}
+        </p>
+      ))}
       <SidesRow meal={meal} recipe={recipe} recipesById={recipesById} sides={sides} actions={actions} />
       {madeIt && (
         <div className="panel-row ratings-row">

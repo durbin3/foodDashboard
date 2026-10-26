@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { buildGroceryList, groceryListText } from '../lib/grocery.js'
 import { addDays, CYCLE_DAYS, cycleStart, formatCycle, formatDay, mealsForCycle } from '../lib/plan.js'
+import { cycleDays, cycleWarnings } from '../lib/schedule.js'
 
 const LIST_AS = [
   ['grocery', 'Groceries'],
@@ -40,7 +41,8 @@ function useTicks(cycle) {
   return [ticks, save]
 }
 
-export default function GroceryPage({ plan, cycle, anchor, recipesById, registry, actions }) {
+export default function GroceryPage({ plan, cycle, settings, recipesById, registry, actions }) {
+  const anchor = settings.cycleStart
   const [copied, setCopied] = useState(false)
   const [editing, setEditing] = useState(false)
   const [ticks, setTicks] = useTicks(cycle)
@@ -136,6 +138,7 @@ export default function GroceryPage({ plan, cycle, anchor, recipesById, registry
   return (
     <section>
       {weekNav}
+      <CycleNotes meals={entries} days={cycleDays(cycle, settings)} recipesById={recipesById} registry={registry} />
       <details className="small muted meals-included">
         <summary>
           From {entries.length} meal{entries.length === 1 ? '' : 's'}
@@ -181,5 +184,30 @@ export default function GroceryPage({ plan, cycle, anchor, recipesById, registry
       )}
       {editing && list.notListed.length > 0 && section('Not listed', list.notListed)}
     </section>
+  )
+}
+
+/** Thawing reminders and freshness problems for the cycle, so they're seen when shopping. */
+function CycleNotes({ meals, days, recipesById, registry }) {
+  const { byMeal, thaw } = cycleWarnings({ meals, days, recipesById, registry })
+  const thawDays = Object.keys(thaw).sort()
+  const stale = meals.filter((m) => byMeal[m.id])
+  if (!thawDays.length && !stale.length) return null
+  return (
+    <div className="notice small cycle-notes">
+      <strong>This cycle</strong>
+      <ul>
+        {thawDays.map((d) => (
+          <li key={d}>
+            ❄ {formatDay(d)}: {thaw[d].join('; ')}
+          </li>
+        ))}
+        {stale.map((m) => (
+          <li key={m.id}>
+            ⚠ {recipesById[m.recipeId]?.name ?? m.recipeId}: {byMeal[m.id].join(' ')}
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }

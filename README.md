@@ -24,9 +24,13 @@ Renaming an ingredient only changes its `name` in the registry; recipes keep poi
 
 **Scaling** multiplies a recipe's ingredient amounts (1.5 = 1.5× everything); it ignores the recipe's stated servings.
 
-**Meal plan** shows one two-week shopping cycle at a time (Monday to Sunday two weeks later; shopping is the Sunday before). Add the meals you want for the cycle, then drag each onto a day, or click a meal to pick its day, change its scale, or remove it. Each day shows the most effort you're up for (set on the Settings tab), and a meal that's harder than that is marked "over". Once a meal's day has passed, click it to rate it: everyone rates 1–5, and a recipe's rating is the average of all of them.
+**Meal plan** shows one two-week shopping cycle at a time (Monday to Sunday two weeks later; shopping is the Sunday before). Add the meals you want for the cycle, then drag each onto a day, or click a meal to pick its day, change its scale, or remove it. Each day shows the most effort you're up for (set on the Settings tab), and a meal that's harder than that is marked "over". Meals not on a day yet get a suggested day, shown as a dashed card in that day's slot. Click it to accept, or use "Place all as suggested". Suggestions fit each day's effort, use perishable ingredients before they go off, and keep the same protein off back-to-back days. Place a meal somewhere else and the rest are re-planned around it. Days also show reminders to thaw meat the day before, and meals placed after an ingredient's shelf life get a warning. Once a meal's day has passed, click it to rate it: everyone rates 1–5, and a recipe's rating is the average of all of them.
 
 **Grocery list** is built per shopping trip, from all of that cycle's meals. Ticks are kept in your browser only, per cycle, and a tick clears itself if the amount changes. It groups items by ingredient and converts units using each ingredient's own conversion list. Standard conversions (tsp/tbsp/cup, oz/lb, metric, pinch) are added to an ingredient automatically once recipes use it in more than one unit; anything else (e.g. 1 each chicken breast = 1/2 lb) you add on the Ingredients tab, where unconvertible ingredients are flagged "needs conversion". Amounts that still can't be converted are listed side by side (`garlic: 1 + 8 clove`).
+
+## Tests
+
+`npm test` runs the scheduler's unit tests with Node's built-in test runner.
 
 ## Adding recipes
 

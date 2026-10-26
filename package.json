@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --open"
+    "dev": "vite --open",
+    "test": "node --test src/**/*.test.js"
   },
   "dependencies": {
     "react": "^18.3.1",

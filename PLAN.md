@@ -140,7 +140,14 @@ As built: a main's editor has a "Goes with" picker of side recipes. On the plan,
 
 ---
 
-## Phase 3: Scheduler (day slot recommendations)
+## Phase 3: Scheduler (day slot recommendations) (done)
+
+As built, in `src/lib/schedule.js` with tests in `schedule.test.js` (`npm test`):
+
+- **No `pinned` flag.** Any meal on a day counts as placed by you and stays put. Suggestions go only to *free* days: cookable, today or later, with nothing on them. If there are more meals than free days, the extra ones show "no free day".
+- **Saved suggestion.** It's stored in `plan.recommendations[cycle]` along with what it was based on: the settings, each meal's recipe, sides and effort, and where the already-placed meals were. It's reused until something besides following it changes. Accepting a suggestion (click the dashed card, or "Place all as suggested") keeps the rest. Dropping a meal anywhere else, taking a placed meal back off its day, adding or removing a meal, or changing settings re-solves.
+- **Costs.** Effort over the day's budget costs (over)², and 0.25 per point under. Perishables cost 20 + 3 per day past their shelf life, and a little in their last two good days. Meals sharing a recipe or main-protein tag cost extra on the same or neighbouring days. There's a tiny preference for earlier days to break ties. Recipes with no effort set have no effort cost.
+- **Warnings.** These cover placed meals: a ❄ thaw reminder on the day before, a ⚠ freshness warning on the meal, and "no-cook day" if a meal is on one. All of them are listed under "This cycle" on the grocery page.
 
 All of this is plain functions in `src/lib/schedule.js`, tested with `node --test` (no new dependencies).
 
