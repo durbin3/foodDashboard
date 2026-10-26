@@ -21,6 +21,7 @@ const ID_RE = /^[a-z0-9-]+$/
 const DATA_FILES = {
   plan: { file: 'plan.json', fallback: { meals: [] } },
   settings: { file: 'settings.json', fallback: DEFAULT_SETTINGS },
+  inventory: { file: 'inventory.json', fallback: { items: [] } },
 }
 
 function readBody(req) {

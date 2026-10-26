@@ -180,7 +180,15 @@ Keeping the saved recommendation means the suggestions don't change every time y
 
 ---
 
-## Phase 4: What to buy (storage, pack sizes, leftovers)
+## Phase 4: What to buy (storage, pack sizes, leftovers) (done)
+
+As built (`src/lib/needs.js`, tested in `needs.test.js`):
+
+- **Base unit.** The arithmetic runs in one base unit per ingredient: the pack unit, else the "buy as" unit, else the recipes' unit. It applies only when there's a pack size or a stored amount, and every amount converts to that unit. Otherwise the line reads as before. A stored amount in a unit that doesn't convert is noted on the line as not counted.
+- **Grocery lines.** They show what to buy ("2 lb (2 packs)") with "use …, have … in storage, … left over" underneath when that differs. Lines fully covered by storage move to an "In storage" section.
+- **On hand tab.** It edits `data/inventory.json`: ingredient, amount, where, date added, and how many days it has left (for perishables outside the freezer).
+- **"Done shopping."** It sets each counted ingredient's storage to what's left once the cycle's meals are made. That's projected at shopping time; the meals haven't been cooked yet. Leftover meat that gets thawed defaults to the freezer. It runs once per trip (`inventory.shopped`) and has an Undo.
+- **Not done yet.** Stored perishables aren't yet part of the scheduler's freshness checks; they're flagged on the On hand tab only.
 
 ### 4.1 One function for what each cycle needs to buy
 

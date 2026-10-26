@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { buildGroceryList, groceryListText } from '../lib/grocery.js'
+import { computeNeeds, inventoryAfterShopping } from '../lib/needs.js'
 import { addDays, CYCLE_DAYS, cycleStart, formatCycle, formatDay, mealsForCycle } from '../lib/plan.js'
 import { cycleDays, cycleWarnings } from '../lib/schedule.js'
 
@@ -41,13 +42,15 @@ function useTicks(cycle) {
   return [ticks, save]
 }
 
-export default function GroceryPage({ plan, cycle, settings, recipesById, registry, actions }) {
+export default function GroceryPage({ plan, cycle, settings, recipesById, registry, inventory, actions }) {
   const anchor = settings.cycleStart
   const [copied, setCopied] = useState(false)
   const [editing, setEditing] = useState(false)
   const [ticks, setTicks] = useTicks(cycle)
   const entries = mealsForCycle(plan, cycle).sort((a, b) => (a.date ?? '~').localeCompare(b.date ?? '~'))
-  const list = buildGroceryList(entries, recipesById, registry)
+  const list = buildGroceryList(entries, recipesById, registry, inventory)
+  const shopped = (inventory.shopped ?? []).includes(cycle)
+  const shoppingDate = addDays(cycle, -1)
   const isTicked = (l) => ticks[l.id] === l.amount
   const all = [...list.groceries, ...list.pantry]
   const tickedCount = all.filter(isTicked).length
@@ -55,6 +58,19 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
   const toggle = (l) => {
     const { [l.id]: _, ...rest } = ticks
     setTicks(isTicked(l) ? rest : { ...rest, [l.id]: l.amount })
+  }
+
+  // Storage becomes what will be left once this cycle's meals are made: leftovers from packs, minus what the meals use.
+  function doneShopping() {
+    const before = inventory
+    actions.updateInventory((inv) => ({
+      ...inventoryAfterShopping(computeNeeds(entries, recipesById, registry, inv), inv, shoppingDate),
+      shopped: [...(inv.shopped ?? []), cycle],
+    }))
+    actions.notify("Storage updated to what's left after this cycle's meals.", {
+      undo: () => actions.updateInventory(() => before),
+      link: { href: '#/storage', label: 'See it' },
+    })
   }
 
   async function copy() {
@@ -103,7 +119,10 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
           <input type="checkbox" checked={isTicked(l)} onChange={() => toggle(l)} />
           <span className="g-name">{l.name}</span>
         </label>
-        <span className={`g-amount ${l.staple ? 'muted' : ''}`}>{l.amount || <span className="muted">as needed</span>}</span>
+        <span className={`g-amount ${l.staple ? 'muted' : ''}`}>
+          {l.covered ? <span className="muted">none to buy</span> : l.amount || <span className="muted">as needed</span>}
+          {l.detail && <span className="g-detail muted small">{l.detail}</span>}
+        </span>
         <span className="muted small g-sources">{l.sources.join(', ')}</span>
         {editing && (
           <span className="g-edit small">
@@ -166,12 +185,20 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
           </button>
         )}
         <span className="spacer" />
+        {shopped ? (
+          <span className="muted small">Storage updated for this trip</span>
+        ) : (
+          <button title="Set storage to what will be left over after this cycle's meals" onClick={doneShopping}>
+            Done shopping
+          </button>
+        )}
         <button aria-pressed={editing} className={editing ? 'on' : ''} onClick={() => setEditing((x) => !x)}>
           {editing ? 'Done editing' : 'Edit list'}
         </button>
       </div>
       {section('Groceries', list.groceries)}
       {section('Pantry', list.pantry, '— check you have these')}
+      {list.stored.length > 0 && section('In storage', list.stored, '— already have enough')}
       {list.notListed.length > 0 && (
         <p className="muted small">
           Not listed: {list.notListed.map((l) => l.name).join(', ')}.{' '}

@@ -1,76 +1,52 @@
-import { mealParts } from './meals.js'
-import { formatQuantity, normalizeUnit, parseQuantity } from './quantity.js'
-import { activeIngredients, capitalize } from './recipe.js'
-import { BUILTIN_CONVERSIONS, combineAmounts, unitGraph } from './units.js'
-
-export const itemKey = (item) => String(item ?? '').trim().toLowerCase()
+import { amountText, computeNeeds } from './needs.js'
 
 /**
- * Combine ingredients across planned meals and their sides. Amounts are converted and summed
- * using each ingredient's own conversion list (standard ones are filled in
- * automatically when recipes are saved); anything left unconvertible is listed
- * side by side ("1 + 1 cup"). Ingredients marked "not listed" (e.g. "taco
- * toppings") are returned separately so the list can mention them.
+ * The grocery list for a set of planned meals and their sides. Amounts come
+ * from computeNeeds: totals converted with each ingredient's own conversion
+ * list, less what's in storage, rounded up to pack sizes. Lines fully covered
+ * by storage are listed separately so they can be checked rather than bought.
+ * Ingredients marked "not listed" (e.g. "taco toppings") are returned
+ * separately so the list can mention them.
  */
-export function buildGroceryList(meals, recipesById, registry) {
-  const items = new Map()
-
-  for (const entry of meals.flatMap(mealParts)) {
-    const recipe = recipesById[entry.recipeId]
-    if (!recipe) continue
-    const scale = Number(entry.scale) || 1
-
-    for (const ing of activeIngredients(recipe)) {
-      const key = ing.ingredientId ?? itemKey(ing.item)
-      if (!key) continue
-      if (!items.has(key)) items.set(key, { id: key, name: capitalize(ing.item.trim()), amounts: new Map(), other: new Set(), sources: new Set() })
-      const agg = items.get(key)
-
-      const qty = parseQuantity(ing.quantity)
-      const unit = normalizeUnit(ing.unit)
-      if (qty != null) {
-        agg.amounts.set(unit, (agg.amounts.get(unit) ?? 0) + qty * scale)
-      } else {
-        const raw = [ing.quantity, ing.unit].filter((s) => s && s.trim()).join(' ')
-        if (raw) agg.other.add(raw)
-      }
-      agg.sources.add(scale === 1 ? recipe.name : `${recipe.name} ×${scale}`)
-    }
-  }
-
-  const lines = [...items.values()]
-    .map((agg) => {
-      const info = registry?.ingredients?.[agg.id] ?? {}
-      // Standard conversions always apply, so 3 tsp can read as 1 tbsp even
-      // for an ingredient only ever used in teaspoons.
-      const edges = unitGraph([...BUILTIN_CONVERSIONS, ...(info.conversions ?? [])])
-      const preferred = info.buyUnit == null ? null : normalizeUnit(info.buyUnit)
-      const amounts = combineAmounts(agg.amounts, edges, preferred)
-      return {
-        id: agg.id,
-        name: agg.name,
-        amount: formatAmounts(amounts, agg.other),
-        unconverted: amounts.length > 1,
-        sources: [...agg.sources],
-        staple: !!info.staple,
-        notListed: !!info.notListed,
-      }
-    })
+export function buildGroceryList(meals, recipesById, registry, inventory) {
+  const lines = computeNeeds(meals, recipesById, registry, inventory)
+    .map((n) => ({
+      id: n.id,
+      name: n.name,
+      amount: n.math ? buyText(n) : n.used,
+      detail: [n.math && detailText(n), n.storedOther.length && `${n.storedOther.join(' + ')} in storage doesn't convert, so isn't counted`].filter(Boolean).join('; '),
+      covered: !!n.math && n.math.buyQty <= 0,
+      unconverted: n.unconverted,
+      sources: n.sources,
+      staple: n.staple,
+      notListed: n.notListed,
+    }))
     .sort((a, b) => a.name.localeCompare(b.name))
 
   const listed = lines.filter((l) => !l.notListed)
   return {
-    groceries: listed.filter((l) => !l.staple),
-    pantry: listed.filter((l) => l.staple),
+    groceries: listed.filter((l) => !l.staple && !l.covered),
+    pantry: listed.filter((l) => l.staple && !l.covered),
+    stored: listed.filter((l) => l.covered),
     notListed: lines.filter((l) => l.notListed),
   }
 }
 
-function formatAmounts(amounts, other) {
-  // Unitless counts first ("2"), then units alphabetically.
-  const sorted = [...amounts].sort((a, b) => (a[0].unit === '' ? -1 : b[0].unit === '' ? 1 : a[0].unit.localeCompare(b[0].unit)))
-  const parts = sorted.flatMap((group) => group.map((p) => `${formatQuantity(p.qty)} ${p.unit}`.trim()))
-  return [...parts, ...other].join(' + ')
+/** "2 lb" or, for packs that aren't a single unit, "4 lb (2 packs)". */
+function buyText(n) {
+  const { buyQty, packs, pack } = n.math
+  const text = amountText(n, buyQty)
+  return packs > 1 || (pack && pack.qty !== 1 && packs) ? `${text} (${packs} pack${packs === 1 ? '' : 's'})` : text
+}
+
+/** What the amount is made of: what the meals use, what's in storage, what's left over. */
+function detailText(n) {
+  const { usedQty, haveQty, buyQty, leftoverQty } = n.math
+  const parts = [`use ${amountText(n, usedQty)}`]
+  if (haveQty > 0) parts.push(`have ${amountText(n, haveQty)} in storage`)
+  if (leftoverQty > 1e-9) parts.push(`${amountText(n, leftoverQty)} left over`)
+  // Bought exactly what's used: nothing worth explaining.
+  return haveQty <= 0 && leftoverQty <= 1e-9 && buyQty > 0 ? '' : parts.join(', ')
 }
 
 export function groceryListText({ groceries, pantry }, checked = () => false) {

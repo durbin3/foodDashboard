@@ -10,6 +10,7 @@ import PlanPage from './pages/PlanPage.jsx'
 import GroceryPage from './pages/GroceryPage.jsx'
 import IngredientsPage from './pages/IngredientsPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
+import StoragePage from './pages/StoragePage.jsx'
 
 /**
  * The current hash as path parts plus query, e.g. "#/recipe/x/edit" → ['recipe', 'x', 'edit'].
@@ -64,6 +65,7 @@ const NAV = [
   ['', 'Recipes'],
   ['plan', 'Meal plan'],
   ['grocery', 'Grocery list'],
+  ['storage', 'On hand'],
   ['ingredients', 'Ingredients'],
   ['settings', 'Settings'],
 ]
@@ -82,6 +84,7 @@ export default function App() {
     onSaving,
   )
   const [settings, updateSettings, replaceSettings] = usePersisted(DEFAULT_SETTINGS, (s) => run(api.saveSettings(s)), onSaving)
+  const [inventory, updateInventory, replaceInventory] = usePersisted({ items: [] }, (i) => run(api.saveInventory(i)), onSaving)
   const leaveGuard = useRef(null)
   const { parts, query } = useHashRoute(leaveGuard)
   const [page, param, sub] = parts
@@ -96,8 +99,9 @@ export default function App() {
   const plan = useMemo(() => normalizePlan(storedPlan, anchor), [storedPlan, anchor])
 
   function loadAll() {
-    return Promise.all([api.listRecipes(), api.getPlan(), api.getIngredients(), api.getSettings()])
-      .then(([r, p, i, s]) => {
+    return Promise.all([api.listRecipes(), api.getPlan(), api.getIngredients(), api.getSettings(), api.getInventory()])
+      .then(([r, p, i, s, inv]) => {
+        replaceInventory({ items: [], ...inv })
         setStoredRecipes(r)
         const loaded = normalizeSettings(s)
         replaceSettings(loaded)
@@ -183,6 +187,7 @@ export default function App() {
       return removeMeals(meals.map((m) => m.id))
     },
     updateSettings,
+    updateInventory,
     /** Patch one ingredient's settings (registering it if a recipe used an unknown id); undefined values are dropped when saved. */
     updateIngredient: (id, patch) =>
       updateRegistry((r) => ({ ...r, ingredients: { ...r.ingredients, [id]: { name: id, ...r.ingredients[id], ...patch } } })),
@@ -251,10 +256,15 @@ export default function App() {
     content = <PlanPage plan={plan} cycle={cycle} settings={settings} recipes={recipes} recipesById={recipesById} registry={registry} actions={actions} />
   } else if (page === 'grocery') {
     title = 'Grocery list'
-    content = <GroceryPage plan={plan} cycle={cycle} settings={settings} recipesById={recipesById} registry={registry} actions={actions} />
+    content = (
+      <GroceryPage plan={plan} cycle={cycle} settings={settings} recipesById={recipesById} registry={registry} inventory={inventory} actions={actions} />
+    )
   } else if (page === 'ingredients') {
     title = 'Ingredients'
     content = <IngredientsPage recipes={recipes} registry={registry} focus={param} actions={actions} />
+  } else if (page === 'storage') {
+    title = 'On hand'
+    content = <StoragePage inventory={inventory} registry={registry} actions={actions} />
   } else if (page === 'settings') {
     title = 'Settings'
     content = <SettingsPage settings={settings} actions={actions} />
