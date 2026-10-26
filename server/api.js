@@ -9,6 +9,7 @@ import {
   fillKnownConversions,
   linkRecipe,
   listRecipes,
+  mergeIngredient,
   readJson,
   readRegistry,
   writeJson,
@@ -56,46 +57,6 @@ async function linkAndPersistRegistry(recipe) {
   const added = fillKnownConversions(registry, [...others, recipe])
   if (created.length || added) await writeRegistry(registry)
   return registry
-}
-
-/** Merge one ingredient into another: repoint every recipe, combine registry settings, drop the old entry. */
-async function mergeIngredient(from, into) {
-  const registry = await readRegistry()
-  const source = registry.ingredients[from]
-  const target = registry.ingredients[into]
-  if (!source || !target) throw Object.assign(new Error('Unknown ingredient id'), { status: 400 })
-
-  let recipesChanged = 0
-  for (const recipe of await listRecipes()) {
-    let changed = false
-    for (const ing of recipe.ingredients) {
-      for (const version of [ing.original, ing.modified]) {
-        if (version?.ingredientId === from) {
-          version.ingredientId = into
-          changed = true
-        }
-      }
-    }
-    if (changed) {
-      await writeJson(path.join(RECIPES_DIR, `${recipe.id}.json`), recipe)
-      recipesChanged++
-    }
-  }
-
-  registry.ingredients[into] = {
-    ...source,
-    ...target,
-    staple: !!(source.staple || target.staple) || undefined,
-    buyUnit: target.buyUnit ?? source.buyUnit,
-    shelfLifeDays: target.shelfLifeDays ?? source.shelfLifeDays,
-    thaw: !!(source.thaw || target.thaw) || undefined,
-    purchase: target.purchase ?? source.purchase,
-    conversions: [...(target.conversions ?? []), ...(source.conversions ?? [])],
-  }
-  delete registry.ingredients[from]
-  fillKnownConversions(registry, await listRecipes())
-  await writeRegistry(registry)
-  return { recipesChanged, ingredients: registry }
 }
 
 async function handle(req, res) {

@@ -265,7 +265,17 @@ The goal is to **find recipes we don't have yet** and add them without creating 
 
 A Discover subtab lists candidates and ranks them with the Phase 5 scoring: rating isn't known, so it uses ingredient overlap with what we usually buy, effort and time (from schema.org data), and category. Each candidate has **Import** (the review flow in 6.3) and **Dismiss** (remembered, so it's not shown again).
 
-### 6.3 Matching website ingredients to our ingredient list
+### 6.3 Matching website ingredients to our ingredient list (done, except the review screen)
+
+As built (`src/lib/match.js`, tested in `match.test.js`):
+
+- **Automatic links.** A name links to an ingredient when it's the ingredient's name or one of its `aliases` (ignoring case), or when both read the same once normalized. Normalizing makes plurals singular, drops punctuation and parentheses, and removes prep and size words (chopped, boneless, large…). Words that change the purchase (fresh, dried, ground, shredded) are kept. If two ingredients normalize alike ("tortilla" and "large tortilla"), nothing is linked automatically.
+- **Suggestions.** Anything else gets ranked suggestions based on shared words (allowing a one-letter typo), one name containing the other, and spelling.
+- **Server and import skill.** The server's linking and the import skill's `link-ingredients.mjs` both use this matcher. The link script lists possible existing matches for every ingredient it creates. The new `merge-ingredient.mjs` folds a mistaken new ingredient into the right one.
+- **Merging and renaming.** Merging (in the app or by script) keeps the old name and its aliases as aliases of the target, and repoints On hand items. Renaming keeps the old name as an alias.
+- **Ingredients tab.** It has an "Also called" editor (an alias can't be another ingredient's name or alias), and search covers aliases. Duplicate detection uses the shared normalizing.
+- **Recipe editor.** It shows "= pepper" when a typed name will link to an ingredient through an alias or other wording, and "Did you mean …?" for new names.
+- **Still to build.** The in-app import review screen (Accept / Choose another / New ingredient per line) comes with the Discover tab (6.2), on top of this matcher.
 
 - Add `aliases: []` to registry ingredients. A website's ingredient line is matched by:
   1. normalizing it (lowercase, plural → singular, drop words like "boneless skinless", "fresh", "chopped", "large"),

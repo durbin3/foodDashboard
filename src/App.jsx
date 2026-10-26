@@ -84,7 +84,7 @@ export default function App() {
     onSaving,
   )
   const [settings, updateSettings, replaceSettings] = usePersisted(DEFAULT_SETTINGS, (s) => run(api.saveSettings(s)), onSaving)
-  const [inventory, updateInventory, replaceInventory] = usePersisted({ items: [] }, (i) => run(api.saveInventory(i)), onSaving)
+  const [inventory, updateInventory, replaceInventory, latestInventory] = usePersisted({ items: [] }, (i) => run(api.saveInventory(i)), onSaving)
   const leaveGuard = useRef(null)
   const { parts, query } = useHashRoute(leaveGuard)
   const [page, param, sub] = parts
@@ -211,6 +211,7 @@ export default function App() {
         if (!latestRegistry.current.ingredients[id])
           await updateRegistry((r) => ({ ...r, ingredients: { ...r.ingredients, [id]: { name: id } } }))
       const before = latestRegistry.current
+      const inventoryBefore = latestInventory.current
       const touched = storedRecipes.filter((r) =>
         r.ingredients.some((i) => i.original?.ingredientId === from || i.modified?.ingredientId === from),
       )
@@ -219,6 +220,7 @@ export default function App() {
       notify(`Merged "${before.ingredients[from]?.name}" into "${before.ingredients[into]?.name}" (${touched.length} recipe${touched.length === 1 ? '' : 's'} updated).`, {
         undo: async () => {
           await run(api.saveIngredients(before))
+          await run(api.saveInventory(inventoryBefore))
           for (const r of touched) await run(api.saveRecipe(r))
           await loadAll()
           notify('Merge undone.')
@@ -239,6 +241,7 @@ export default function App() {
         isNew
         takenIds={new Set(recipes.map((r) => r.id))}
         knownItems={knownItems}
+        registry={registry}
         allTags={[...new Set(recipes.flatMap((r) => r.tags ?? []))].sort()}
         sides={recipes.filter((r) => categoryOf(r) === 'side')}
         actions={actions}
@@ -251,6 +254,7 @@ export default function App() {
         key={param}
         recipe={recipesById[param]}
         knownItems={knownItems}
+        registry={registry}
         allTags={[...new Set(recipes.flatMap((r) => r.tags ?? []))].sort()}
         sides={recipes.filter((r) => categoryOf(r) === 'side')}
         actions={actions}

@@ -123,9 +123,20 @@ From the project root, run:
 node .claude/skills/import-recipe/link-ingredients.mjs recipes/<id>.json
 ```
 
-The script replaces each `item` with an `ingredientId` and adds any new names to `data/ingredients.json`. It prints which ingredients matched and which were created. Check the created ones: if one is really an existing ingredient under a different name (e.g. "parmesan" next to an existing "parmesan cheese"), fix the `item` in the recipe and re-run the script. Re-running is safe, because versions that already have an `ingredientId` are left alone. To re-link a changed name, put `item` back on that version.
+The script replaces each `item` with an `ingredientId` and adds any new names to `data/ingredients.json`. An item links to an existing ingredient when it matches the ingredient's name, one of its `aliases`, or the same words once plurals and prep/size words are set aside ("Boneless Skinless Chicken Breasts" → `chicken breast`). Words that change the purchase (fresh, dried, ground, shredded) still have to match.
 
-Two imports must not run this script at the same time, because both write `data/ingredients.json`. When several agents import in parallel, have them stop after step 3, then run the link script for each recipe one after another.
+It prints which ingredients matched and which were created, and for each created one, existing ingredients it might really be (`"parmesan" might be: parmesan-cheese ("parmesan cheese", 80%)`). For each of those:
+
+- **Same thing you'd buy:** merge the new one into the existing one. This repoints the recipe and keeps the new wording as an alias, so the next import using it links automatically:
+  ```sh
+  node .claude/skills/import-recipe/merge-ingredient.mjs <new-id> <existing-id>
+  ```
+- **Different purchase** (e.g. "fresh basil" vs "dried basil"): leave it as a new ingredient.
+- **Not sure:** ask the user, and list the open question in your report.
+
+Re-running the link script is safe, because versions that already have an `ingredientId` are left alone.
+
+Two imports must not run these scripts at the same time, because both write `data/ingredients.json`. When several agents import in parallel, have them stop after step 3, then run the link script for each recipe one after another.
 
 ## 4. Report back
 

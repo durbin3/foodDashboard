@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { formatIngredient } from '../lib/quantity.js'
+import { matchIngredient, suggestIngredients } from '../lib/match.js'
 import { CATEGORIES, categoryOf, effectiveIngredient, newRecipe, sameIngredient, unparsedQuantity } from '../lib/recipe.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 import { KNOWN_UNITS } from '../lib/units.js'
@@ -24,7 +25,7 @@ const cleaned = (draft) => ({
  * Edits a saved recipe, or, with `isNew`, a blank unsaved one that's created
  * (and given an id from its name) on the first save.
  */
-export default function RecipePage({ recipe, isNew = false, takenIds, knownItems, allTags, sides, actions }) {
+export default function RecipePage({ recipe, isNew = false, takenIds, knownItems, registry, allTags, sides, actions }) {
   const [draft, setDraft] = useState(recipe)
   const [newGroup, setNewGroup] = useState('')
   const [status, setStatus] = useState('')
@@ -72,7 +73,6 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
   if (!groups.length) groups.push('')
   // Hand-made recipes have no imported originals, so there's nothing to compare against.
   const hasOriginals = draft.ingredients.some((i) => i.original)
-  const known = new Set(knownItems.map((i) => i.toLowerCase()))
 
   const update = (patch) => setDraft((d) => ({ ...d, ...(typeof patch === 'function' ? patch(d) : patch) }))
   const updateIngredient = (id, fn) => update((d) => ({ ingredients: d.ingredients.map((i) => (i.id === id ? fn(i) : i)) }))
@@ -281,7 +281,11 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                     const added = !ing.original && hasOriginals
                     const rowClass = ing.removed ? 'removed' : changed ? 'changed' : added ? 'added' : ''
                     const name = eff.item?.trim() || 'new ingredient'
-                    const isNewItem = eff.item?.trim() && !known.has(eff.item.trim().toLowerCase())
+                    // A name links to an existing ingredient by its name, an alias, or the same words in another form.
+                    const match = eff.item?.trim() ? matchIngredient(eff.item, registry) : null
+                    const isNewItem = eff.item?.trim() && !match
+                    const linksTo = match && match.how !== 'name' ? registry.ingredients[match.id]?.name : null
+                    const maybe = isNewItem && !ing.removed ? suggestIngredients(eff.item, registry, { limit: 2 }) : []
                     const badQty = unparsedQuantity(eff.quantity)
                     return (
                       <tr key={ing.id} className={rowClass}>
@@ -323,6 +327,25 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                             {field === 'item' && isNewItem && !ing.removed && (
                               <span className="pill new" title="Not a known ingredient yet; saving creates it">
                                 new
+                              </span>
+                            )}
+                            {field === 'item' && linksTo && !ing.removed && (
+                              <span className="field-note" title="Saved as this ingredient">
+                                = {linksTo}
+                              </span>
+                            )}
+                            {field === 'item' && maybe.length > 0 && (
+                              <span className="field-note">
+                                Did you mean{' '}
+                                {maybe.map((m, i) => (
+                                  <span key={m.id}>
+                                    {i > 0 && ' or '}
+                                    <button className="link small" onClick={() => setField(ing, 'item', m.name)}>
+                                      {m.name}
+                                    </button>
+                                  </span>
+                                ))}
+                                ?
                               </span>
                             )}
                             {field === 'quantity' && badQty && <span className="field-warning">not a number</span>}

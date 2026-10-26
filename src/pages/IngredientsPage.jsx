@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { normalizeUnit, parseQuantity } from '../lib/quantity.js'
+import { aliasProblem, likelyDuplicates } from '../lib/match.js'
 import { activeIngredients } from '../lib/recipe.js'
 import { KNOWN_UNITS, unitGroupCount } from '../lib/units.js'
 
@@ -17,43 +18,6 @@ const listAsPatch = {
   grocery: { staple: undefined, notListed: undefined },
   pantry: { staple: true, notListed: undefined },
   none: { staple: undefined, notListed: true },
-}
-
-// Words that make a variant of the same thing you'd buy ("double pie crust" vs "pie crust").
-const QUALIFIERS = new Set(['double', 'single', 'large', 'small', 'medium', 'fresh', 'whole', 'extra', 'big'])
-const tokens = (name) =>
-  name
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim()
-    .split(' ')
-    .map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w))
-
-function editDistance(a, b) {
-  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)])
-  for (let j = 1; j <= b.length; j++) d[0][j] = j
-  for (let i = 1; i <= a.length; i++)
-    for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
-  return d[a.length][b.length]
-}
-
-/** Pairs of ingredients whose names suggest they're the same thing. */
-function likelyDuplicates(entries) {
-  const pairs = []
-  for (let i = 0; i < entries.length; i++)
-    for (let j = i + 1; j < entries.length; j++) {
-      const [a, b] = [tokens(entries[i].info.name), tokens(entries[j].info.name)]
-      const [short, long] = a.length <= b.length ? [a, b] : [b, a]
-      const extra = long.filter((w) => !short.includes(w))
-      const same =
-        a.join('') === b.join('') ||
-        (short.every((w) => long.includes(w)) && extra.length === 1 && QUALIFIERS.has(extra[0])) ||
-        (a.join('').length >= 6 && editDistance(a.join(' '), b.join(' ')) <= 1)
-      if (same) pairs.push([entries[i], entries[j]])
-    }
-  return pairs
 }
 
 function useDismissedPairs() {
@@ -138,7 +102,7 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
   const q = query.trim().toLowerCase()
   const visible = index
     .filter(FILTERS.find(([k]) => k === filter)[2])
-    .filter((e) => !q || e.info.name.toLowerCase().includes(q) || e.id.includes(q))
+    .filter((e) => !q || e.info.name.toLowerCase().includes(q) || e.id.includes(q) || (e.info.aliases ?? []).some((a) => a.toLowerCase().includes(q)))
 
   return (
     <section>
@@ -216,6 +180,7 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
                   entry={e}
                   open={open}
                   index={index}
+                  registry={registry}
                   allUnits={allUnits}
                   onToggleOpen={() => setExpanded(open ? null : e.id)}
                   onUpdate={(patch) => actions.updateIngredient(e.id, patch)}
@@ -255,7 +220,7 @@ const RecipeLinks = ({ recipes, limit = Infinity }) => {
   )
 }
 
-function IngredientRow({ entry, open, index, allUnits, onToggleOpen, onUpdate, onMerge, onDelete }) {
+function IngredientRow({ entry, open, index, registry, allUnits, onToggleOpen, onUpdate, onMerge, onDelete }) {
   const { id, info, units } = entry
   const conversions = info.conversions ?? []
   const [newName, setNewName] = useState(info.name)
@@ -270,7 +235,9 @@ function IngredientRow({ entry, open, index, allUnits, onToggleOpen, onUpdate, o
     e.preventDefault()
     const to = newName.trim()
     if (!to || to === info.name || clash) return
-    onUpdate({ name: to })
+    // The old name stays findable: imports using it still link here.
+    const aliases = [...(info.aliases ?? []).filter((a) => !sameName(a, to)), info.name]
+    onUpdate({ name: to, aliases })
   }
 
   return (
@@ -380,6 +347,10 @@ function IngredientRow({ entry, open, index, allUnits, onToggleOpen, onUpdate, o
                 <p className="muted small">Blank shelf life means it doesn't go off. No pack size means buy exactly what recipes use.</p>
               </div>
               <div>
+                <h4>Also called</h4>
+                <AliasEditor id={id} info={info} registry={registry} onChange={(aliases) => onUpdate({ aliases: aliases.length ? aliases : undefined })} />
+              </div>
+              <div>
                 <h4>Conversions for {info.name}</h4>
                 <ConversionEditor
                   conversions={conversions}
@@ -447,6 +418,41 @@ function PurchaseInput({ purchase, onChange }) {
       <input className="unit" list="unit-options" aria-label="Pack unit" placeholder="each" value={unit} onChange={(e) => setUnit(e.target.value)} />
       {bad && <span className="field-warning">Use a number, e.g. 2 or 1/2</span>}
     </label>
+  )
+}
+
+/** Other names an ingredient goes by. Imports and recipes using any of them link to it. */
+function AliasEditor({ id, info, registry, onChange }) {
+  const [text, setText] = useState('')
+  const aliases = info.aliases ?? []
+  const problem = text.trim() ? aliasProblem(text, id, registry) : null
+  return (
+    <div>
+      <div className="tags compact">
+        {aliases.length === 0 && <span className="muted small">No other names yet.</span>}
+        {aliases.map((a) => (
+          <span key={a} className="tag static">
+            {a}
+            <button className="link" aria-label={`Remove name ${a}`} onClick={() => onChange(aliases.filter((x) => x !== a))}>
+              ×
+            </button>
+          </span>
+        ))}
+      </div>
+      <form
+        className="inline-form"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (!text.trim() || problem) return
+          onChange([...aliases, text.trim().toLowerCase()])
+          setText('')
+        }}
+      >
+        <input aria-label={`Another name for ${info.name}`} placeholder="e.g. how a recipe site writes it" value={text} onChange={(e) => setText(e.target.value)} />
+        <button disabled={!text.trim() || !!problem}>Add name</button>
+        <span className="muted small">{problem ?? 'Recipes and imports using this name will link here.'}</span>
+      </form>
+    </div>
   )
 }
 

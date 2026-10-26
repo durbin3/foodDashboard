@@ -515,3 +515,5 @@ a.button.primary { background: var(--accent); color: var(--accent-text); border-
 @media (max-width: 760px) {
   .suggestion-card { width: calc(50% - 3px); }
 }
+.field-note { display: block; font-size: 12px; color: var(--muted); }
+.field-note button.link { padding: 0; font-size: 12px; }
