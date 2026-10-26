@@ -1,6 +1,6 @@
 import { formatQuantity, normalizeUnit, parseQuantity } from './quantity.js'
-import { activeIngredients } from './recipe.js'
-import { combineAmounts, unitGraph } from './units.js'
+import { activeIngredients, capitalize } from './recipe.js'
+import { BUILTIN_CONVERSIONS, combineAmounts, unitGraph } from './units.js'
 
 export const itemKey = (item) => String(item ?? '').trim().toLowerCase()
 
@@ -8,12 +8,13 @@ export const itemKey = (item) => String(item ?? '').trim().toLowerCase()
  * Combine ingredients across planned meals. Amounts are converted and summed
  * using each ingredient's own conversion list (standard ones are filled in
  * automatically when recipes are saved); anything left unconvertible is listed
- * side by side ("1 + 1 cup").
+ * side by side ("1 + 1 cup"). Ingredients marked "not listed" (e.g. "taco
+ * toppings") are returned separately so the list can mention them.
  */
-export function buildGroceryList(plan, recipesById, registry) {
+export function buildGroceryList(entries, recipesById, registry) {
   const items = new Map()
 
-  for (const entry of plan.entries) {
+  for (const entry of entries) {
     const recipe = recipesById[entry.recipeId]
     if (!recipe) continue
     const scale = Number(entry.scale) || 1
@@ -21,7 +22,7 @@ export function buildGroceryList(plan, recipesById, registry) {
     for (const ing of activeIngredients(recipe)) {
       const key = ing.ingredientId ?? itemKey(ing.item)
       if (!key) continue
-      if (!items.has(key)) items.set(key, { id: key, name: itemKey(ing.item), amounts: new Map(), other: new Set(), sources: new Set() })
+      if (!items.has(key)) items.set(key, { id: key, name: capitalize(ing.item.trim()), amounts: new Map(), other: new Set(), sources: new Set() })
       const agg = items.get(key)
 
       const qty = parseQuantity(ing.quantity)
@@ -39,7 +40,9 @@ export function buildGroceryList(plan, recipesById, registry) {
   const lines = [...items.values()]
     .map((agg) => {
       const info = registry?.ingredients?.[agg.id] ?? {}
-      const edges = unitGraph(info.conversions ?? [])
+      // Standard conversions always apply, so 3 tsp can read as 1 tbsp even
+      // for an ingredient only ever used in teaspoons.
+      const edges = unitGraph([...BUILTIN_CONVERSIONS, ...(info.conversions ?? [])])
       const preferred = info.buyUnit == null ? null : normalizeUnit(info.buyUnit)
       const amounts = combineAmounts(agg.amounts, edges, preferred)
       return {
@@ -49,27 +52,32 @@ export function buildGroceryList(plan, recipesById, registry) {
         unconverted: amounts.length > 1,
         sources: [...agg.sources],
         staple: !!info.staple,
+        notListed: !!info.notListed,
       }
     })
     .sort((a, b) => a.name.localeCompare(b.name))
 
+  const listed = lines.filter((l) => !l.notListed)
   return {
-    groceries: lines.filter((l) => !l.staple),
-    pantry: lines.filter((l) => l.staple),
+    groceries: listed.filter((l) => !l.staple),
+    pantry: listed.filter((l) => l.staple),
+    notListed: lines.filter((l) => l.notListed),
   }
 }
 
 function formatAmounts(amounts, other) {
   // Unitless counts first ("2"), then units alphabetically.
-  const sorted = [...amounts].sort((a, b) => (a.unit === '' ? -1 : b.unit === '' ? 1 : a.unit.localeCompare(b.unit)))
-  const parts = sorted.map((a) => `${formatQuantity(a.qty)} ${a.unit}`.trim())
+  const sorted = [...amounts].sort((a, b) => (a[0].unit === '' ? -1 : b[0].unit === '' ? 1 : a[0].unit.localeCompare(b[0].unit)))
+  const parts = sorted.flatMap((group) => group.map((p) => `${formatQuantity(p.qty)} ${p.unit}`.trim()))
   return [...parts, ...other].join(' + ')
 }
 
-export function groceryListText({ groceries, pantry }) {
+export function groceryListText({ groceries, pantry }, checked = () => false) {
   const line = (l) => `- ${l.name}${l.amount ? `: ${l.amount}` : ''}`
   const sections = []
-  if (groceries.length) sections.push(['Groceries', ...groceries.map(line)].join('\n'))
-  if (pantry.length) sections.push(['Pantry (check before buying)', ...pantry.map(line)].join('\n'))
+  const toBuy = groceries.filter((l) => !checked(l))
+  const toCheck = pantry.filter((l) => !checked(l))
+  if (toBuy.length) sections.push(['Groceries', ...toBuy.map(line)].join('\n'))
+  if (toCheck.length) sections.push(['Pantry (check before buying)', ...toCheck.map(line)].join('\n'))
   return sections.join('\n\n')
 }

@@ -1,19 +1,93 @@
 import { useEffect, useMemo, useState } from 'react'
-import { itemKey } from '../lib/grocery.js'
 import { normalizeUnit, parseQuantity } from '../lib/quantity.js'
 import { activeIngredients } from '../lib/recipe.js'
 import { KNOWN_UNITS, unitGroupCount } from '../lib/units.js'
 
 const unitLabel = (u) => (u === '' ? 'each' : u)
 const formatConversion = (c) => `${c.qty} ${unitLabel(c.unit)} = ${c.equals} ${unitLabel(c.toUnit)}`
+const sameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase()
+
+const LIST_AS = [
+  ['grocery', 'Groceries'],
+  ['pantry', 'Pantry staple'],
+  ['none', "Don't list"],
+]
+const listAsOf = (info) => (info.notListed ? 'none' : info.staple ? 'pantry' : 'grocery')
+const listAsPatch = {
+  grocery: { staple: undefined, notListed: undefined },
+  pantry: { staple: true, notListed: undefined },
+  none: { staple: undefined, notListed: true },
+}
+
+// Words that make a variant of the same thing you'd buy ("double pie crust" vs "pie crust").
+const QUALIFIERS = new Set(['double', 'single', 'large', 'small', 'medium', 'fresh', 'whole', 'extra', 'big'])
+const tokens = (name) =>
+  name
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .split(' ')
+    .map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w))
+
+function editDistance(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)])
+  for (let j = 1; j <= b.length; j++) d[0][j] = j
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
+  return d[a.length][b.length]
+}
+
+/** Pairs of ingredients whose names suggest they're the same thing. */
+function likelyDuplicates(entries) {
+  const pairs = []
+  for (let i = 0; i < entries.length; i++)
+    for (let j = i + 1; j < entries.length; j++) {
+      const [a, b] = [tokens(entries[i].info.name), tokens(entries[j].info.name)]
+      const [short, long] = a.length <= b.length ? [a, b] : [b, a]
+      const extra = long.filter((w) => !short.includes(w))
+      const same =
+        a.join('') === b.join('') ||
+        (short.every((w) => long.includes(w)) && extra.length === 1 && QUALIFIERS.has(extra[0])) ||
+        (a.join('').length >= 6 && editDistance(a.join(' '), b.join(' ')) <= 1)
+      if (same) pairs.push([entries[i], entries[j]])
+    }
+  return pairs
+}
+
+function useDismissedPairs() {
+  const key = 'ingredients:not-duplicates'
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(key)) ?? [])
+    } catch {
+      return new Set()
+    }
+  })
+  const dismiss = (pairKey) => {
+    const next = new Set(dismissed).add(pairKey)
+    setDismissed(next)
+    try {
+      localStorage.setItem(key, JSON.stringify([...next]))
+    } catch {
+      // Not remembered across reloads without storage; harmless.
+    }
+  }
+  return [dismissed, dismiss]
+}
 
 export default function IngredientsPage({ recipes, registry, focus, actions }) {
   const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState('all')
   const [expanded, setExpanded] = useState(focus || null)
+  const [dismissed, dismissPair] = useDismissedPairs()
   useEffect(() => {
     if (focus) {
       setExpanded(focus)
-      document.getElementById(`ing-${focus}`)?.scrollIntoView({ block: 'center' })
+      setFilter('all')
+      setQuery('')
+      requestAnimationFrame(() => document.getElementById(`ing-${focus}`)?.scrollIntoView({ block: 'center' }))
     }
   }, [focus])
 
@@ -23,65 +97,46 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
     for (const r of recipes) {
       for (const ing of activeIngredients(r)) {
         if (!ing.ingredientId) continue
-        if (!usage.has(ing.ingredientId)) usage.set(ing.ingredientId, { recipes: new Set(), units: new Set() })
+        if (!usage.has(ing.ingredientId)) usage.set(ing.ingredientId, { recipes: new Map(), units: new Set() })
         const u = usage.get(ing.ingredientId)
-        u.recipes.add(r.name)
+        u.recipes.set(r.id, r.name)
         if (parseQuantity(ing.quantity) != null) u.units.add(normalizeUnit(ing.unit))
       }
     }
-    return Object.entries(registry.ingredients)
-      .map(([id, info]) => ({ id, info, ...(usage.get(id) ?? { recipes: new Set(), units: new Set() }) }))
+    // Ids recipes point at that aren't in the registry (e.g. a half-finished
+    // import) are listed too, so they can be found and merged.
+    const unregistered = [...usage.keys()].filter((id) => !registry.ingredients[id]).map((id) => [id, { name: id, unregistered: true }])
+    return [...Object.entries(registry.ingredients), ...unregistered]
+      .map(([id, info]) => {
+        const use = usage.get(id) ?? { recipes: new Map(), units: new Set() }
+        const units = [...use.units].sort()
+        return { id, info, ...use, units, needsConversion: unitGroupCount(units, info.conversions ?? []) > 1 }
+      })
       .sort((a, b) => a.info.name.localeCompare(b.info.name))
   }, [recipes, registry])
 
-  const allUnits = useMemo(
-    () => [...new Set([...KNOWN_UNITS, ...index.flatMap((e) => [...e.units])])].filter(Boolean).sort(),
-    [index],
+  const duplicates = useMemo(
+    () => likelyDuplicates(index).filter(([a, b]) => !dismissed.has(`${a.id}|${b.id}`)),
+    [index, dismissed],
   )
+  const inDuplicates = new Set(duplicates.flat().map((e) => e.id))
 
+  const allUnits = useMemo(() => [...new Set([...KNOWN_UNITS, ...index.flatMap((e) => e.units)])].filter(Boolean).sort(), [index])
+
+  const FILTERS = [
+    ['all', 'All', () => true],
+    ['grocery', 'Groceries', (e) => listAsOf(e.info) === 'grocery'],
+    ['pantry', 'Pantry', (e) => listAsOf(e.info) === 'pantry'],
+    ['none', 'Not listed', (e) => listAsOf(e.info) === 'none'],
+    ['convert', 'Needs conversion', (e) => e.needsConversion],
+    ['duplicates', 'Possible duplicates', (e) => inDuplicates.has(e.id)],
+    ['unused', 'Unused', (e) => e.recipes.size === 0],
+    ['unregistered', 'Not registered', (e) => e.info.unregistered],
+  ]
   const q = query.trim().toLowerCase()
-  const visible = index.filter((e) => !q || e.info.name.includes(q) || e.id.includes(q))
-
-  const table = (title, entries, emptyText) => (
-    <>
-      <h2>
-        {title} <span className="muted small">({entries.length})</span>
-      </h2>
-      {entries.length === 0 ? (
-        <p className="muted small">{emptyText}</p>
-      ) : (
-        <table className="ing-index">
-          <thead>
-            <tr>
-              <th>Ingredient</th>
-              <th>Used in</th>
-              <th>Units seen</th>
-              <th>Staple</th>
-              <th>Buy as</th>
-              <th>Conversions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e) => {
-              const open = expanded === e.id
-              return (
-                <IngredientRow
-                  key={e.id}
-                  entry={e}
-                  open={open}
-                  index={index}
-                  onToggleOpen={() => setExpanded(open ? null : e.id)}
-                  onUpdate={(patch) => actions.updateIngredient(e.id, patch)}
-                  onMerge={(into) => actions.mergeIngredient(e.id, into).then(() => setExpanded(into))}
-                  onDelete={() => actions.deleteIngredient(e.id)}
-                />
-              )
-            })}
-          </tbody>
-        </table>
-      )}
-    </>
-  )
+  const visible = index
+    .filter(FILTERS.find(([k]) => k === filter)[2])
+    .filter((e) => !q || e.info.name.toLowerCase().includes(q) || e.id.includes(q))
 
   return (
     <section>
@@ -90,60 +145,162 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
           <option key={u} value={u} />
         ))}
       </datalist>
+      <datalist id="known-ingredient-names">
+        {index.map((x) => (
+          <option key={x.id} value={x.info.name} />
+        ))}
+      </datalist>
 
-      <p className="muted small">
-        Recipes refer to ingredients by id, so renaming here changes the name everywhere at once. Renaming to a name
-        that already exists merges the two. Standard conversions (tsp/tbsp/cup, oz/lb, metric) are added to an
-        ingredient automatically once recipes use it in more than one unit. Add your own for anything else, e.g. 1 each
-        chicken breast = 1/2 lb.
-      </p>
       <div className="toolbar">
-        <input type="search" placeholder="Filter ingredients…" value={query} onChange={(e) => setQuery(e.target.value)} />
-        <span className="muted small">{index.length} ingredients</span>
+        <input type="search" placeholder="Filter ingredients…" aria-label="Filter ingredients" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <span className="muted small">{index.length} ingredients · changes save automatically</span>
+      </div>
+      <div className="tags" role="group" aria-label="Show">
+        {FILTERS.map(([key, label, test]) => {
+          const n = key === 'all' ? index.length : index.filter(test).length
+          if (key !== 'all' && !n) return null
+          return (
+            <button key={key} className={`tag ${filter === key ? 'on' : ''} ${['convert', 'duplicates', 'unregistered'].includes(key) ? 'attention' : ''}`} aria-pressed={filter === key} onClick={() => setFilter(key)}>
+              {label} ({n})
+            </button>
+          )
+        })}
       </div>
 
-      {table('Staples', visible.filter((e) => e.info.staple), 'No staples match.')}
-      {table('Other ingredients', visible.filter((e) => !e.info.staple), 'No ingredients match.')}
+      {duplicates.length > 0 && filter === 'duplicates' && (
+        <div className="notice">
+          <p className="small">These look like the same ingredient. Merging points every recipe at one of them.</p>
+          <ul className="dup-list">
+            {duplicates.map(([a, b]) => (
+              <li key={`${a.id}|${b.id}`}>
+                <strong>{a.info.name}</strong> ({a.recipes.size}) and <strong>{b.info.name}</strong> ({b.recipes.size})
+                <button className="small" onClick={() => confirmMerge(b, a, actions)}>
+                  Merge into “{a.info.name}”
+                </button>
+                <button className="small" onClick={() => confirmMerge(a, b, actions)}>
+                  Merge into “{b.info.name}”
+                </button>
+                <button className="link small" onClick={() => dismissPair(`${a.id}|${b.id}`)}>
+                  Not duplicates
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {visible.length === 0 ? (
+        <p className="muted small">No ingredients match.</p>
+      ) : (
+        <table className="ing-index">
+          <thead>
+            <tr>
+              <th>Ingredient</th>
+              <th>Used in</th>
+              <th>Units seen</th>
+              <th title="Where it goes on the grocery list">List as</th>
+              <th title="The unit the grocery list totals it in">Buy as</th>
+              <th title="How its units relate, e.g. 1 each = 1/2 lb">Conversions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {visible.map((e) => {
+              const open = expanded === e.id
+              return (
+                <IngredientRow
+                  key={e.id}
+                  entry={e}
+                  open={open}
+                  index={index}
+                  allUnits={allUnits}
+                  onToggleOpen={() => setExpanded(open ? null : e.id)}
+                  onUpdate={(patch) => actions.updateIngredient(e.id, patch)}
+                  onMerge={(target) => confirmMerge(e, target, actions, () => setExpanded(target.id))}
+                  onDelete={() => actions.deleteIngredient(e.id)}
+                />
+              )
+            })}
+          </tbody>
+        </table>
+      )}
     </section>
   )
 }
 
-function IngredientRow({ entry, open, index, onToggleOpen, onUpdate, onMerge, onDelete }) {
-  const { id, info } = entry
-  const [newName, setNewName] = useState(info.name)
-  useEffect(() => setNewName(info.name), [info.name])
+function confirmMerge(from, into, actions, then) {
+  const n = from.recipes.size
+  if (!confirm(`Merge "${from.info.name}" into "${into.info.name}"? ${n} recipe${n === 1 ? '' : 's'} will switch to "${into.info.name}" and "${from.info.name}" goes away. You can undo right after.`))
+    return
+  actions.mergeIngredient(from.id, into.id).then(then, () => {})
+}
+
+const RecipeLinks = ({ recipes, limit = Infinity }) => {
+  const list = [...recipes].sort((a, b) => a[1].localeCompare(b[1]))
+  if (!list.length) return <span className="muted">none</span>
+  const shown = list.slice(0, limit)
+  return (
+    <>
+      {shown.map(([id, name], i) => (
+        <span key={id}>
+          {i > 0 && ', '}
+          <a href={`#/recipe/${id}`}>{name}</a>
+        </span>
+      ))}
+      {list.length > shown.length && <span className="muted"> +{list.length - shown.length} more</span>}
+    </>
+  )
+}
+
+function IngredientRow({ entry, open, index, allUnits, onToggleOpen, onUpdate, onMerge, onDelete }) {
+  const { id, info, units } = entry
   const conversions = info.conversions ?? []
-  const units = [...entry.units].sort()
-  const needsConversion = unitGroupCount(units, conversions) > 1
+  const [newName, setNewName] = useState(info.name)
+  const [mergeName, setMergeName] = useState('')
+  useEffect(() => setNewName(info.name), [info.name])
   const buyOptions = [...new Set(['', ...units, ...conversions.flatMap((c) => [normalizeUnit(c.unit), normalizeUnit(c.toUnit)]), 'lb', 'oz', 'cup'])]
+
+  const clash = newName.trim() && !sameName(newName, info.name) ? index.find((x) => x.id !== id && sameName(x.info.name, newName)) : null
+  const mergeTarget = index.find((x) => x.id !== id && mergeName.trim() && sameName(x.info.name, mergeName))
 
   function rename(e) {
     e.preventDefault()
-    const to = itemKey(newName)
-    if (!to || to === info.name) return
-    const existing = index.find((x) => x.info.name === to && x.id !== id)
-    if (!existing) return onUpdate({ name: to })
-    if (confirm(`"${to}" already exists. Merge "${info.name}" into it? Recipes using "${info.name}" will switch to "${to}".`))
-      onMerge(existing.id)
+    const to = newName.trim()
+    if (!to || to === info.name || clash) return
+    onUpdate({ name: to })
   }
 
   return (
     <>
       <tr id={`ing-${id}`} className={open ? 'open' : ''}>
         <td>
-          <button className="link" onClick={onToggleOpen}>
+          <button className="link" onClick={onToggleOpen} aria-expanded={open}>
             {open ? '▾' : '▸'} {info.name}
           </button>
+          {info.unregistered && (
+            <span className="pill" title="A recipe uses this id but it isn't in data/ingredients.json. Merge it into the right ingredient, or rename it to register it.">
+              not registered
+            </span>
+          )}
         </td>
-        <td className="small" title={[...entry.recipes].join('\n')}>
-          {entry.recipes.size || <span className="muted">none</span>}
+        <td className="small">
+          <RecipeLinks recipes={entry.recipes} limit={2} />
         </td>
         <td className="small">{units.map(unitLabel).join(', ')}</td>
         <td>
-          <input type="checkbox" checked={!!info.staple} onChange={(e) => onUpdate({ staple: e.target.checked || undefined })} />
+          <select aria-label={`List ${info.name} as`} value={listAsOf(info)} onChange={(e) => onUpdate(listAsPatch[e.target.value])}>
+            {LIST_AS.map(([v, label]) => (
+              <option key={v} value={v}>
+                {label}
+              </option>
+            ))}
+          </select>
         </td>
         <td>
-          <select value={info.buyUnit ?? '__auto'} onChange={(e) => onUpdate({ buyUnit: e.target.value === '__auto' ? undefined : e.target.value })}>
+          <select
+            aria-label={`Buy ${info.name} as`}
+            value={info.buyUnit ?? '__auto'}
+            onChange={(e) => onUpdate({ buyUnit: e.target.value === '__auto' ? undefined : e.target.value })}
+          >
             <option value="__auto">auto</option>
             {buyOptions.map((u) => (
               <option key={u} value={u}>
@@ -154,9 +311,9 @@ function IngredientRow({ entry, open, index, onToggleOpen, onUpdate, onMerge, on
         </td>
         <td className="small">
           {conversions.length ? conversions.map(formatConversion).join('; ') : <span className="muted">—</span>}
-          {needsConversion && (
+          {entry.needsConversion && (
             <button className="link small warn" onClick={onToggleOpen} title={`Used as ${units.map(unitLabel).join(' and ')}, which don't combine yet`}>
-              needs conversion
+              ⚠ needs conversion
             </button>
           )}
         </td>
@@ -167,25 +324,43 @@ function IngredientRow({ entry, open, index, onToggleOpen, onUpdate, onMerge, on
             <div className="detail-panel">
               <div>
                 <h4>Used in</h4>
-                <p className="small">{[...entry.recipes].join(', ') || 'No recipes'}</p>
+                <p className="small">
+                  <RecipeLinks recipes={entry.recipes} />
+                </p>
                 <p className="muted small">id: {id}</p>
               </div>
               <form className="inline-form" onSubmit={rename}>
                 <h4>Name</h4>
-                <input list="known-ingredient-names" value={newName} onChange={(e) => setNewName(e.target.value)} />
-                <datalist id="known-ingredient-names">
-                  {index.map((x) => (
-                    <option key={x.id} value={x.info.name} />
-                  ))}
-                </datalist>
-                <button disabled={!newName.trim() || itemKey(newName) === info.name}>Rename</button>
+                <input aria-label={`Rename ${info.name}`} value={newName} onChange={(e) => setNewName(e.target.value)} />
+                <button disabled={!newName.trim() || newName.trim() === info.name || !!clash}>Rename</button>
+                <span className="muted small">
+                  {clash ? `"${clash.info.name}" already exists. To combine them, use Merge below.` : 'Changes the name in every recipe.'}
+                </span>
+              </form>
+              <form
+                className="inline-form"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  if (mergeTarget) onMerge(mergeTarget)
+                }}
+              >
+                <h4>Merge</h4>
+                <input
+                  list="known-ingredient-names"
+                  aria-label={`Merge ${info.name} into`}
+                  placeholder="Into ingredient…"
+                  value={mergeName}
+                  onChange={(e) => setMergeName(e.target.value)}
+                />
+                <button disabled={!mergeTarget}>Merge</button>
+                <span className="muted small">Points recipes using “{info.name}” at the other ingredient, then removes this one.</span>
               </form>
               <div>
                 <h4>Conversions for {info.name}</h4>
                 <ConversionEditor
                   conversions={conversions}
-                  onChange={(next) => onUpdate({ conversions: next.length ? next : undefined })}
-                  emptyText="None yet."
+                  allUnits={allUnits}
+                  onSave={(next) => onUpdate({ conversions: next.length ? next : undefined })}
                 />
               </div>
               {entry.recipes.size === 0 && (
@@ -203,24 +378,46 @@ function IngredientRow({ entry, open, index, onToggleOpen, onUpdate, onMerge, on
   )
 }
 
-function ConversionEditor({ conversions, onChange, emptyText }) {
-  const set = (i, patch) => onChange(conversions.map((c, j) => (j === i ? { ...c, ...patch } : c)))
+const conversionProblem = (c) => {
+  if (!(parseQuantity(c.qty) > 0) || !(parseQuantity(c.equals) > 0)) return 'Amounts must be numbers, e.g. 1 or 1/2'
+  if (normalizeUnit(c.unit) === normalizeUnit(c.toUnit)) return 'The two units must differ'
+  return null
+}
+
+/** Edits a draft; nothing is saved until every row is valid and Save is pressed. */
+function ConversionEditor({ conversions, onSave }) {
+  const [draft, setDraft] = useState(conversions)
+  useEffect(() => setDraft(conversions), [JSON.stringify(conversions)])
+  const set = (i, patch) => setDraft((d) => d.map((c, j) => (j === i ? { ...c, ...patch } : c)))
+  const problems = draft.map(conversionProblem)
+  const changed = JSON.stringify(draft) !== JSON.stringify(conversions)
   return (
     <div className="conversions">
-      {conversions.length === 0 && <p className="muted small">{emptyText}</p>}
-      {conversions.map((c, i) => (
+      {draft.length === 0 && <p className="muted small">None yet. Add one for units that don't combine, e.g. 1 each = 1/2 lb.</p>}
+      {draft.map((c, i) => (
         <div key={i} className="conversion-row">
-          <input className="num" value={c.qty} onChange={(e) => set(i, { qty: e.target.value })} />
-          <input className="unit" list="unit-options" placeholder="each" value={c.unit} onChange={(e) => set(i, { unit: e.target.value })} />
+          <input className={`num ${problems[i] && !(parseQuantity(c.qty) > 0) ? 'invalid' : ''}`} aria-label="Amount" value={c.qty} onChange={(e) => set(i, { qty: e.target.value })} />
+          <input className="unit" list="unit-options" aria-label="Unit" placeholder="each" value={c.unit} onChange={(e) => set(i, { unit: e.target.value })} />
           <span>=</span>
-          <input className="num" value={c.equals} onChange={(e) => set(i, { equals: e.target.value })} />
-          <input className="unit" list="unit-options" placeholder="each" value={c.toUnit} onChange={(e) => set(i, { toUnit: e.target.value })} />
-          <button onClick={() => onChange(conversions.filter((_, j) => j !== i))}>Remove</button>
+          <input className={`num ${problems[i] && !(parseQuantity(c.equals) > 0) ? 'invalid' : ''}`} aria-label="Equals amount" value={c.equals} onChange={(e) => set(i, { equals: e.target.value })} />
+          <input className="unit" list="unit-options" aria-label="Equals unit" placeholder="each" value={c.toUnit} onChange={(e) => set(i, { toUnit: e.target.value })} />
+          <button onClick={() => setDraft((d) => d.filter((_, j) => j !== i))}>Remove</button>
+          {problems[i] && <span className="field-warning">{problems[i]}</span>}
         </div>
       ))}
-      <button className="link" onClick={() => onChange([...conversions, { qty: '1', unit: '', equals: '', toUnit: '' }])}>
-        + Add conversion
-      </button>
+      <div className="inline-form">
+        <button className="link" onClick={() => setDraft((d) => [...d, { qty: '1', unit: '', equals: '', toUnit: '' }])}>
+          + Add conversion
+        </button>
+        {changed && (
+          <>
+            <button className="primary" disabled={problems.some(Boolean)} onClick={() => onSave(draft)}>
+              Save conversions
+            </button>
+            <button onClick={() => setDraft(conversions)}>Cancel</button>
+          </>
+        )}
+      </div>
     </div>
   )
 }

@@ -1,0 +1,98 @@
+{
+  "id": "basic-easy-quiche",
+  "name": "Basic Easy Quiche",
+  "source": "https://www.bigoven.com/recipe/basic-easy-quiche/170897",
+  "servings": 6,
+  "tags": [
+    "breakfast",
+    "baked",
+    "vegetarian"
+  ],
+  "ingredients": [
+    {
+      "id": "sharp-cheddar-cheese",
+      "group": "",
+      "original": {
+        "quantity": "1 1/2",
+        "unit": "cup",
+        "ingredientId": "sharp-cheddar-cheese",
+        "note": "shredded"
+      },
+      "modified": null
+    },
+    {
+      "id": "flour",
+      "group": "",
+      "original": {
+        "quantity": "2",
+        "unit": "tbsp",
+        "ingredientId": "flour",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "whole-milk",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "cup",
+        "ingredientId": "milk",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "egg",
+      "group": "",
+      "original": {
+        "quantity": "3",
+        "unit": "",
+        "ingredientId": "egg",
+        "note": "slightly beaten"
+      },
+      "modified": null
+    },
+    {
+      "id": "parmesan-cheese",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "cup",
+        "ingredientId": "parmesan-cheese",
+        "note": "grated"
+      },
+      "modified": null
+    },
+    {
+      "id": "pie-crust",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "pie-crust",
+        "note": "9 inch, unbaked"
+      },
+      "modified": null
+    },
+    {
+      "id": "pepper",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "pinch",
+        "ingredientId": "black-pepper",
+        "note": "a dash"
+      },
+      "modified": null
+    }
+  ],
+  "steps": [
+    "Toss cheddar cheese with flour.",
+    "Add milk, eggs, parmesan cheese, and pepper; mix well.",
+    "Pour into unbaked pie shell.",
+    "Bake at 350°F for 50-60 minutes or until set.",
+    "Optional: add whatever you like to the quiche, such as spinach, broccoli, bacon, ham, onions, mushrooms, or tomatoes."
+  ],
+  "notes": ""
+}

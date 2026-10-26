@@ -5,7 +5,15 @@
     },
     "black-pepper": {
       "name": "pepper",
-      "staple": true
+      "staple": true,
+      "conversions": [
+        {
+          "qty": "1",
+          "unit": "tsp",
+          "equals": "16",
+          "toUnit": "pinch"
+        }
+      ]
     },
     "brown-sugar": {
       "name": "brown sugar",
@@ -44,6 +52,9 @@
         }
       ]
     },
+    "canned-tomatoes": {
+      "name": "canned tomatoes"
+    },
     "carrot": {
       "name": "carrot"
     },
@@ -63,6 +74,9 @@
       "name": "chipotle pepper powder",
       "staple": true
     },
+    "cilantro": {
+      "name": "cilantro"
+    },
     "cinnamon": {
       "name": "cinnamon"
     },
@@ -70,7 +84,8 @@
       "name": "cinnamon stick"
     },
     "cocoa-powder": {
-      "name": "cocoa powder"
+      "name": "cocoa powder",
+      "staple": true
     },
     "cooked-chicken": {
       "name": "cooked chicken"
@@ -103,7 +118,8 @@
       "name": "double pie crust"
     },
     "dried-basil": {
-      "name": "dried basil"
+      "name": "dried basil",
+      "staple": true
     },
     "dried-oregano": {
       "name": "dried oregano",
@@ -136,17 +152,9 @@
         }
       ]
     },
-    "flour-tortilla": {
-      "name": "flour tortilla"
-    },
-    "four-cheese-blend": {
-      "name": "four-cheese blend"
-    },
     "fresh-parsley": {
-      "name": "fresh parsley"
-    },
-    "frozen-chopped-spinach": {
-      "name": "frozen chopped spinach"
+      "name": "fresh parsley",
+      "staple": true
     },
     "frozen-mixed-vegetables": {
       "name": "frozen mixed vegetables"
@@ -160,7 +168,8 @@
       "staple": true
     },
     "granulated-sugar": {
-      "name": "granulated sugar"
+      "name": "sugar",
+      "staple": true
     },
     "grape-tomato": {
       "name": "grape tomato"
@@ -187,11 +196,15 @@
     "italian-seasoning": {
       "name": "italian seasoning"
     },
-    "ketchup": {
-      "name": "ketchup"
+    "jalapeno": {
+      "name": "jalapeno"
     },
-    "kosher-salt": {
-      "name": "kosher salt"
+    "jolly-rancher-blue-raspberry": {
+      "name": "jolly rancher blue raspberry"
+    },
+    "ketchup": {
+      "name": "ketchup",
+      "staple": true
     },
     "large-tortilla": {
       "name": "large tortilla"
@@ -202,17 +215,25 @@
     "lemon": {
       "name": "lemon"
     },
+    "macaroni": {
+      "name": "macaroni"
+    },
     "maple-extract": {
       "name": "maple extract"
-    },
-    "margarine": {
-      "name": "margarine"
     },
     "meatballs": {
       "name": "meatballs"
     },
     "mexican-cheese": {
       "name": "mexican cheese"
+    },
+    "mikes-hard-lemonade": {
+      "name": "mikes hard lemonade"
+    },
+    "milk": {
+      "name": "milk",
+      "staple": true,
+      "conversions": []
     },
     "navy-beans": {
       "name": "navy beans"
@@ -230,11 +251,15 @@
     "orange": {
       "name": "orange"
     },
+    "orange-sparkling-water": {
+      "name": "orange sparkling water"
+    },
     "orzo": {
       "name": "orzo"
     },
     "paprika": {
-      "name": "paprika"
+      "name": "paprika",
+      "staple": true
     },
     "parmesan-cheese": {
       "name": "parmesan cheese"
@@ -246,7 +271,10 @@
       "name": "pesto"
     },
     "plain-breadcrumbs": {
-      "name": "plain breadcrumbs"
+      "name": "breadcrumbs"
+    },
+    "popov": {
+      "name": "popov"
     },
     "pork-butt-roast": {
       "name": "pork butt roast"
@@ -261,7 +289,8 @@
       "name": "potato"
     },
     "powdered-sugar": {
-      "name": "powdered sugar"
+      "name": "powdered sugar",
+      "staple": true
     },
     "quick-oats": {
       "name": "quick oats"
@@ -270,7 +299,7 @@
       "name": "red onion"
     },
     "red-pepper": {
-      "name": "red pepper"
+      "name": "red bell pepper"
     },
     "red-pepper-flakes": {
       "name": "red pepper flakes",
@@ -281,13 +310,15 @@
           "equals": "16",
           "toUnit": "pinch"
         }
-      ]
+      ],
+      "staple": true
     },
     "rice": {
       "name": "rice"
     },
     "rice-vinegar": {
-      "name": "rice vinegar"
+      "name": "rice vinegar",
+      "staple": true
     },
     "ricotta-cheese": {
       "name": "ricotta cheese"
@@ -308,59 +339,69 @@
         }
       ]
     },
-    "salted-butter": {
-      "name": "salted butter"
+    "sharp-cheddar-cheese": {
+      "name": "sharp cheddar cheese"
     },
     "shredded-cheese": {
-      "name": "shredded cheese"
+      "name": "shredded cheese",
+      "conversions": []
+    },
+    "sierra-mist": {
+      "name": "sierra mist"
     },
     "smoked-paprika": {
-      "name": "smoked paprika"
+      "name": "smoked paprika",
+      "staple": true
     },
     "sour-cream": {
       "name": "sour cream"
     },
     "soy-sauce": {
-      "name": "soy sauce"
+      "name": "soy sauce",
+      "staple": true
     },
     "spaghetti": {
-      "name": "spaghetti"
+      "name": "spaghetti pasta"
     },
     "spaghetti-sauce": {
       "name": "spaghetti sauce"
     },
     "spinach": {
-      "name": "spinach"
+      "name": "spinach",
+      "conversions": []
     },
     "sriracha": {
-      "name": "sriracha"
+      "name": "sriracha",
+      "staple": true
     },
     "steak": {
       "name": "steak"
     },
     "steak-seasoning": {
-      "name": "steak seasoning"
+      "name": "steak seasoning",
+      "staple": true
     },
     "sundried-tomatoes": {
       "name": "sundried tomatoes"
     },
     "taco-toppings": {
-      "name": "taco toppings"
+      "name": "taco toppings",
+      "staple": true
     },
     "toasted-sesame-oil": {
-      "name": "toasted sesame oil"
+      "name": "toasted sesame oil",
+      "staple": true
     },
     "tortilla": {
-      "name": "tortilla"
+      "name": "tortilla",
+      "conversions": []
     },
     "vanilla-extract": {
-      "name": "vanilla extract"
+      "name": "vanilla extract",
+      "staple": true
     },
     "water": {
-      "name": "water"
-    },
-    "whole-milk": {
-      "name": "whole milk",
+      "name": "water",
       "staple": true
     },
     "worcestershire-sauce": {
@@ -372,7 +413,11 @@
           "equals": "3",
           "toUnit": "tsp"
         }
-      ]
+      ],
+      "staple": true
+    },
+    "yeast": {
+      "name": "yeast"
     },
     "yellow-mustard": {
       "name": "yellow mustard"

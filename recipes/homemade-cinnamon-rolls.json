@@ -15,7 +15,7 @@
       "original": {
         "quantity": "1",
         "unit": "cup",
-        "ingredientId": "whole-milk",
+        "ingredientId": "milk",
         "note": "warm (115°F)"
       },
       "modified": null
@@ -48,7 +48,7 @@
       "original": {
         "quantity": "1/3",
         "unit": "cup",
-        "ingredientId": "salted-butter",
+        "ingredientId": "butter",
         "note": "melted or very softened, not over 110°F; 1/2 cup keeps rolls softer"
       },
       "modified": null
@@ -92,7 +92,7 @@
       "original": {
         "quantity": "1/2",
         "unit": "cup",
-        "ingredientId": "salted-butter",
+        "ingredientId": "butter",
         "note": "almost melted"
       },
       "modified": null
@@ -147,7 +147,7 @@
       "original": {
         "quantity": "1/3",
         "unit": "cup",
-        "ingredientId": "salted-butter",
+        "ingredientId": "butter",
         "note": "softened"
       },
       "modified": null

@@ -56,11 +56,27 @@ export function reachable(edges, root) {
   return size
 }
 
+// Spoon and cup units a total may be re-expressed in, even if no recipe used
+// them (3 tsp reads better as 1 tbsp), as long as the conversions reach them.
+const MEASURE_UNITS = ['tsp', 'tbsp', 'cup']
+
+// How much of a unit reads naturally: below `min` or at/above `max`, a
+// neighbouring unit is better (1/2 tbsp → 1 1/2 tsp, 3 tsp → 1 tbsp).
+const UNIT_RANGE = { tsp: [0.125, 3], tbsp: [1, 4] }
+const DEFAULT_RANGE = [0.249, 12.001]
+const inRange = (u, q) => {
+  const [min, max] = UNIT_RANGE[u] ?? DEFAULT_RANGE
+  return q >= min - 1e-9 && q < max
+}
+// Cups read best in quarters and thirds; 3/8 cup is technically right but awkward.
+const isWhole = (n) => Math.abs(n - Math.round(n)) < 0.02
+const isNiceIn = (u, q) => (u === 'cup' ? isWhole(q * 4) || isWhole(q * 3) : isNiceQuantity(q))
+
 /**
- * Combine per-unit totals into as few amounts as the conversions allow.
+ * Combine per-unit totals into as few amounts as the conversions allow. Each
+ * result is a list of parts that add up to one amount, e.g. [1/2 cup, 1 tbsp].
  * `preferredUnit` (an ingredient's "buy as" unit, null for automatic) is used
- * whenever it's reachable; otherwise the largest unit present that gives a
- * whole number or common fraction is chosen.
+ * whenever it's reachable.
  */
 export function combineAmounts(amounts, edges, preferredUnit = null) {
   const left = new Map(amounts)
@@ -71,22 +87,44 @@ export function combineAmounts(amounts, edges, preferredUnit = null) {
     const members = [...left.keys()].filter((u) => size.has(u))
     const total = members.reduce((sum, u) => sum + left.get(u) * size.get(u), 0)
     members.forEach((u) => left.delete(u))
-    const unit = pickUnit(total, members, size, preferredUnit)
-    result.push({ qty: total / size.get(unit), unit })
+    result.push(expressAmount(total, members, size, preferredUnit))
   }
   return result
 }
 
-function pickUnit(total, members, size, preferredUnit) {
-  if (preferredUnit != null && size.has(preferredUnit)) return preferredUnit
-  const largestFirst = [...members].sort((a, b) => size.get(b) - size.get(a))
-  // Allow down to 1/4 of a unit, so 12 tbsp reads as 3/4 cup.
-  const atLeastOne = largestFirst.filter((u) => total / size.get(u) >= 0.249)
-  // A nice fraction in a small unit beats a decimal, but not when it's a big
-  // count of a small unit (49 tsp reads worse than 1.02 cup).
-  const nice = atLeastOne.find((u) => isNiceQuantity(total / size.get(u)))
-  if (nice && total / size.get(nice) <= 12) return nice
-  return atLeastOne[0] ?? largestFirst[largestFirst.length - 1]
+const roundUpTo8ths = (q) => Math.ceil(q * 8 - 1e-6) / 8
+
+/** `total` (in root units) as one or two kitchen-friendly parts. */
+function expressAmount(total, members, size, preferredUnit) {
+  const qtyIn = (u) => total / size.get(u)
+  if (preferredUnit != null && size.has(preferredUnit)) return [{ qty: roundUpTo8ths(qtyIn(preferredUnit)), unit: preferredUnit }]
+
+  const largestFirst = (us) => [...us].sort((a, b) => size.get(b) - size.get(a))
+  const extra = members.some((u) => MEASURE_UNITS.includes(u)) ? MEASURE_UNITS.filter((u) => size.has(u) && !members.includes(u)) : []
+  // Units the recipes used come first, so butter stays in sticks rather than turning into cups.
+  const candidates = [...largestFirst(members), ...largestFirst(extra)]
+
+  // Counts ("2 eggs") can't be bought in halves.
+  if (candidates.length === 1 && candidates[0] === '') return [{ qty: Math.ceil(qtyIn('') - 1e-6), unit: '' }]
+
+  // One unit, if some unit gives a whole number or common fraction in its natural range.
+  const single = candidates.find((u) => inRange(u, qtyIn(u)) && isNiceIn(u, qtyIn(u)))
+  if (single != null) return [{ qty: qtyIn(single), unit: single }]
+
+  // Two parts: a whole/quarter amount of one unit plus a nice remainder in a smaller one (1/2 cup + 1 tbsp).
+  for (const u of candidates) {
+    const q = qtyIn(u)
+    const first = Math.floor(q * 4 + 1e-9) / 4
+    if (first <= 0 || !inRange(u, first) || !isNiceIn(u, first)) continue
+    const rest = total - first * size.get(u)
+    if (rest <= total * 1e-6) continue
+    const v = largestFirst(candidates).find((x) => size.get(x) < size.get(u) && inRange(x, rest / size.get(x)) && isNiceIn(x, rest / size.get(x)))
+    if (v != null) return [{ qty: first, unit: u }, { qty: rest / size.get(v), unit: v }]
+  }
+
+  // Otherwise round up (you can't buy a little less) in the first unit that reads naturally.
+  const unit = candidates.find((u) => inRange(u, qtyIn(u))) ?? candidates[candidates.length - 1]
+  return [{ qty: roundUpTo8ths(qtyIn(unit)), unit }]
 }
 
 /** How many groups `units` fall into under `conversions` (1 means they all combine). */

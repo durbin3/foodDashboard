@@ -1,7 +1,7 @@
 // The ingredient registry (data/ingredients.json) and linking recipe
 // ingredients to it. Recipes reference ingredients by id; the registry holds
-// each ingredient's display name, staple flag, "buy as" unit and conversions:
-//   { ingredients: { "<id>": { name, staple?, buyUnit?, conversions? } } }
+// each ingredient's display name, staple and not-listed flags, "buy as" unit and conversions:
+//   { ingredients: { "<id>": { name, staple?, notListed?, buyUnit?, conversions? } } }
 // Shared by the dev-server API and the import skill's link script.
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -62,7 +62,8 @@ export function linkRecipe(recipe, registry) {
       const base = slugify(name) || 'ingredient'
       id = base
       for (let n = 2; registry.ingredients[id]; n++) id = `${base}-${n}`
-      registry.ingredients[id] = { name }
+      // Matching ignores case, but the name keeps the capitals it was typed with.
+      registry.ingredients[id] = { name: version.item.trim() }
       byName.set(name, id)
       created.push({ id, name })
     } else if (id) {

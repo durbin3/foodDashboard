@@ -1,57 +1,183 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { buildGroceryList, groceryListText } from '../lib/grocery.js'
+import { addDays, entriesForWeek, formatDay, formatWeek, weekStart } from '../lib/plan.js'
 
-export default function GroceryPage({ plan, recipesById, registry, actions }) {
+const LIST_AS = [
+  ['grocery', 'Groceries'],
+  ['pantry', 'Pantry staple'],
+  ['none', "Don't list"],
+]
+const listAsPatch = {
+  grocery: { staple: undefined, notListed: undefined },
+  pantry: { staple: true, notListed: undefined },
+  none: { staple: undefined, notListed: true },
+}
+
+/**
+ * Ticks are kept in this browser only, per week, as { ingredientId: amount }.
+ * A tick counts only while the amount is unchanged, so adding a meal that
+ * needs more of something un-ticks it.
+ */
+function useTicks(week) {
+  const key = `grocery-ticks:${week}`
+  const read = () => {
+    try {
+      return JSON.parse(localStorage.getItem(key)) ?? {}
+    } catch {
+      return {}
+    }
+  }
+  const [ticks, setTicks] = useState(read)
+  useEffect(() => setTicks(read()), [key])
+  const save = (next) => {
+    setTicks(next)
+    try {
+      localStorage.setItem(key, JSON.stringify(next))
+    } catch {
+      // Storage unavailable (private window); ticks just won't survive a reload.
+    }
+  }
+  return [ticks, save]
+}
+
+export default function GroceryPage({ plan, week, recipesById, registry, actions }) {
   const [copied, setCopied] = useState(false)
-  const list = buildGroceryList(plan, recipesById, registry)
+  const [editing, setEditing] = useState(false)
+  const [ticks, setTicks] = useTicks(week)
+  const entries = entriesForWeek(plan, week)
+  const list = buildGroceryList(entries, recipesById, registry)
+  const isTicked = (l) => ticks[l.id] === l.amount
+  const all = [...list.groceries, ...list.pantry]
+  const tickedCount = all.filter(isTicked).length
 
-  async function copy() {
-    await navigator.clipboard.writeText(groceryListText(list))
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
+  const toggle = (l) => {
+    const { [l.id]: _, ...rest } = ticks
+    setTicks(isTicked(l) ? rest : { ...rest, [l.id]: l.amount })
   }
 
-  if (!plan.entries.length) return <p className="muted">Add meals to the plan to build a grocery list.</p>
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(groceryListText(list, isTicked))
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      actions.notify("Couldn't copy to the clipboard.", { kind: 'error' })
+    }
+  }
 
-  const section = (title, lines, staple) => (
+  const weekNav = (
+    <div className="week-nav">
+      <a className="button" href={`#/grocery/${addDays(week, -7)}`} aria-label="Previous week">
+        ‹
+      </a>
+      <h2>Groceries for {formatWeek(week)}</h2>
+      <a className="button" href={`#/grocery/${addDays(week, 7)}`} aria-label="Next week">
+        ›
+      </a>
+      {week !== weekStart() && (
+        <a className="small" href={`#/grocery/${weekStart()}`}>
+          This week
+        </a>
+      )}
+    </div>
+  )
+
+  if (!entries.length)
+    return (
+      <section>
+        {weekNav}
+        <p className="muted">
+          Nothing planned this week. <a href={`#/plan/${week}`}>Plan some meals</a> to build a grocery list.
+        </p>
+      </section>
+    )
+
+  const line = (l) => {
+    const listAs = l.notListed ? 'none' : l.staple ? 'pantry' : 'grocery'
+    return (
+      <li key={l.id} className={isTicked(l) ? 'done' : ''}>
+        <label className="g-check">
+          <input type="checkbox" checked={isTicked(l)} onChange={() => toggle(l)} />
+          <span className="g-name">{l.name}</span>
+        </label>
+        <span className={`g-amount ${l.staple ? 'muted' : ''}`}>{l.amount || <span className="muted">as needed</span>}</span>
+        <span className="muted small g-sources">{l.sources.join(', ')}</span>
+        {editing && (
+          <span className="g-edit small">
+            <select
+              aria-label={`List ${l.name} as`}
+              value={listAs}
+              onChange={(e) => actions.updateIngredient(l.id, listAsPatch[e.target.value])}
+              disabled={!registry.ingredients[l.id]}
+            >
+              {LIST_AS.map(([v, label]) => (
+                <option key={v} value={v}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <a href={`#/ingredients/${encodeURIComponent(l.id)}`}>{l.unconverted ? 'Add conversion' : 'Settings'}</a>
+          </span>
+        )}
+      </li>
+    )
+  }
+
+  const section = (title, lines, hint) => (
     <div className="grocery-section">
-      <h2>{title}</h2>
-      {lines.length === 0 && <p className="muted small">Nothing here.</p>}
-      <ul className="grocery">
-        {lines.map((l) => (
-          <li key={l.id}>
-            <a className="g-name" href={`#/ingredients/${encodeURIComponent(l.id)}`} title="Ingredient settings">
-              {l.name}
-            </a>
-            <span className="g-amount">
-              {l.amount}
-              {l.unconverted && (
-                <a className="small add-conv" href={`#/ingredients/${encodeURIComponent(l.id)}`}>
-                  add conversion
-                </a>
-              )}
-            </span>
-            <span className="muted small g-sources">{l.sources.join(', ')}</span>
-            {registry.ingredients[l.id] && (
-              <button className="link small" onClick={() => actions.updateIngredient(l.id, { staple: !staple || undefined })}>
-                {staple ? 'Not a staple' : 'Mark as staple'}
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <h3>
+        {title} {hint && <span className="muted small">{hint}</span>}
+      </h3>
+      {lines.length === 0 ? <p className="muted small">Nothing here.</p> : <ul className={`grocery ${editing ? 'editing' : ''}`}>{lines.map(line)}</ul>}
     </div>
   )
 
   return (
     <section>
+      {weekNav}
+      <details className="small muted meals-included">
+        <summary>
+          From {entries.length} meal{entries.length === 1 ? '' : 's'}
+        </summary>
+        <ul>
+          {entries.map((e) => (
+            <li key={e.id}>
+              {e.date ? formatDay(e.date) : 'Unscheduled'}: {recipesById[e.recipeId]?.name ?? e.recipeId}
+              {e.scale !== 1 && ` ×${e.scale}`}
+            </li>
+          ))}
+        </ul>
+      </details>
       <div className="toolbar">
         <button className="primary" onClick={copy}>
-          {copied ? 'Copied!' : 'Copy as text'}
+          {copied ? 'Copied!' : tickedCount ? "Copy what's left" : 'Copy as text'}
+        </button>
+        <span className="muted small">
+          {tickedCount} of {all.length} checked
+        </span>
+        {tickedCount > 0 && (
+          <button className="link small" onClick={() => setTicks({})}>
+            Uncheck all
+          </button>
+        )}
+        <span className="spacer" />
+        <button aria-pressed={editing} className={editing ? 'on' : ''} onClick={() => setEditing((x) => !x)}>
+          {editing ? 'Done editing' : 'Edit list'}
         </button>
       </div>
-      {section('Groceries', list.groceries, false)}
-      {section('Pantry — check before buying', list.pantry, true)}
+      {section('Groceries', list.groceries)}
+      {section('Pantry', list.pantry, '— check you have these')}
+      {list.notListed.length > 0 && (
+        <p className="muted small">
+          Not listed: {list.notListed.map((l) => l.name).join(', ')}.{' '}
+          {!editing && (
+            <button className="link small" onClick={() => setEditing(true)}>
+              Change
+            </button>
+          )}
+        </p>
+      )}
+      {editing && list.notListed.length > 0 && section('Not listed', list.notListed)}
     </section>
   )
 }

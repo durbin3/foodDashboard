@@ -1,3 +1,5 @@
+import { formatQuantity, parseQuantity } from './quantity.js'
+
 // Each ingredient keeps the imported `original` and an optional `modified`
 // override, so personal changes sit alongside the source recipe.
 //   { id, group, original: {quantity, unit, ingredientId, note} | null, modified: {...} | null, removed?: true }
@@ -47,6 +49,32 @@ export function newRecipe(name, takenIds) {
   return { id, name: name.trim(), source: '', servings: null, tags: [], ingredients: [], steps: [], notes: '' }
 }
 
+export const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
+
+/** True for recipes typed in by hand: no ingredient has an imported original. */
+export const isHandMade = (recipe) => !recipe.ingredients.some((ing) => ing.original)
+
+/** Changes made to an imported recipe. Hand-made recipes have nothing to compare against, so 0. */
 export function modificationCount(recipe) {
+  if (isHandMade(recipe)) return 0
   return recipe.ingredients.filter((ing) => ing.removed || ing.modified || !ing.original).length
+}
+
+/** Quantities that aren't numbers ("lil bit"), which the grocery list can't add up. */
+export const unparsedQuantity = (q) => !!String(q ?? '').trim() && parseQuantity(q) == null
+
+/** Gaps worth fixing, as short labels: no steps, no servings, unreadable quantities. */
+export function recipeIssues(recipe) {
+  const issues = []
+  if (!recipe.steps?.some((s) => s.trim())) issues.push('no steps')
+  if (!recipe.servings) issues.push('no servings')
+  if (activeIngredients(recipe).some((i) => unparsedQuantity(i.quantity))) issues.push('unclear amounts')
+  return issues
+}
+
+/** A quantity string multiplied by `scale`, kept as written when it isn't a number. */
+export function scaleQuantity(quantity, scale) {
+  if (scale === 1) return quantity
+  const n = parseQuantity(quantity)
+  return n == null ? quantity : formatQuantity(n * scale)
 }

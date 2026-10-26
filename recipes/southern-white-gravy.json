@@ -1,0 +1,76 @@
+{
+  "id": "southern-white-gravy",
+  "name": "Southern White Gravy",
+  "source": "https://www.mindyscookingobsession.com/easy-homemade-southern-white-country-gravy-recipe/",
+  "servings": 4,
+  "tags": [
+    "breakfast",
+    "quick",
+    "stovetop",
+    "comfort food"
+  ],
+  "ingredients": [
+    {
+      "id": "butter",
+      "group": "",
+      "original": {
+        "quantity": "4",
+        "unit": "tbsp",
+        "ingredientId": "butter",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "flour",
+      "group": "",
+      "original": {
+        "quantity": "4",
+        "unit": "tbsp",
+        "ingredientId": "flour",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "salt",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "tsp",
+        "ingredientId": "salt",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "pepper",
+      "group": "",
+      "original": {
+        "quantity": "1/2",
+        "unit": "tsp",
+        "ingredientId": "black-pepper",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "whole-milk",
+      "group": "",
+      "original": {
+        "quantity": "2",
+        "unit": "cup",
+        "ingredientId": "milk",
+        "note": ""
+      },
+      "modified": null
+    }
+  ],
+  "steps": [
+    "Melt butter in a large skillet over medium heat.",
+    "Add the flour, salt, and pepper to the melted butter. Whisk constantly and cook for 1 to 2 minutes, until the roux is smooth and bubbly.",
+    "Slowly add the milk and continue to cook over medium to medium-high heat, whisking constantly until the mixture thickens to the desired consistency, about 5 minutes.",
+    "Serve over hot biscuits, mashed potatoes, or cooked meat."
+  ],
+  "notes": ""
+}

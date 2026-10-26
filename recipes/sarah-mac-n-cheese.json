@@ -1,0 +1,96 @@
+{
+  "id": "sarah-mac-n-cheese",
+  "name": "Sarah Mac n Cheese",
+  "source": "",
+  "servings": 2,
+  "tags": [
+    "dinner"
+  ],
+  "ingredients": [
+    {
+      "id": "custom-mvo2e0mq",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1.5",
+        "unit": "cup",
+        "ingredientId": "macaroni",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2efe8",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1/4",
+        "unit": "cup",
+        "ingredientId": "butter",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2elrq",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1/2",
+        "unit": "tsp",
+        "ingredientId": "salt",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2erlt",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1/4",
+        "unit": "tsp",
+        "ingredientId": "black-pepper",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2eypd",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1/4",
+        "unit": "cup",
+        "ingredientId": "flour",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2f37g",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1.75",
+        "unit": "cup",
+        "ingredientId": "milk",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2f9xu",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "8",
+        "unit": "oz",
+        "ingredientId": "sharp-cheddar-cheese",
+        "note": ""
+      }
+    }
+  ],
+  "steps": [
+    "Cook macaroni",
+    "Melt butter and saute onions with salt and pepper",
+    "Add flour, cook until weird",
+    "Add in milk, heat until changes - make sure you don't burn it",
+    "Add cheese"
+  ],
+  "notes": "can substitute any other cheese"
+}

@@ -71,7 +71,7 @@
       "original": {
         "quantity": "2 1/2",
         "unit": "cup",
-        "ingredientId": "whole-milk",
+        "ingredientId": "milk",
         "note": "recipe says just \"milk\""
       },
       "modified": null
@@ -82,7 +82,7 @@
       "original": {
         "quantity": "3",
         "unit": "tbsp",
-        "ingredientId": "margarine",
+        "ingredientId": "butter",
         "note": "melted"
       },
       "modified": null
@@ -126,7 +126,7 @@
       "original": {
         "quantity": "2",
         "unit": "cup",
-        "ingredientId": "four-cheese-blend",
+        "ingredientId": "shredded-cheese",
         "note": "shredded"
       },
       "modified": null

@@ -1,3 +1,40 @@
 {
-  "entries": []
+  "entries": [
+    {
+      "id": "b51bd61a-0d06-496b-9eb3-e057a8875c33",
+      "recipeId": "crockpot-taco-meat",
+      "date": "2026-10-20",
+      "scale": 1
+    },
+    {
+      "id": "dd7b94da-454a-4385-afb8-e80f558044bd",
+      "recipeId": "basic-easy-quiche",
+      "date": null,
+      "scale": 1
+    },
+    {
+      "id": "9221cfd4-6655-4c7e-9644-7a242482caca",
+      "recipeId": "basic-easy-quiche",
+      "date": null,
+      "scale": 1
+    },
+    {
+      "id": "a8615c7d-7d20-4e59-b39a-18a5130537e5",
+      "recipeId": "chicken-pot-pie",
+      "date": null,
+      "scale": 1
+    },
+    {
+      "id": "f0e5d521-46c3-4d36-8e99-bbf81788fab6",
+      "recipeId": "classic-meatloaf",
+      "date": null,
+      "scale": 1
+    },
+    {
+      "id": "0c2827ee-d40f-4320-bd58-33b6286a2087",
+      "recipeId": "homemade-alfredo-sauce",
+      "date": null,
+      "scale": 1
+    }
+  ]
 }

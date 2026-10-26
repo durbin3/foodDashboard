@@ -1,0 +1,80 @@
+{
+  "id": "salsa",
+  "name": "Salsa",
+  "source": "",
+  "servings": 30,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "custom-mvo2wsse",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "28",
+        "unit": "oz",
+        "ingredientId": "canned-tomatoes",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2x759",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "",
+        "unit": "",
+        "ingredientId": "salt",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2xgyt",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "3",
+        "unit": "stalk",
+        "ingredientId": "green-onion",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2xund",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "2",
+        "unit": "",
+        "ingredientId": "jalapeno",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2xzxz",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "",
+        "unit": "",
+        "ingredientId": "cilantro",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2ycvk",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "bit",
+        "ingredientId": "garlic-powder",
+        "note": ""
+      }
+    }
+  ],
+  "steps": [
+    "blend tomatoes with salt",
+    "add the rest of the ingredients"
+  ],
+  "notes": ""
+}

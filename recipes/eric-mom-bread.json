@@ -1,0 +1,59 @@
+{
+  "id": "eric-mom-bread",
+  "name": "Eric Mom Bread",
+  "source": "",
+  "servings": null,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "custom-mvo30uua",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "3.5",
+        "unit": "cup",
+        "ingredientId": "flour",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo30z5e",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "tsp",
+        "ingredientId": "yeast",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo311k1",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "tsp",
+        "ingredientId": "salt",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo315sl",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1.5",
+        "unit": "cups",
+        "ingredientId": "water",
+        "note": ""
+      }
+    }
+  ],
+  "steps": [
+    "mix together at night, let rise overnight",
+    "shape into ball",
+    "bake at 450 for 30m"
+  ],
+  "notes": ""
+}

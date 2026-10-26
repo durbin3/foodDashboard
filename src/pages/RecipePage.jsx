@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { formatIngredient } from '../lib/quantity.js'
-import { effectiveIngredient, newRecipe, sameIngredient } from '../lib/recipe.js'
+import { effectiveIngredient, newRecipe, sameIngredient, unparsedQuantity } from '../lib/recipe.js'
 import { KNOWN_UNITS } from '../lib/units.js'
 
 const FIELDS = [
@@ -10,39 +10,71 @@ const FIELDS = [
   ['note', 'Note', 'note'],
 ]
 
+const isBlankIngredient = (i) => !i.original && !['quantity', 'unit', 'item', 'note'].some((k) => String(i.modified?.[k] ?? '').trim())
+
+/** What gets saved: no blank steps or never-filled-in ingredient rows. */
+const cleaned = (draft) => ({
+  ...draft,
+  steps: draft.steps.filter((s) => s.trim()),
+  ingredients: draft.ingredients.filter((i) => !isBlankIngredient(i)),
+})
+
 /**
  * Edits a saved recipe, or, with `isNew`, a blank unsaved one that's created
  * (and given an id from its name) on the first save.
  */
-export default function RecipePage({ recipe, isNew = false, takenIds, knownItems, actions }) {
+export default function RecipePage({ recipe, isNew = false, takenIds, knownItems, allTags, actions }) {
   const [draft, setDraft] = useState(recipe)
-  const [tagText, setTagText] = useState('')
   const [newGroup, setNewGroup] = useState('')
   const [status, setStatus] = useState('')
+  // Id of a just-added ingredient whose first input should take focus once it mounts.
+  const focusOnMount = useRef(null)
 
   useEffect(() => {
     setDraft(recipe)
-    setTagText((recipe?.tags ?? []).join(', '))
   }, [recipe])
 
   const dirty = recipe && JSON.stringify(draft) !== JSON.stringify(recipe)
+  // Warn on tab close/refresh, and (via the app's router) on in-app navigation.
+  const dirtyRef = useRef(dirty)
+  dirtyRef.current = dirty
   useEffect(() => {
-    if (!dirty) return
-    const warn = (e) => e.preventDefault()
+    actions.setLeaveGuard(() => dirtyRef.current)
+    const warn = (e) => dirtyRef.current && e.preventDefault()
     window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty])
+    return () => {
+      actions.setLeaveGuard(null)
+      window.removeEventListener('beforeunload', warn)
+    }
+  }, [])
 
-  if (!recipe || !draft) return <p className="muted">Recipe not found.</p>
+  const saveRef = useRef(null)
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        saveRef.current?.()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  if (!recipe || !draft)
+    return (
+      <p className="muted">
+        Recipe not found. <a href="#/">Back to recipes</a>
+      </p>
+    )
 
   const groups = [...new Set(draft.ingredients.map((i) => i.group ?? ''))]
   if (!groups.length) groups.push('')
   // Hand-made recipes have no imported originals, so there's nothing to compare against.
   const hasOriginals = draft.ingredients.some((i) => i.original)
+  const known = new Set(knownItems.map((i) => i.toLowerCase()))
 
-  const update = (patch) => setDraft((d) => ({ ...d, ...patch }))
-  const updateIngredient = (id, fn) =>
-    update({ ingredients: draft.ingredients.map((i) => (i.id === id ? fn(i) : i)) })
+  const update = (patch) => setDraft((d) => ({ ...d, ...(typeof patch === 'function' ? patch(d) : patch) }))
+  const updateIngredient = (id, fn) => update((d) => ({ ingredients: d.ingredients.map((i) => (i.id === id ? fn(i) : i)) }))
 
   function setField(ing, field, value) {
     updateIngredient(ing.id, (i) => {
@@ -55,39 +87,60 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
   function addIngredient(group) {
     const blank = { quantity: '', unit: '', item: '', note: '' }
     const ing = { id: `custom-${Date.now().toString(36)}`, group, original: null, modified: blank }
-    update({ ingredients: [...draft.ingredients, ing] })
+    focusOnMount.current = ing.id
+    update((d) => ({ ingredients: [...d.ingredients, ing] }))
   }
 
   function renameGroup(from, to) {
-    update({ ingredients: draft.ingredients.map((i) => ((i.group ?? '') === from ? { ...i, group: to } : i)) })
+    if (to === from) return true
+    if (to && groups.includes(to) && !confirm(`There's already a "${to}" group. Merge "${from || 'Ungrouped'}" into it?`)) return false
+    if (!to && groups.length > 1 && !confirm(`Clear the name? Its ingredients will move to Ungrouped.`)) return false
+    update((d) => ({ ingredients: d.ingredients.map((i) => ((i.group ?? '') === from ? { ...i, group: to } : i)) }))
+    return true
   }
 
-  const setSteps = (steps) => update({ steps })
+  const setSteps = (fn) => update((d) => ({ steps: fn(d.steps) }))
   function moveStep(index, delta) {
-    const steps = [...draft.steps]
-    const [step] = steps.splice(index, 1)
-    steps.splice(index + delta, 0, step)
-    setSteps(steps)
+    setSteps((steps) => {
+      const next = [...steps]
+      const [step] = next.splice(index, 1)
+      next.splice(index + delta, 0, step)
+      return next
+    })
+  }
+  function deleteStep(index) {
+    const text = draft.steps[index]
+    setSteps((steps) => steps.filter((_, j) => j !== index))
+    if (text.trim())
+      actions.notify(`Deleted step ${index + 1}.`, {
+        undo: () => setSteps((steps) => [...steps.slice(0, index), text, ...steps.slice(index)]),
+      })
   }
 
   async function save() {
+    if (!draft.name.trim() || (!isNew && !dirty)) return
     setStatus('Saving…')
     try {
       if (isNew) {
-        const created = await actions.createRecipe({ ...draft, id: newRecipe(draft.name, takenIds).id })
-        window.location.hash = `#/recipe/${created.id}`
+        const id = newRecipe(draft.name, takenIds).id
+        await actions.createRecipe(cleaned({ ...draft, id }))
+        actions.setLeaveGuard(null)
+        actions.notify(`Created ${draft.name.trim()}.`)
+        window.location.hash = `#/?new=${id}`
         return
       }
-      await actions.saveRecipe(draft)
+      await actions.saveRecipe(cleaned(draft))
       setStatus('Saved')
     } catch {
       setStatus('')
     }
   }
+  saveRef.current = save
 
   async function remove() {
     if (!confirm(`Delete "${recipe.name}"? This removes recipes/${recipe.id}.json and takes it out of the meal plan.`)) return
     await actions.deleteRecipe(recipe.id)
+    actions.setLeaveGuard(null)
     window.location.hash = '#/'
   }
 
@@ -104,30 +157,37 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
         ))}
       </datalist>
 
-      <div className="recipe-head">
-        <input
-          className="title-input"
-          value={draft.name}
-          onChange={(e) => update({ name: e.target.value })}
-          aria-label="Recipe name"
-          placeholder={isNew ? 'New recipe name' : 'Recipe name'}
-          autoFocus={isNew}
-        />
-        <div className="save-bar">
-          {status && !dirty && <span className="muted small">{status}</span>}
-          {isNew ? (
-            <a href="#/">Cancel</a>
-          ) : (
-            dirty && <button onClick={() => setDraft(recipe)}>Discard</button>
-          )}
-          <button
-            className="primary"
-            disabled={!draft.name.trim() || (!isNew && !dirty)}
-            title={!draft.name.trim() ? 'Give the recipe a name first' : undefined}
-            onClick={save}
-          >
-            {isNew ? 'Create recipe' : 'Save changes'}
-          </button>
+      <div className="editor-head">
+        <a href={isNew ? '#/' : `#/recipe/${recipe.id}`} className="small back-link">
+          ← {isNew ? 'Recipes' : 'Back to recipe'}
+        </a>
+        <div className="recipe-head">
+          <input
+            className="title-input"
+            value={draft.name}
+            onChange={(e) => update({ name: e.target.value })}
+            aria-label="Recipe name"
+            placeholder={isNew ? 'New recipe name' : 'Recipe name'}
+            autoFocus={isNew}
+          />
+          <div className="save-bar">
+            <span className="muted small" aria-live="polite">
+              {dirty ? 'Unsaved changes' : status}
+            </span>
+            {isNew ? (
+              <a href="#/">Cancel</a>
+            ) : (
+              dirty && <button onClick={() => setDraft(recipe)}>Discard changes</button>
+            )}
+            <button
+              className="primary"
+              disabled={!draft.name.trim() || (!isNew && !dirty)}
+              title={!draft.name.trim() ? 'Give the recipe a name first' : 'Ctrl+S'}
+              onClick={save}
+            >
+              {isNew ? 'Create recipe' : 'Save changes'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -152,30 +212,17 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
             onChange={(e) => update({ servings: e.target.value === '' ? null : Number(e.target.value) })}
           />
         </label>
-        <label className="field">
-          Tags <span className="muted small">(comma separated)</span>
-          <input
-            value={tagText}
-            onChange={(e) => {
-              setTagText(e.target.value)
-              update({ tags: e.target.value.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean) })
-            }}
-          />
-        </label>
-        {!isNew && (
-          <div className="field">
-            <span>&nbsp;</span>
-            <button onClick={() => actions.addToPlan(draft.id)}>+ Add to plan</button>
-          </div>
-        )}
+        <div className="field">
+          <span id="tags-label">Tags</span>
+          <TagInput tags={draft.tags ?? []} allTags={allTags} onChange={(tags) => update({ tags })} />
+        </div>
       </div>
 
       <h2>Ingredients</h2>
-      {hasOriginals && (
-        <p className="muted small">
-          Edit the right-hand fields to make your version. The imported original stays on the left.
-        </p>
-      )}
+      <p className="muted small">
+        {hasOriginals && 'Edit the right-hand fields to make your version; the imported original stays on the left. '}
+        Item picks an ingredient by name: a name that isn't known yet becomes a new ingredient when you save.
+      </p>
       {groups.map((group) => {
         const rows = draft.ingredients.filter((i) => (i.group ?? '') === group)
         return (
@@ -198,44 +245,82 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                   {rows.map((ing) => {
                     const eff = effectiveIngredient(ing)
                     const changed = !!ing.modified && !!ing.original
-                    const rowClass = ing.removed ? 'removed' : changed ? 'changed' : !ing.original && hasOriginals ? 'added' : ''
+                    const added = !ing.original && hasOriginals
+                    const rowClass = ing.removed ? 'removed' : changed ? 'changed' : added ? 'added' : ''
+                    const name = eff.item?.trim() || 'new ingredient'
+                    const isNewItem = eff.item?.trim() && !known.has(eff.item.trim().toLowerCase())
+                    const badQty = unparsedQuantity(eff.quantity)
                     return (
                       <tr key={ing.id} className={rowClass}>
                         {hasOriginals && (
                           <td className="original">
                             {ing.original ? (
-                              <span className={changed || ing.removed ? 'struck' : ''}>{formatIngredient(ing.original)}</span>
+                              <>
+                                <span className={changed || ing.removed ? 'struck' : ''}>{formatIngredient(ing.original)}</span>
+                                {changed && <span className="pill">changed</span>}
+                                {ing.removed && <span className="pill">left out</span>}
+                              </>
                             ) : (
-                              <em className="muted">added by you</em>
+                              <span className="pill">added by you</span>
                             )}
                           </td>
                         )}
-                        {FIELDS.map(([field, , cls]) => (
-                          <td key={field} className={cls}>
+                        {FIELDS.map(([field, label, cls]) => (
+                          <td key={field} className={cls} data-label={label}>
                             <input
+                              ref={(el) => {
+                                if (el && field === FIELDS[0][0] && focusOnMount.current === ing.id) {
+                                  focusOnMount.current = null
+                                  el.focus()
+                                }
+                              }}
+                              aria-label={`${label} for ${name}`}
                               value={eff[field] ?? ''}
                               disabled={ing.removed}
+                              className={field === 'quantity' && badQty ? 'invalid' : undefined}
+                              title={
+                                field === 'quantity' && badQty
+                                  ? 'Not a number, so the grocery list can’t add it up. Use e.g. 1/2, 1 1/2 or 0.25.'
+                                  : undefined
+                              }
                               list={field === 'item' ? 'known-items' : field === 'unit' ? 'known-units' : undefined}
                               placeholder={field === 'unit' ? 'each' : undefined}
                               onChange={(e) => setField(ing, field, e.target.value)}
                             />
+                            {field === 'item' && isNewItem && !ing.removed && (
+                              <span className="pill new" title="Not a known ingredient yet; saving creates it">
+                                new
+                              </span>
+                            )}
+                            {field === 'quantity' && badQty && <span className="field-warning">not a number</span>}
                           </td>
                         ))}
                         <td className="row-actions">
+                          {groups.length > 1 && (
+                            <select
+                              aria-label={`Move ${name} to group`}
+                              value={ing.group ?? ''}
+                              onChange={(e) => updateIngredient(ing.id, (i) => ({ ...i, group: e.target.value }))}
+                            >
+                              {groups.map((g) => (
+                                <option key={g} value={g}>
+                                  {g || 'Ungrouped'}
+                                </option>
+                              ))}
+                            </select>
+                          )}
                           {changed && (
-                            <button title="Revert to original" onClick={() => updateIngredient(ing.id, (i) => ({ ...i, modified: null }))}>
-                              Reset
+                            <button title="Go back to the original line" onClick={() => updateIngredient(ing.id, (i) => ({ ...i, modified: null }))}>
+                              Undo edit
                             </button>
                           )}
                           {!ing.original ? (
-                            <button onClick={() => update({ ingredients: draft.ingredients.filter((i) => i.id !== ing.id) })}>
-                              Delete
-                            </button>
+                            <button onClick={() => update((d) => ({ ingredients: d.ingredients.filter((i) => i.id !== ing.id) }))}>Delete</button>
                           ) : ing.removed ? (
-                            <button onClick={() => updateIngredient(ing.id, ({ removed, ...i }) => i)}>Restore</button>
+                            <button onClick={() => updateIngredient(ing.id, ({ removed, ...i }) => i)}>Put back</button>
                           ) : (
-                            <button title="Leave out of your version" onClick={() => updateIngredient(ing.id, (i) => ({ ...i, removed: true }))}>
-                              Remove
+                            <button title="Leave this out of your version; the original stays for reference" onClick={() => updateIngredient(ing.id, (i) => ({ ...i, removed: true }))}>
+                              Leave out
                             </button>
                           )}
                         </td>
@@ -260,13 +345,14 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
           setNewGroup('')
         }}
       >
-        <input placeholder="New group, e.g. Sauce" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} />
+        <input placeholder="New group, e.g. Sauce" aria-label="New group name" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} />
         <button disabled={!newGroup.trim()}>+ Add group</button>
       </form>
 
       <h2>Notes</h2>
-      <textarea
-        rows={6}
+      <AutoTextarea
+        minRows={4}
+        aria-label="Notes"
         value={draft.notes ?? ''}
         placeholder="Your notes on this recipe…"
         onChange={(e) => update({ notes: e.target.value })}
@@ -277,15 +363,15 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
         {draft.steps.map((step, i) => (
           <li key={i}>
             <div className="step-row">
-              <textarea rows={3} value={step} onChange={(e) => setSteps(draft.steps.map((s, j) => (j === i ? e.target.value : s)))} />
+              <AutoTextarea aria-label={`Step ${i + 1}`} value={step} onChange={(e) => setSteps((steps) => steps.map((s, j) => (j === i ? e.target.value : s)))} />
               <div className="step-actions">
-                <button title="Move up" disabled={i === 0} onClick={() => moveStep(i, -1)}>
+                <button title="Move up" aria-label={`Move step ${i + 1} up`} disabled={i === 0} onClick={() => moveStep(i, -1)}>
                   ↑
                 </button>
-                <button title="Move down" disabled={i === draft.steps.length - 1} onClick={() => moveStep(i, 1)}>
+                <button title="Move down" aria-label={`Move step ${i + 1} down`} disabled={i === draft.steps.length - 1} onClick={() => moveStep(i, 1)}>
                   ↓
                 </button>
-                <button title="Delete step" onClick={() => setSteps(draft.steps.filter((_, j) => j !== i))}>
+                <button title="Delete step" aria-label={`Delete step ${i + 1}`} onClick={() => deleteStep(i)}>
                   ×
                 </button>
               </div>
@@ -293,7 +379,7 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
           </li>
         ))}
       </ol>
-      <button className="link" onClick={() => setSteps([...draft.steps, ''])}>
+      <button className="link" onClick={() => setSteps((steps) => [...steps, ''])}>
         + Add step
       </button>
 
@@ -308,14 +394,88 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
   )
 }
 
+/** A textarea that grows with its content, so long steps aren't clipped. */
+function AutoTextarea({ minRows = 2, ...props }) {
+  const ref = useRef(null)
+  const fit = () => {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight + 2}px`
+  }
+  useEffect(fit)
+  // Text rewraps when the window narrows (e.g. a phone rotating), so refit then too.
+  useEffect(() => {
+    window.addEventListener('resize', fit)
+    return () => window.removeEventListener('resize', fit)
+  }, [])
+  return <textarea ref={ref} rows={minRows} {...props} />
+}
+
+/** Tags as removable chips, with existing tags suggested so they don't drift. */
+function TagInput({ tags, allTags, onChange }) {
+  const [text, setText] = useState('')
+  const add = (raw) => {
+    const next = raw
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter((t) => t && !tags.includes(t))
+    if (next.length) onChange([...tags, ...next])
+    setText('')
+  }
+  return (
+    <div className="tag-input">
+      {tags.map((t) => (
+        <span key={t} className="tag static">
+          {t}
+          <button className="link" aria-label={`Remove tag ${t}`} onClick={() => onChange(tags.filter((x) => x !== t))}>
+            ×
+          </button>
+        </span>
+      ))}
+      <input
+        list="tag-options"
+        aria-labelledby="tags-label"
+        placeholder={tags.length ? 'Add tag…' : 'e.g. chicken, quick'}
+        value={text}
+        onChange={(e) => {
+          // Picking a suggestion replaces the whole value (no inputType, or
+          // insertReplacementText); a comma finishes a tag while typing.
+          const v = e.target.value
+          const picked = !e.nativeEvent.inputType || e.nativeEvent.inputType === 'insertReplacementText'
+          if (v.includes(',') || (picked && allTags.includes(v.trim().toLowerCase()))) add(v)
+          else setText(v)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            add(text)
+          } else if (e.key === 'Backspace' && !text && tags.length) onChange(tags.slice(0, -1))
+        }}
+        onBlur={() => text.trim() && add(text)}
+      />
+      <datalist id="tag-options">
+        {allTags
+          .filter((t) => !tags.includes(t))
+          .map((t) => (
+            <option key={t} value={t} />
+          ))}
+      </datalist>
+    </div>
+  )
+}
+
 /** Group heading that renames on blur/Enter, so typing doesn't regroup rows mid-edit. */
 function GroupName({ name, onRename }) {
   const [value, setValue] = useState(name)
   useEffect(() => setValue(name), [name])
-  const commit = () => value.trim() !== name && onRename(value.trim())
+  const commit = () => {
+    if (value.trim() !== name && !onRename(value.trim())) setValue(name)
+  }
   return (
     <input
       className="group-input"
+      aria-label={`Group name${name ? `: ${name}` : ''}`}
       value={value}
       placeholder="Ungrouped"
       onChange={(e) => setValue(e.target.value)}

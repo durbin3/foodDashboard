@@ -1,0 +1,68 @@
+{
+  "id": "blue",
+  "name": "Blue",
+  "source": "",
+  "servings": null,
+  "tags": [
+    "drink"
+  ],
+  "ingredients": [
+    {
+      "id": "custom-mvo2zne5",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "can",
+        "ingredientId": "sierra-mist",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2zsig",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "2",
+        "unit": "bottle",
+        "ingredientId": "mikes-hard-lemonade",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo2zyk9",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "bottle",
+        "ingredientId": "popov",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo302ob",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "5",
+        "unit": "",
+        "ingredientId": "jolly-rancher-blue-raspberry",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvo309j5",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "",
+        "unit": "",
+        "ingredientId": "orange-sparkling-water",
+        "note": ""
+      }
+    }
+  ],
+  "steps": [],
+  "notes": ""
+}
