@@ -463,3 +463,9 @@ a.button.primary { background: var(--accent); color: var(--accent-text); border-
 .day-settings td { padding: 4px 12px 4px 0; border-bottom: 1px solid var(--border); }
 .day-settings select { padding: 2px 6px; }
 .people .inline-form { margin-bottom: 6px; }
+.tag-input .side-add { border: none; padding: 3px 4px; color: var(--muted); }
+.meal-card .meal-sides { display: block; font-size: 12px; overflow-wrap: anywhere; }
+.sides-row { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; gap: 6px; }
+.sides-row .tag { display: inline-flex; align-items: center; gap: 2px; }
+.sides-row .tag button { padding: 0 0 0 4px; color: var(--muted); }
+.tag.suggestion { border: 1px dashed var(--accent); color: var(--accent); background: transparent; }

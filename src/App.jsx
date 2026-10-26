@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './api.js'
 import { cycleStart, formatCycle, normalizePlan } from './lib/plan.js'
-import { newRecipe, withNames } from './lib/recipe.js'
+import { categoryOf, newRecipe, withNames } from './lib/recipe.js'
 import { DEFAULT_SETTINGS, normalizeSettings } from './lib/settings.js'
 import Library from './pages/Library.jsx'
 import RecipeView from './pages/RecipeView.jsx'
@@ -151,9 +151,15 @@ export default function App() {
     deleteRecipe: async (id) => {
       await run(api.deleteRecipe(id))
       setStoredRecipes((rs) => rs.filter((r) => r.id !== id))
-      await updatePlan((p) => ({ ...p, meals: p.meals.filter((m) => m.recipeId !== id) }))
+      // Meals of a deleted main go; a deleted side just comes off the meals it was attached to.
+      await updatePlan((p) => ({
+        ...p,
+        meals: p.meals
+          .filter((m) => m.recipeId !== id)
+          .map((m) => (m.sides?.some((s) => s.recipeId === id) ? { ...m, sides: m.sides.filter((s) => s.recipeId !== id) } : m)),
+      }))
     },
-    /** Adds a meal to the cycle being planned (the one last shown on the plan page), not on a day yet. */
+    /** Adds a meal to the cycle being planned (the one last shown on the plan page), not on a day yet. Returns its id. */
     addToPlan: (recipeId, scale = 1, { quiet = false } = {}) => {
       const meal = { id: crypto.randomUUID(), recipeId, cycle, date: null, scale }
       if (!quiet)
@@ -161,7 +167,8 @@ export default function App() {
           undo: () => removeMeals([meal.id]),
           link: page === 'plan' ? null : { href: `#/plan/${cycle}`, label: 'Pick a day' },
         })
-      return updatePlan((p) => ({ ...p, meals: [...p.meals, meal] }))
+      updatePlan((p) => ({ ...p, meals: [...p.meals, meal] }))
+      return meal.id
     },
     updateMeal: (id, patch) => updatePlan((p) => ({ ...p, meals: p.meals.map((m) => (m.id === id ? { ...m, ...patch } : m)) })),
     removeMeal: (meal) => {
@@ -217,6 +224,7 @@ export default function App() {
         takenIds={new Set(recipes.map((r) => r.id))}
         knownItems={knownItems}
         allTags={[...new Set(recipes.flatMap((r) => r.tags ?? []))].sort()}
+        sides={recipes.filter((r) => categoryOf(r) === 'side')}
         actions={actions}
       />
     )
@@ -228,12 +236,13 @@ export default function App() {
         recipe={recipesById[param]}
         knownItems={knownItems}
         allTags={[...new Set(recipes.flatMap((r) => r.tags ?? []))].sort()}
+        sides={recipes.filter((r) => categoryOf(r) === 'side')}
         actions={actions}
       />
     )
   } else if (page === 'recipe') {
     title = recipesById[param]?.name ?? 'Recipe not found'
-    content = <RecipeView key={param} recipe={recipesById[param]} plan={plan} actions={actions} />
+    content = <RecipeView key={param} recipe={recipesById[param]} recipes={recipes} recipesById={recipesById} plan={plan} actions={actions} />
   } else if (page === 'plan') {
     title = 'Meal plan'
     content = <PlanPage plan={plan} cycle={cycle} settings={settings} recipes={recipes} recipesById={recipesById} actions={actions} />

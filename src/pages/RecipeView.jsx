@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { formatQuantity } from '../lib/quantity.js'
 import { addDays, formatCycle, formatDay, today } from '../lib/plan.js'
 import { formatRating, recipeRatings } from '../lib/ratings.js'
+import { mainsFor, pairedSides } from '../lib/meals.js'
 import { activeIngredients, categoryOf, formatMinutes, recipeIssues, scaleQuantity, totalMinutes } from '../lib/recipe.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 
 const SCALES = [0.5, 1, 1.5, 2, 3]
 
 /** The recipe for reading and cooking from; editing is one click away. */
-export default function RecipeView({ recipe, plan, actions }) {
+export default function RecipeView({ recipe, recipes, recipesById, plan, actions }) {
   const [scale, setScale] = useState(1)
   // Ingredients ticked off while prepping. Not saved; it's for this cook only.
   const [ticked, setTicked] = useState(() => new Set())
@@ -27,7 +28,10 @@ export default function RecipeView({ recipe, plan, actions }) {
   const minutes = totalMinutes(recipe)
   const category = categoryOf(recipe)
   const now = today()
-  const upcoming = plan.meals.filter((m) => m.recipeId === recipe.id && (m.date ? m.date >= now : m.cycle >= addDays(now, -13)))
+  const isSide = category === 'side'
+  const usesThis = (m) => m.recipeId === recipe.id || m.sides?.some((s) => s.recipeId === recipe.id)
+  const upcoming = plan.meals.filter((m) => usesThis(m) && (m.date ? m.date >= now : m.cycle >= addDays(now, -13)))
+  const goesWith = isSide ? mainsFor(recipe.id, recipes) : pairedSides(recipe, recipesById)
   const rating = recipeRatings(plan, recipe.id)
   const toggle = (id) =>
     setTicked((t) => {
@@ -44,7 +48,7 @@ export default function RecipeView({ recipe, plan, actions }) {
       <div className="recipe-head">
         <h1>{recipe.name}</h1>
         <div className="head-actions">
-          <button onClick={(e) => e.detail <= 1 && actions.addToPlan(recipe.id, scale)}>+ Add to plan</button>
+          {!isSide && <button onClick={(e) => e.detail <= 1 && actions.addToPlan(recipe.id, scale)}>+ Add to plan</button>}
           <a className="button primary" href={`#/recipe/${recipe.id}/edit`}>
             Edit
           </a>
@@ -70,9 +74,20 @@ export default function RecipeView({ recipe, plan, actions }) {
         )}
         {(recipe.tags ?? []).length > 0 && <span>{recipe.tags.join(' · ')}</span>}
         {rating.times > 0 && (
-          <a href="#ratings">
+          <button className="link small" onClick={() => document.getElementById('ratings')?.scrollIntoView({ behavior: 'smooth' })}>
             ★ {formatRating(rating.average)} ({Object.entries(rating.byPerson).map(([p, n]) => `${p} ${formatRating(n)}`).join(', ')})
-          </a>
+          </button>
+        )}
+        {goesWith.length > 0 && (
+          <span>
+            Goes with{' '}
+            {goesWith.map((r, i) => (
+              <span key={r.id}>
+                {i > 0 && ', '}
+                <a href={`#/recipe/${r.id}`}>{r.name}</a>
+              </span>
+            ))}
+          </span>
         )}
         {upcoming.length > 0 && (
           <a href={`#/plan/${upcoming[0].cycle}`}>

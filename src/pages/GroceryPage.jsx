@@ -145,6 +145,7 @@ export default function GroceryPage({ plan, cycle, anchor, recipesById, registry
             <li key={e.id}>
               {e.date ? formatDay(e.date) : 'Not on a day'}: {recipesById[e.recipeId]?.name ?? e.recipeId}
               {e.scale !== 1 && ` ×${e.scale}`}
+              {e.sides?.length > 0 && ` with ${e.sides.map((s) => recipesById[s.recipeId]?.name ?? s.recipeId).join(', ')}`}
             </li>
           ))}
         </ul>

@@ -66,7 +66,7 @@ export default function Library({ recipes, plan, anchor, registry, query, action
       // Non-staples are what distinguish a recipe (and what you'd shop for); if
       // everything is a staple (e.g. gravy), show the ingredients themselves.
       const distinctive = ingredients.filter((i) => i.item && !registry.ingredients[i.ingredientId]?.staple).map((i) => i.item)
-      const meals = plan.meals.filter((m) => m.recipeId === r.id)
+      const meals = plan.meals.filter((m) => m.recipeId === r.id || m.sides?.some((s) => s.recipeId === r.id))
       const past = meals.filter((m) => m.date && m.date < now).map((m) => m.date).sort()
       const upcoming = meals
         .filter((m) => (m.date ? m.date >= now : m.cycle >= current))
@@ -240,13 +240,15 @@ export default function Library({ recipes, plan, anchor, registry, query, action
                   <td className="col-num">{r.servings ?? <span className="muted">—</span>}</td>
                   <td className="col-date small">{r.lastMade ? formatDay(r.lastMade) : <span className="muted">—</span>}</td>
                   <td className="col-plan">
-                    <button
-                      onClick={(e) => e.detail <= 1 && actions.addToPlan(r.id)}
-                      title="Add to the meal plan"
-                      aria-label={`Add ${r.name} to meal plan`}
-                    >
-                      + Add
-                    </button>
+                    {cat !== 'side' && (
+                      <button
+                        onClick={(e) => e.detail <= 1 && actions.addToPlan(r.id)}
+                        title="Add to the meal plan"
+                        aria-label={`Add ${r.name} to meal plan`}
+                      >
+                        + Add
+                      </button>
+                    )}
                     {/* Always takes a line, so adding a meal doesn't shift the button under the cursor. */}
                     <div className="planned small">
                       {r.upcoming.length > 0 ? (

@@ -24,7 +24,7 @@ const cleaned = (draft) => ({
  * Edits a saved recipe, or, with `isNew`, a blank unsaved one that's created
  * (and given an id from its name) on the first save.
  */
-export default function RecipePage({ recipe, isNew = false, takenIds, knownItems, allTags, actions }) {
+export default function RecipePage({ recipe, isNew = false, takenIds, knownItems, allTags, sides, actions }) {
   const [draft, setDraft] = useState(recipe)
   const [newGroup, setNewGroup] = useState('')
   const [status, setStatus] = useState('')
@@ -244,6 +244,12 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
           <MinutesInput label="Cook" value={draft.cookMinutes} onChange={(cookMinutes) => update({ cookMinutes })} />
         </div>
       </div>
+      {categoryOf(draft) !== 'side' && (
+        <div className="field">
+          <span id="pairs-label">Goes with</span>
+          <SidePicker picked={draft.pairsWith ?? []} sides={sides.filter((s) => s.id !== draft.id)} onChange={(pairsWith) => update({ pairsWith })} />
+        </div>
+      )}
 
       <h2>Ingredients</h2>
       <p className="muted small">
@@ -418,6 +424,36 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
         </div>
       )}
     </section>
+  )
+}
+
+/** Chips for the sides a main goes with, plus a menu of the rest. */
+function SidePicker({ picked, sides, onChange }) {
+  const byId = Object.fromEntries(sides.map((s) => [s.id, s]))
+  const shown = picked.filter((id) => byId[id])
+  const rest = sides.filter((s) => !picked.includes(s.id))
+  if (!sides.length) return <p className="muted small">No sides yet. Set a recipe's Kind to Side to pair it with mains.</p>
+  return (
+    <div className="tag-input" role="group" aria-labelledby="pairs-label">
+      {shown.map((id) => (
+        <span key={id} className="tag static">
+          {byId[id].name}
+          <button className="link" aria-label={`Remove ${byId[id].name}`} onClick={() => onChange(picked.filter((x) => x !== id))}>
+            ×
+          </button>
+        </span>
+      ))}
+      {rest.length > 0 && (
+        <select className="side-add" aria-label="Add a side" value="" onChange={(e) => e.target.value && onChange([...picked, e.target.value])}>
+          <option value="">{shown.length ? 'Add another side…' : 'Add a side…'}</option>
+          {rest.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+      )}
+    </div>
   )
 }
 

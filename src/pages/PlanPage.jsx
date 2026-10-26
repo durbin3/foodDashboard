@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { formatQuantity } from '../lib/quantity.js'
 import { addDays, CYCLE_DAYS, cycleDates, cycleStart, formatCycle, formatDay, formatShortDay, mealsForCycle, today, weekdayKey } from '../lib/plan.js'
+import { mealEffort, pairedSides } from '../lib/meals.js'
 import { categoryOf, formatMinutes, totalMinutes } from '../lib/recipe.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 
@@ -22,6 +23,7 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   const selected = meals.find((m) => m.id === selectedId)
   // Sides get attached to a meal rather than planned on their own.
   const plannable = recipes.filter((r) => categoryOf(r) !== 'side')
+  const sides = recipes.filter((r) => categoryOf(r) === 'side')
   const byName = new Map(plannable.map((r) => [r.name.toLowerCase(), r]))
   const picked = byName.get(recipeText.trim().toLowerCase())
 
@@ -35,7 +37,9 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   function add(e) {
     e.preventDefault()
     if (!picked) return
-    actions.addToPlan(picked.id)
+    const id = actions.addToPlan(picked.id)
+    // Open the new meal when it has sides to suggest.
+    if (pairedSides(picked, recipesById).length) setSelectedId(id)
     setRecipeText('')
     recipeInput.current?.focus()
   }
@@ -64,6 +68,7 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
       key={m.id}
       meal={m}
       recipe={recipesById[m.recipeId]}
+      recipesById={recipesById}
       budget={date ? budget(date) : null}
       needsRating={needsRating(m)}
       selected={m.id === selectedId}
@@ -180,6 +185,8 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
           key={selected.id}
           meal={selected}
           recipe={recipesById[selected.recipeId]}
+          recipesById={recipesById}
+          sides={sides}
           days={days}
           budget={budget}
           people={settings.people}
@@ -192,10 +199,12 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   )
 }
 
-function MealCard({ meal, recipe, budget, needsRating, selected, onSelect }) {
-  const over = budget != null && recipe?.effort > budget
+function MealCard({ meal, recipe, recipesById, budget, needsRating, selected, onSelect }) {
+  const effort = mealEffort(meal, recipesById)
+  const over = budget != null && effort > budget
   const minutes = recipe && totalMinutes(recipe)
-  const meta = [recipe?.effort && `effort ${recipe.effort}`, minutes != null && formatMinutes(minutes), meal.scale !== 1 && `×${formatQuantity(meal.scale)}`]
+  const meta = [effort && `effort ${effort}`, minutes != null && formatMinutes(minutes), meal.scale !== 1 && `×${formatQuantity(meal.scale)}`]
+  const sideNames = (meal.sides ?? []).map((s) => recipesById[s.recipeId]?.name).filter(Boolean)
   return (
     <div
       className={`meal-card ${selected ? 'selected' : ''} ${over ? 'over' : ''}`}
@@ -203,7 +212,7 @@ function MealCard({ meal, recipe, budget, needsRating, selected, onSelect }) {
       role="button"
       tabIndex={0}
       aria-pressed={selected}
-      title={over ? `Effort ${recipe.effort} is more than this day's ${budget}` : 'Drag to a day, or click for options'}
+      title={over ? `Effort ${effort} is more than this day's ${budget}` : 'Drag to a day, or click for options'}
       onDragStart={(e) => {
         e.dataTransfer.setData('text/plain', meal.id)
         e.dataTransfer.effectAllowed = 'move'
@@ -217,6 +226,7 @@ function MealCard({ meal, recipe, budget, needsRating, selected, onSelect }) {
       }}
     >
       <span className="meal-name">{recipe?.name ?? `Missing recipe: ${meal.recipeId}`}</span>
+      {sideNames.length > 0 && <span className="meal-sides">+ {sideNames.join(', ')}</span>}
       <span className="meal-meta muted">
         {meta.filter(Boolean).join(' · ')}
         {over && <span className="warn"> · over</span>}
@@ -226,7 +236,7 @@ function MealCard({ meal, recipe, budget, needsRating, selected, onSelect }) {
   )
 }
 
-function MealPanel({ meal, recipe, days, budget, people, now, actions, onClose }) {
+function MealPanel({ meal, recipe, recipesById, sides, days, budget, people, now, actions, onClose }) {
   const madeIt = meal.date && meal.date <= now
   const name = recipe?.name ?? meal.recipeId
   return (
@@ -259,6 +269,7 @@ function MealPanel({ meal, recipe, days, budget, people, now, actions, onClose }
           ×
         </button>
       </div>
+      <SidesRow meal={meal} recipe={recipe} recipesById={recipesById} sides={sides} actions={actions} />
       {madeIt && (
         <div className="panel-row ratings-row">
           <span className="small">How was it?</span>
@@ -284,6 +295,46 @@ function MealPanel({ meal, recipe, days, budget, people, now, actions, onClose }
           ))}
           <NoteInput meal={meal} actions={actions} />
         </div>
+      )}
+    </div>
+  )
+}
+
+/** The sides on this meal, the main's usual pairings as one-click suggestions, and any other side from a menu. */
+function SidesRow({ meal, recipe, recipesById, sides, actions }) {
+  const attached = meal.sides ?? []
+  const has = (id) => attached.some((s) => s.recipeId === id)
+  const set = (next) => actions.updateMeal(meal.id, { sides: next.length ? next : undefined })
+  // A side made for a scaled meal is scaled with it.
+  const add = (id) => set([...attached, { recipeId: id, scale: meal.scale }])
+  const suggested = pairedSides(recipe, recipesById).filter((s) => !has(s.id))
+  const others = sides.filter((s) => !has(s.id) && !suggested.includes(s))
+  if (!sides.length) return null
+  return (
+    <div className="panel-row sides-row small">
+      <span>Sides</span>
+      {attached.map((s) => (
+        <span key={s.recipeId} className="tag static">
+          {recipesById[s.recipeId]?.name ?? s.recipeId}
+          <button className="link" aria-label={`Remove ${recipesById[s.recipeId]?.name ?? 'side'}`} onClick={() => set(attached.filter((x) => x !== s))}>
+            ×
+          </button>
+        </span>
+      ))}
+      {suggested.map((s) => (
+        <button key={s.id} className="tag suggestion" title={`Usually goes with ${recipe?.name}`} onClick={() => add(s.id)}>
+          + {s.name}
+        </button>
+      ))}
+      {others.length > 0 && (
+        <select aria-label="Add another side" value="" onChange={(e) => e.target.value && add(e.target.value)}>
+          <option value="">{attached.length || suggested.length ? 'Other side…' : 'Add a side…'}</option>
+          {others.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
       )}
     </div>
   )

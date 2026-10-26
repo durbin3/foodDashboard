@@ -127,7 +127,9 @@ Once a meal's date has passed, its card shows a "How was it?" prompt with a 1–
 
 ---
 
-## Phase 2: Sides
+## Phase 2: Sides (done)
+
+As built: a main's editor has a "Goes with" picker of side recipes. On the plan, adding a main that has pairings opens its panel with those sides as one-click suggestions, plus a menu of every other side. An attached side starts at the meal's scale. Sides have no "+ Add" of their own; the Recipes list and recipe page show which meals they're planned with. Shared logic is in `src/lib/meals.js` (`mealParts`, `mealEffort`, `pairedSides`, `mainsFor`).
 
 - Sides are recipes with `category: "side"`. They're listed on their own subtab (0.4).
 - Mains list their good sides in `pairsWith` (picked from side recipes in the editor). The side's view shows the reverse ("Goes with: Pork chops, Steak") by searching the mains, so the link is only stored once.

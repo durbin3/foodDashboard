@@ -1,3 +1,4 @@
+import { mealParts } from './meals.js'
 import { formatQuantity, normalizeUnit, parseQuantity } from './quantity.js'
 import { activeIngredients, capitalize } from './recipe.js'
 import { BUILTIN_CONVERSIONS, combineAmounts, unitGraph } from './units.js'
@@ -5,16 +6,16 @@ import { BUILTIN_CONVERSIONS, combineAmounts, unitGraph } from './units.js'
 export const itemKey = (item) => String(item ?? '').trim().toLowerCase()
 
 /**
- * Combine ingredients across planned meals. Amounts are converted and summed
+ * Combine ingredients across planned meals and their sides. Amounts are converted and summed
  * using each ingredient's own conversion list (standard ones are filled in
  * automatically when recipes are saved); anything left unconvertible is listed
  * side by side ("1 + 1 cup"). Ingredients marked "not listed" (e.g. "taco
  * toppings") are returned separately so the list can mention them.
  */
-export function buildGroceryList(entries, recipesById, registry) {
+export function buildGroceryList(meals, recipesById, registry) {
   const items = new Map()
 
-  for (const entry of entries) {
+  for (const entry of meals.flatMap(mealParts)) {
     const recipe = recipesById[entry.recipeId]
     if (!recipe) continue
     const scale = Number(entry.scale) || 1
