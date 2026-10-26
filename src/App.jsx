@@ -174,6 +174,14 @@ export default function App() {
       updatePlan((p) => ({ ...p, meals: [...p.meals, meal] }))
       return meal.id
     },
+    /** Adds several recipes to the cycle being planned in one change, with one Undo. */
+    addMeals: (recipeIds) => {
+      const meals = recipeIds.map((recipeId) => ({ id: crypto.randomUUID(), recipeId, cycle, date: null, scale: 1 }))
+      notify(`Added ${meals.length} meal${meals.length === 1 ? '' : 's'}: ${recipeIds.map(recipeName).join(', ')}.`, {
+        undo: () => removeMeals(meals.map((m) => m.id)),
+      })
+      return updatePlan((p) => ({ ...p, meals: [...p.meals, ...meals] }))
+    },
     /** Put several meals on days at once: { mealId: date }. */
     placeMeals: (dates) => updatePlan((p) => ({ ...p, meals: p.meals.map((m) => (m.id in dates ? { ...m, date: dates[m.id] } : m)) })),
     setRecommendation: (cycleStart, rec) => updatePlan((p) => ({ ...p, recommendations: { ...p.recommendations, [cycleStart]: rec } })),
@@ -253,7 +261,7 @@ export default function App() {
     content = <RecipeView key={param} recipe={recipesById[param]} recipes={recipes} recipesById={recipesById} plan={plan} actions={actions} />
   } else if (page === 'plan') {
     title = 'Meal plan'
-    content = <PlanPage plan={plan} cycle={cycle} settings={settings} recipes={recipes} recipesById={recipesById} registry={registry} actions={actions} />
+    content = <PlanPage plan={plan} cycle={cycle} settings={settings} recipes={recipes} recipesById={recipesById} registry={registry} inventory={inventory} actions={actions} />
   } else if (page === 'grocery') {
     title = 'Grocery list'
     content = (

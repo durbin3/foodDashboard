@@ -3,7 +3,9 @@ import { formatQuantity } from '../lib/quantity.js'
 import { addDays, CYCLE_DAYS, cycleStart, formatCycle, formatDay, formatShortDay, mealsForCycle, today } from '../lib/plan.js'
 import { mealEffort, pairedSides } from '../lib/meals.js'
 import { categoryOf, formatMinutes, totalMinutes } from '../lib/recipe.js'
+import { formatRating } from '../lib/ratings.js'
 import { buildRecommendation, cycleDays, cycleWarnings, freeDays, recommendationStillFits } from '../lib/schedule.js'
+import { fillCycle, suggestMeals } from '../lib/suggest.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 
 /**
@@ -11,7 +13,7 @@ import { EFFORT_LABELS } from '../lib/settings.js'
  * into. Clicking a meal opens a panel with the same moves (for touch screens
  * and keyboards), its scale, and ratings once it's been made.
  */
-export default function PlanPage({ plan, cycle, settings, recipes, recipesById, registry, actions }) {
+export default function PlanPage({ plan, cycle, settings, recipes, recipesById, registry, inventory, actions }) {
   const [recipeText, setRecipeText] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const [dropTarget, setDropTarget] = useState(null)
@@ -38,7 +40,13 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   const suggestedOn = (date) => meals.find((m) => suggestionFor(m) === date)
   const suggestions = meals.filter((m) => suggestionFor(m))
   const warnings = cycleWarnings(context)
+
+  // Meals worth adding, re-ranked after every pick. Only while there are days left to cook.
+  const openDays = freeDays(cycleInfo, meals, now).length
+  const suggestContext = { picked: meals, recipes, recipesById, registry, inventory, plan, now, weights: settings.weights }
+  const ranked = useMemo(() => (openDays ? suggestMeals(suggestContext) : []), [openDays, meals, recipes, registry, inventory, plan, now, settings.weights])
   const unplaced = meals.filter((m) => !m.date)
+  const toFill = Math.max(0, openDays - unplaced.length)
   const selected = meals.find((m) => m.id === selectedId)
   // Sides get attached to a meal rather than planned on their own.
   const plannable = recipes.filter((r) => categoryOf(r) !== 'side')
@@ -195,6 +203,16 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
             </button>
           </form>
         </div>
+        {ranked.length > 0 && (
+          <Suggestions
+            ranked={ranked}
+            toFill={toFill}
+            weights={settings.weights}
+            onAdd={(id) => actions.addToPlan(id)}
+            onFill={() => actions.addMeals(fillCycle({ ...suggestContext, count: toFill }))}
+            onWeights={(weights) => actions.updateSettings((s) => ({ ...s, weights: { ...s.weights, ...weights } }))}
+          />
+        )}
         {unplaced.length > 0 ? (
           <>
             <div className="pool-cards">{unplaced.map((m) => card(m, null))}</div>
@@ -251,11 +269,85 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   )
 }
 
+const WEIGHTS = [
+  ['cost', 'Shared ingredients', 'Prefer meals that need little you aren’t already buying'],
+  ['variety', 'Variety', 'Avoid repeating a meal or a protein'],
+  ['recency', 'Not made lately', 'Hold back meals made in the last few weeks'],
+  ['effort', 'Effort fit', 'Match meals to how much effort each day allows'],
+  ['freshness', 'Freshness', 'Use perishable ingredients before they go off'],
+]
+
+function Suggestions({ ranked, toFill, weights, onAdd, onFill, onWeights }) {
+  const [shown, setShown] = useState(6)
+  return (
+    <div className="suggestions">
+      <div className="suggestions-head small">
+        <strong>Suggested</strong>
+        <span className="muted">best first: liked, uses what you're already buying, not made lately</span>
+        <span className="spacer" />
+        {toFill > 0 && (
+          <button className="small" onClick={onFill} title="Add the top suggestion, then the best one given that, and so on">
+            Fill the {toFill} open day{toFill === 1 ? '' : 's'}
+          </button>
+        )}
+        <details className="tune">
+          <summary>Tune</summary>
+          <div className="tune-panel">
+            {WEIGHTS.map(([key, label, hint]) => (
+              <label key={key} title={hint}>
+                <span>{label}</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="3"
+                  step="0.5"
+                  value={weights[key] ?? 1}
+                  onChange={(e) => onWeights({ [key]: Number(e.target.value) })}
+                />
+                <span className="muted">{weights[key] ?? 1}×</span>
+              </label>
+            ))}
+            <p className="muted">The first three rank these suggestions; variety, effort and freshness also decide which day each meal is suggested for.</p>
+          </div>
+        </details>
+      </div>
+      <div className="suggestion-list">
+        {ranked.slice(0, shown).map((s) => (
+          <button key={s.recipe.id} className="suggestion-card" onClick={() => onAdd(s.recipe.id)} title={`Add ${s.recipe.name}`}>
+            <span className="meal-name">+ {s.recipe.name}</span>
+            <span className="meal-meta muted">
+              {[
+                s.rating != null ? `★ ${formatRating(s.rating)}` : 'not rated',
+                s.extra === 0 ? 'nothing new to buy' : `${s.extra} new to buy`,
+                s.shared.length > 0 && `shares ${s.shared.slice(0, 2).join(', ')}${s.shared.length > 2 ? '…' : ''}`,
+                s.lastMade != null && s.lastMade < 28 && `made ${s.lastMade} day${s.lastMade === 1 ? '' : 's'} ago`,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
+          </button>
+        ))}
+        {ranked.length > shown && (
+          <button className="link small" onClick={() => setShown((n) => n + 6)}>
+            More…
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function MealCard({ meal, recipe, recipesById, budget, noCook, needsRating, warnings, suggestion, selected, onSelect }) {
   const effort = mealEffort(meal, recipesById)
   const over = budget != null && effort > budget
   const minutes = recipe && totalMinutes(recipe)
-  const meta = [effort && `effort ${effort}`, minutes != null && formatMinutes(minutes), meal.scale !== 1 && `×${formatQuantity(meal.scale)}`]
+  const meta = [
+    effort && `effort ${effort}`,
+    minutes != null && formatMinutes(minutes),
+    meal.scale !== 1 && `×${formatQuantity(meal.scale)}`,
+    suggestion && `suggested ${formatShortDay(suggestion)}`,
+    suggestion === null && 'no free day',
+  ]
   const sideNames = (meal.sides ?? []).map((s) => recipesById[s.recipeId]?.name).filter(Boolean)
   return (
     <div
@@ -284,8 +376,6 @@ function MealCard({ meal, recipe, recipesById, budget, noCook, needsRating, warn
         {over && <span className="warn"> · over</span>}
         {noCook && <span className="warn"> · no-cook day</span>}
         {warnings && <span className="warn"> · ⚠ freshness</span>}
-        {suggestion && <span> · suggested {formatShortDay(suggestion)}</span>}
-        {suggestion === null && <span> · no free day</span>}
         {needsRating && <span className="pill">rate</span>}
       </span>
     </div>

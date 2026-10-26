@@ -197,7 +197,8 @@ export function recommend({ meals, days, now, recipesById, registry, weights }) 
 // A saved recommendation records what it was based on, so it's reused until
 // something other than following it changes: settings, a meal's recipe, sides
 // or effort, meals added or removed, or a meal placed somewhere else.
-const settingsKey = (settings) => JSON.stringify([settings.dayEffort, settings.noCookDays, settings.weights])
+// Only the weights that affect which day a meal goes on (cost and recency rank meal suggestions instead).
+const settingsKey = ({ dayEffort, noCookDays, weights: { effort, freshness, variety } }) => JSON.stringify([dayEffort, noCookDays, effort, freshness, variety])
 const mealKey = (m, recipesById) => JSON.stringify([m.recipeId, (m.sides ?? []).map((s) => s.recipeId), mealEffort(m, recipesById)])
 
 export function buildRecommendation({ meals, days, now, recipesById, registry, settings }) {

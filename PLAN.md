@@ -219,7 +219,15 @@ New `data/inventory.json` and an **On hand** page (or a section on the Ingredien
 
 ---
 
-## Phase 5: Meal suggestions in the Meals section
+## Phase 5: Meal suggestions in the Meals section (done)
+
+As built (`src/lib/suggest.js`, tested in `suggest.test.js`):
+
+- **What costs something.** "Things to buy" counts each ingredient not already being bought, or each extra pack for ingredients sold in packs. Staples, unlisted ingredients, and anything covered by storage or by leftovers from packs already being bought cost nothing.
+- **Unrated recipes** count as 3 stars. "Made recently" costs 2 if made within the last 14 days, fading to 0 at 28 days. Variety costs 0.5 for each picked meal that shares a main-protein tag.
+- **Repeats.** Recipes already in the cycle aren't suggested again: a repeat would cost nothing and crowd out everything else. You can still add one by hand.
+- **Fill button.** "Fill the N open days" adds one meal per free day not already covered by a picked meal, choosing each given the ones before it, with one Undo.
+- **Tune sliders.** Five weights live under "Tune" next to the suggestions: shared ingredients, variety, not made lately, effort fit, freshness. They're saved in `settings.weights`. Only effort fit, freshness and variety affect which day a meal is suggested for.
 
 While choosing meals for a cycle, show ranked **suggested additions** that re-rank after every pick:
 

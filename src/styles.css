@@ -498,3 +498,20 @@ a.button.primary { background: var(--accent); color: var(--accent-text); border-
   .storage-table td { border: none; padding: 0; }
 }
 .storage-add .num { width: 84px; }
+
+/* Meal suggestions */
+.suggestions { border-top: 1px solid var(--border); margin-top: 10px; padding-top: 8px; }
+.suggestions-head { display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; }
+.suggestion-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-items: center; }
+.suggestion-card { width: 220px; text-align: left; border: 1px dashed var(--accent); background: transparent; border-radius: 6px; padding: 4px 8px; font-size: 13px; line-height: 1.35; }
+.suggestion-card:hover { background: var(--bg); }
+.suggestion-card .meal-name { display: block; font-weight: 500; }
+.suggestion-card .meal-meta { display: block; font-size: 12px; }
+.tune summary { cursor: pointer; color: var(--accent); }
+.tune[open] { flex-basis: 100%; }
+.tune-panel { display: grid; gap: 4px; padding: 6px 0; max-width: 460px; }
+.tune-panel label { display: grid; grid-template-columns: 140px 1fr 36px; gap: 8px; align-items: center; }
+.tune-panel p { margin: 4px 0 0; }
+@media (max-width: 760px) {
+  .suggestion-card { width: calc(50% - 3px); }
+}
