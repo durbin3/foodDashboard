@@ -1,18 +1,30 @@
-import { useState } from 'react'
-import { formatQuantity } from '../lib/quantity.js'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { formatQuantity, normalizeUnit, parseQuantity } from '../lib/quantity.js'
 import { addDays, formatCycle, formatDay, today } from '../lib/plan.js'
 import { formatRating, recipeRatings } from '../lib/ratings.js'
 import { mainsFor, pairedSides } from '../lib/meals.js'
-import { activeIngredients, categoryOf, formatMinutes, recipeIssues, scaleQuantity, totalMinutes } from '../lib/recipe.js'
+import { activeIngredients, categoryOf, effectiveIngredient, formatMinutes, recipeIssues, scaleQuantity, totalMinutes } from '../lib/recipe.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
+import { convertQty, edgesFor, formatAmount, splitAmounts, stepIngredientsOf, stepLines, unitChoices } from '../lib/steps.js'
+import { BUILTIN_CONVERSIONS, unitGraph } from '../lib/units.js'
 
 const SCALES = [0.5, 1, 1.5, 2, 3]
+const STANDARD_EDGES = unitGraph(BUILTIN_CONVERSIONS)
 
 /** The recipe for reading and cooking from; editing is one click away. */
-export default function RecipeView({ recipe, recipes, recipesById, plan, actions }) {
+export default function RecipeView({ recipe, recipes, recipesById, plan, registry, actions }) {
   const [scale, setScale] = useState(1)
   // Ingredients ticked off while prepping. Not saved; it's for this cook only.
   const [ticked, setTicked] = useState(() => new Set())
+  // Units picked to show amounts in (the tablespoon's dirty, so teaspoons): per
+  // ingredient, and per amount written in a step's text. Also just for this cook.
+  const [units, setUnits] = useState({})
+  const [textUnits, setTextUnits] = useState({})
+  const edgesById = useMemo(
+    () => Object.fromEntries((recipe?.ingredients ?? []).map((ing) => [ing.id, edgesFor(effectiveIngredient(ing) ?? {}, registry)])),
+    [recipe, registry],
+  )
+  const edgesOf = (ing) => edgesById[ing.id] ?? STANDARD_EDGES
 
   if (!recipe)
     return (
@@ -23,7 +35,15 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, actions
 
   const ingredients = activeIngredients(recipe)
   const groups = [...new Set(ingredients.map((i) => i.group ?? ''))]
-  const steps = recipe.steps.filter((s) => s.trim())
+  const allUses = stepIngredientsOf(recipe, ingredients, registry)
+  const shownSteps = recipe.steps.map((text, i) => ({ text, uses: allUses[i] ?? [] })).filter((s) => s.text.trim())
+  const steps = shownSteps.map((s) => s.text)
+  const usesByStep = stepLines(
+    shownSteps.map((s) => s.uses),
+    ingredients,
+    { scale, edgesOf },
+  )
+  const pickUnit = (id, unit) => setUnits((u) => ({ ...u, [id]: unit }))
   const issues = recipeIssues(recipe)
   const minutes = totalMinutes(recipe)
   const category = categoryOf(recipe)
@@ -137,7 +157,9 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, actions
                       <label>
                         <input type="checkbox" checked={ticked.has(i.id)} onChange={() => toggle(i.id)} />
                         <span>
-                          <strong>{[scaleQuantity(i.quantity, scale), i.unit].filter((s) => s && String(s).trim()).join(' ')}</strong>{' '}
+                          <strong>
+                            <IngredientAmount ing={i} scale={scale} edges={edgesOf(i)} picked={units[i.id]} onPick={(u) => pickUnit(i.id, u)} />
+                          </strong>{' '}
                           {i.item}
                           {i.note && <span className="muted">, {i.note}</span>}
                         </span>
@@ -150,7 +172,10 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, actions
         </section>
 
         <section className="view-steps">
-          <h2>Steps</h2>
+          <div className="steps-head">
+            <h2>Steps</h2>
+            {usesByStep.some((u) => u.length) && <span className="muted small steps-uses-label">For this step</span>}
+          </div>
           {steps.length === 0 ? (
             <p className="muted small">
               No steps yet. <a href={`#/recipe/${recipe.id}/edit`}>Add some</a>.
@@ -158,7 +183,36 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, actions
           ) : (
             <ol className="read-steps">
               {steps.map((s, i) => (
-                <li key={i}>{s}</li>
+                <li key={i}>
+                  <div className="step-body">
+                    <p>
+                      {splitAmounts(s).map((part, k) =>
+                        typeof part === 'string' ? (
+                          part
+                        ) : (
+                          <Amount
+                            key={k}
+                            qty={part.qty}
+                            unit={part.unit}
+                            label={part.text}
+                            edges={STANDARD_EDGES}
+                            picked={textUnits[`${i}:${k}`]}
+                            onPick={(u) => setTextUnits((t) => ({ ...t, [`${i}:${k}`]: u }))}
+                          />
+                        ),
+                      )}
+                    </p>
+                    {usesByStep[i].length > 0 && (
+                      <ul className="step-uses" aria-label={`Ingredients for step ${i + 1}`}>
+                        {usesByStep[i].map((line) => (
+                          <li key={line.id} className={ticked.has(line.id) ? 'done' : ''}>
+                            <StepUse line={line} edges={edgesOf(line)} picked={units[line.id]} onPick={(u) => pickUnit(line.id, u)} />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </li>
               ))}
             </ol>
           )}
@@ -183,5 +237,83 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, actions
         </section>
       )}
     </article>
+  )
+}
+
+/**
+ * An amount that can be shown in another unit: click it for the units it
+ * converts to, and pick one. `picked` is the unit chosen, if any.
+ */
+function Amount({ qty, unit, label, edges, picked, onPick }) {
+  const [open, setOpen] = useState(false)
+  const box = useRef(null)
+  // Clicking anywhere else closes the menu (some browsers don't focus a clicked button, so blur alone misses it).
+  useEffect(() => {
+    if (!open) return
+    const close = (e) => !box.current?.contains(e.target) && setOpen(false)
+    document.addEventListener('pointerdown', close)
+    return () => document.removeEventListener('pointerdown', close)
+  }, [open])
+  const choices = unitChoices(qty, unit, edges)
+  const converted = picked != null ? convertQty(qty, unit, picked, edges) : null
+  const text = converted != null ? formatAmount(converted, picked) : (label ?? formatAmount(qty, unit))
+  if (!choices.length) return text
+  const current = converted != null ? picked : unit
+  const options = [{ qty, unit }, ...choices].sort((a, b) => a.qty - b.qty)
+  return (
+    <span
+      ref={box}
+      className={`amount-swap${open ? ' open' : ''}`}
+      onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setOpen(false)}
+      onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
+    >
+      <button type="button" className="amount" aria-haspopup="menu" aria-expanded={open} title="Show in another unit" onClick={() => setOpen((o) => !o)}>
+        {text}
+      </button>
+      <span className="unit-menu" role="menu">
+        {options.map((o) => (
+          <button
+            key={o.unit}
+            type="button"
+            role="menuitemradio"
+            aria-checked={o.unit === current}
+            onClick={() => {
+              onPick(o.unit === unit ? null : o.unit)
+              setOpen(false)
+            }}
+          >
+            {formatAmount(o.qty, o.unit) || formatQuantity(o.qty)}
+          </button>
+        ))}
+      </span>
+    </span>
+  )
+}
+
+/** An ingredient's amount in the list, scaled; shown as written when it isn't a number. */
+function IngredientAmount({ ing, scale, edges, picked, onPick }) {
+  const written = scaleQuantity(ing.quantity, scale)
+  const qty = parseQuantity(written)
+  if (qty == null) return [written, ing.unit].filter((s) => s && String(s).trim()).join(' ')
+  return <Amount qty={qty} unit={normalizeUnit(ing.unit)} edges={edges} picked={picked} onPick={onPick} />
+}
+
+/** "1 tbsp olive oil (2 remaining)": what a step uses of one ingredient. */
+function StepUse({ line, edges, picked, onPick }) {
+  // The leftover reads in the same unit as the amount, and drops the unit when it matches.
+  const shownUnit = picked != null && convertQty(1, line.unit, picked, edges) != null ? picked : line.unit
+  const inShown = line.rest && convertQty(line.rest.qty, line.rest.unit, shownUnit, edges)
+  const rest = !line.rest ? '' : inShown != null ? formatAmount(inShown, '') : formatAmount(line.rest.qty, line.rest.unit)
+  return (
+    <>
+      {line.qty != null && (
+        <strong>
+          <Amount qty={line.qty} unit={line.unit} edges={edges} picked={picked} onPick={onPick} />
+        </strong>
+      )}
+      {line.text && <strong>{line.text}</strong>} {line.item}
+      {line.note && <span className="muted">, {line.note}</span>}
+      {rest && <span className="muted"> ({rest} remaining)</span>}
+    </>
   )
 }

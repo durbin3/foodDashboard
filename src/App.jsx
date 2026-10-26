@@ -262,7 +262,7 @@ export default function App() {
     )
   } else if (page === 'recipe') {
     title = recipesById[param]?.name ?? 'Recipe not found'
-    content = <RecipeView key={param} recipe={recipesById[param]} recipes={recipes} recipesById={recipesById} plan={plan} actions={actions} />
+    content = <RecipeView key={param} recipe={recipesById[param]} recipes={recipes} recipesById={recipesById} plan={plan} registry={registry} actions={actions} />
   } else if (page === 'plan') {
     title = 'Meal plan'
     content = <PlanPage plan={plan} cycle={cycle} settings={settings} recipes={recipes} recipesById={recipesById} registry={registry} inventory={inventory} actions={actions} />

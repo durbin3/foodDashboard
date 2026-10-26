@@ -180,5 +180,79 @@
     "Add the top crust and crimp the edges closed. Brush a light layer of whisked egg over the surface of the pie crust (optional). Use a knife to cut large vents in the top of the crust.",
     "Bake the chicken pot pie for 45-50 minutes, or until the crust is golden brown and flakey. The baking time may vary depending on the type of crust and pie plate used."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "chicken-breast"
+      }
+    ],
+    [
+      {
+        "id": "cooking-oil"
+      },
+      {
+        "id": "chicken-breast"
+      }
+    ],
+    [
+      {
+        "id": "yellow-onion"
+      },
+      {
+        "id": "butter"
+      }
+    ],
+    [
+      {
+        "id": "flour"
+      }
+    ],
+    [
+      {
+        "id": "chicken-broth"
+      },
+      {
+        "id": "whole-milk"
+      }
+    ],
+    [
+      {
+        "id": "chicken-breast"
+      },
+      {
+        "id": "dried-thyme"
+      },
+      {
+        "id": "rubbed-sage"
+      },
+      {
+        "id": "salt"
+      },
+      {
+        "id": "black-pepper"
+      }
+    ],
+    [
+      {
+        "id": "frozen-mixed-vegetables"
+      }
+    ],
+    [
+      {
+        "id": "double-pie-crust",
+        "note": "bottom crust"
+      }
+    ],
+    [
+      {
+        "id": "double-pie-crust",
+        "note": "top crust"
+      },
+      {
+        "id": "egg"
+      }
+    ],
+    []
+  ],
   "notes": ""
 }

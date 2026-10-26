@@ -1,40 +1,112 @@
 {
-  "entries": [
+  "meals": [
     {
       "id": "b51bd61a-0d06-496b-9eb3-e057a8875c33",
       "recipeId": "crockpot-taco-meat",
       "date": "2026-10-20",
-      "scale": 1
+      "scale": 1,
+      "cycle": "2026-10-12"
     },
     {
       "id": "dd7b94da-454a-4385-afb8-e80f558044bd",
       "recipeId": "basic-easy-quiche",
       "date": null,
-      "scale": 1
+      "scale": 1,
+      "cycle": "2026-10-26"
     },
     {
       "id": "9221cfd4-6655-4c7e-9644-7a242482caca",
       "recipeId": "basic-easy-quiche",
       "date": null,
-      "scale": 1
+      "scale": 1,
+      "cycle": "2026-10-26"
     },
     {
       "id": "a8615c7d-7d20-4e59-b39a-18a5130537e5",
       "recipeId": "chicken-pot-pie",
-      "date": null,
-      "scale": 1
+      "date": "2026-10-28",
+      "scale": 1,
+      "cycle": "2026-10-26"
     },
     {
       "id": "f0e5d521-46c3-4d36-8e99-bbf81788fab6",
       "recipeId": "classic-meatloaf",
       "date": null,
-      "scale": 1
+      "scale": 1,
+      "cycle": "2026-10-26"
     },
     {
       "id": "0c2827ee-d40f-4320-bd58-33b6286a2087",
       "recipeId": "homemade-alfredo-sauce",
       "date": null,
+      "scale": 1,
+      "cycle": "2026-10-26"
+    },
+    {
+      "id": "420efd04-c181-4a20-8d41-8d2a10720e5b",
+      "recipeId": "sarah-mac-n-cheese",
+      "cycle": "2026-10-26",
+      "date": null,
+      "scale": 1
+    },
+    {
+      "id": "7316e966-1bbd-4a07-bddb-ca48b2c3aca4",
+      "recipeId": "spaghetti",
+      "cycle": "2026-10-26",
+      "date": null,
+      "scale": 1
+    },
+    {
+      "id": "a3dc379e-ca2a-47a6-94d7-c710ae5950c5",
+      "recipeId": "marry-me-pork-chops",
+      "cycle": "2026-10-26",
+      "date": null,
+      "scale": 1
+    },
+    {
+      "id": "32966e10-f9d7-4c52-b629-db9de518b7d9",
+      "recipeId": "quick-creamy-chicken-enchiladas",
+      "cycle": "2026-10-26",
+      "date": "2026-10-30",
+      "scale": 1
+    },
+    {
+      "id": "a54eb907-2af2-43e0-a986-0b9b4e40c385",
+      "recipeId": "cheesy-potato-soup",
+      "cycle": "2026-10-26",
+      "date": null,
       "scale": 1
     }
-  ]
+  ],
+  "recommendations": {
+    "2026-10-26": {
+      "settings": "[{\"mon\":3,\"tue\":3,\"wed\":3,\"thu\":3,\"fri\":1,\"sat\":4,\"sun\":4},[\"thu\"],1,1,1]",
+      "meals": {
+        "dd7b94da-454a-4385-afb8-e80f558044bd": "[\"basic-easy-quiche\",[],null]",
+        "9221cfd4-6655-4c7e-9644-7a242482caca": "[\"basic-easy-quiche\",[],null]",
+        "a8615c7d-7d20-4e59-b39a-18a5130537e5": "[\"chicken-pot-pie\",[],null]",
+        "f0e5d521-46c3-4d36-8e99-bbf81788fab6": "[\"classic-meatloaf\",[],null]",
+        "0c2827ee-d40f-4320-bd58-33b6286a2087": "[\"homemade-alfredo-sauce\",[],null]",
+        "420efd04-c181-4a20-8d41-8d2a10720e5b": "[\"sarah-mac-n-cheese\",[],null]",
+        "7316e966-1bbd-4a07-bddb-ca48b2c3aca4": "[\"spaghetti\",[],null]",
+        "a3dc379e-ca2a-47a6-94d7-c710ae5950c5": "[\"marry-me-pork-chops\",[],null]",
+        "32966e10-f9d7-4c52-b629-db9de518b7d9": "[\"quick-creamy-chicken-enchiladas\",[],null]",
+        "a54eb907-2af2-43e0-a986-0b9b4e40c385": "[\"cheesy-potato-soup\",[],null]"
+      },
+      "placed": {
+        "a8615c7d-7d20-4e59-b39a-18a5130537e5": "2026-10-28",
+        "32966e10-f9d7-4c52-b629-db9de518b7d9": "2026-10-30"
+      },
+      "days": {
+        "9221cfd4-6655-4c7e-9644-7a242482caca": "2026-10-31",
+        "dd7b94da-454a-4385-afb8-e80f558044bd": "2026-10-27",
+        "f0e5d521-46c3-4d36-8e99-bbf81788fab6": "2026-11-01",
+        "0c2827ee-d40f-4320-bd58-33b6286a2087": "2026-11-04",
+        "a54eb907-2af2-43e0-a986-0b9b4e40c385": "2026-11-02",
+        "a3dc379e-ca2a-47a6-94d7-c710ae5950c5": "2026-10-26",
+        "420efd04-c181-4a20-8d41-8d2a10720e5b": "2026-11-03",
+        "7316e966-1bbd-4a07-bddb-ca48b2c3aca4": "2026-11-06"
+      }
+    }
+  }
 }

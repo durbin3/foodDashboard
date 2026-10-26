@@ -76,5 +76,29 @@
     "Slowly add the milk and continue to cook over medium to medium-high heat, whisking constantly until the mixture thickens to the desired consistency, about 5 minutes.",
     "Serve over hot biscuits, mashed potatoes, or cooked meat."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "butter"
+      }
+    ],
+    [
+      {
+        "id": "flour"
+      },
+      {
+        "id": "salt"
+      },
+      {
+        "id": "pepper"
+      }
+    ],
+    [
+      {
+        "id": "whole-milk"
+      }
+    ],
+    []
+  ],
   "notes": ""
 }

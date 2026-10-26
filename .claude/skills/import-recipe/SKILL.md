@@ -79,9 +79,18 @@ Write each ingredient with an `item` **name**, as below. Stored recipes refer to
     }
   ],
   "steps": ["…"],
+  "stepIngredients": [[{ "id": "garlic" }], [{ "id": "olive-oil", "quantity": "1", "unit": "tbsp" }]],
   "notes": ""
 }
 ```
+
+**stepIngredients** lists, for each step in order, the ingredients that step uses, by the recipe ingredient's `id`. The view shows them in a column beside each step. It must have exactly one list per step, using `[]` for steps that use no ingredients, such as "Preheat the oven".
+
+- Leave out `quantity` when a step uses all that's left of an ingredient. That covers most uses, including "the remaining olive oil".
+- Give `quantity` and `unit` when a step uses part of an ingredient ("heat 1 tablespoon of the oil"). The view then shows how much is left. For "half the Parmesan", work out the amount (3/4 cup → `"3/8"` `cup`).
+- Use `note` for a part that isn't an amount, e.g. `"zest"` and `"juice"` of one lemon used in different steps.
+- List an ingredient again in a later step when it comes back ("return the chicken to the pan").
+- Match what the step actually means, not just the words: "bell peppers" means both the green and red pepper rows, and "2 cups mozzarella" is the shredded cheese.
 
 Ingredient rules. These matter because the grocery list combines ingredients by exact `item` name and `unit`.
 

@@ -97,5 +97,34 @@
     "Once it's boiling, stop stirring and allow the mixture to boil for exactly 60 seconds (set a timer!), then remove from heat. Add the oats, peanut butter, and vanilla. Stir together with a silicone spatula until well combined.",
     "Use a cookie scoop or spoon to drop heaps of the mixture onto the lined baking sheets (about 2 tablespoons each). Let the cookies cool until set, 20 to 30 minutes."
   ],
+  "stepIngredients": [
+    [],
+    [
+      {
+        "id": "granulated-sugar"
+      },
+      {
+        "id": "whole-milk"
+      },
+      {
+        "id": "butter"
+      },
+      {
+        "id": "cocoa-powder"
+      }
+    ],
+    [
+      {
+        "id": "quick-oats"
+      },
+      {
+        "id": "peanut-butter"
+      },
+      {
+        "id": "vanilla-extract"
+      }
+    ],
+    []
+  ],
   "notes": ""
 }

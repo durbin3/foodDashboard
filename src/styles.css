@@ -164,6 +164,28 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .check-list li.done span { text-decoration: line-through; color: var(--muted); }
 .read-steps { padding-left: 22px; margin: 0; font-size: 16px; line-height: 1.6; }
 .read-steps li { margin-bottom: 14px; padding-left: 4px; }
+.read-steps p { margin: 0; }
+/* Each step's text, with the ingredients it uses in a column to the right. */
+.steps-head, .step-body { display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 18px; align-items: baseline; }
+.steps-uses-label { padding-left: 12px; }
+.step-uses { list-style: none; margin: 0; padding: 0 0 0 12px; border-left: 2px solid var(--border); font-size: 14px; line-height: 1.45; }
+.read-steps .step-uses li { margin: 0 0 3px; padding: 0; }
+.step-uses li.done { text-decoration: line-through; color: var(--muted); }
+
+/* An amount that can be shown in other units: click it for the menu. */
+.amount-swap { position: relative; display: inline-block; }
+.amount-swap .amount {
+  font: inherit; color: var(--accent); background: none; border: none; padding: 0; border-radius: 0;
+  text-decoration: underline dotted; text-underline-offset: 3px; cursor: pointer;
+}
+.amount-swap .unit-menu {
+  display: none; position: absolute; left: -6px; top: calc(100% + 4px); z-index: 20; flex-direction: column; min-width: max-content;
+  padding: 4px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 14px rgb(0 0 0 / 0.14);
+}
+.amount-swap.open .unit-menu { display: flex; }
+.unit-menu button { font-size: 14px; font-weight: 400; text-align: left; padding: 4px 12px; border: none; border-radius: 0; background: none; white-space: nowrap; }
+.unit-menu button:hover, .unit-menu button:focus-visible { color: var(--accent); }
+.unit-menu button[aria-checked='true'] { font-weight: 600; }
 
 /* Recipe editor */
 .editor-head {
@@ -226,6 +248,9 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
   .ing-table td.item .pill { top: auto; bottom: 6px; transform: none; }
   .ing-table .row-actions select { max-width: 90px; }
   .view-columns { grid-template-columns: 1fr; gap: 8px; }
+  .step-body { grid-template-columns: 1fr; gap: 6px; }
+  .steps-head { display: block; }
+  .steps-uses-label { display: none; }
 }
 
 /* Forms and editing */
@@ -517,3 +542,10 @@ a.button.primary { background: var(--accent); color: var(--accent-text); border-
 }
 .field-note { display: block; font-size: 12px; color: var(--muted); }
 .field-note button.link { padding: 0; font-size: 12px; }
+
+/* Editor: the ingredients each step uses */
+.step-uses-edit { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0 4px; }
+.step-uses-edit .tag { display: inline-flex; align-items: center; gap: 4px; }
+.step-uses-edit .tag button { padding: 0 0 0 2px; color: var(--muted); }
+.step-uses-edit .use-amount { width: 7ch; padding: 0 4px; font-size: 12px; border-radius: 4px; }
+.step-uses-edit .side-add { border: 1px dashed var(--border); border-radius: 999px; padding: 2px 8px; font-size: 13px; color: var(--muted); }

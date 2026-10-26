@@ -80,5 +80,29 @@
     "blend tomatoes with salt",
     "add the rest of the ingredients"
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "custom-mvo2wsse"
+      },
+      {
+        "id": "custom-mvo2x759"
+      }
+    ],
+    [
+      {
+        "id": "custom-mvo2xgyt"
+      },
+      {
+        "id": "custom-mvo2xund"
+      },
+      {
+        "id": "custom-mvo2xzxz"
+      },
+      {
+        "id": "custom-mvo2ycvk"
+      }
+    ]
+  ],
   "notes": ""
 }

@@ -131,5 +131,45 @@
     "Place a lid on the slow cooker, turn it on to high, and cook for 5 hours, or until the meat is tender and falls apart.",
     "Use tongs to stir and shred the meat, and remove the cinnamon sticks. Either divide the meat and liquid into smaller containers to refrigerate for later, or transfer the meat and some of the liquid to a skillet (preferably non-stick or cast iron). Cook the meat over medium flame until browned and crispy on the edges. Avoid stirring the meat too much as it will break down into tiny pieces. Use the crispy meat as a filling for tacos, burritos, nachos, or burrito bowls."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "yellow-onion"
+      },
+      {
+        "id": "garlic"
+      },
+      {
+        "id": "cinnamon-stick"
+      }
+    ],
+    [
+      {
+        "id": "oregano"
+      },
+      {
+        "id": "cumin"
+      },
+      {
+        "id": "salt"
+      },
+      {
+        "id": "black-pepper"
+      },
+      {
+        "id": "chipotle-pepper-powder"
+      },
+      {
+        "id": "pork-butt-roast"
+      }
+    ],
+    [
+      {
+        "id": "orange"
+      }
+    ],
+    [],
+    []
+  ],
   "notes": ""
 }

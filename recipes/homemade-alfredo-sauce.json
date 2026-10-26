@@ -98,5 +98,36 @@
     "Whisk in the parmesan cheese until melted.",
     "Serve immediately."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "butter"
+      },
+      {
+        "id": "heavy-cream"
+      }
+    ],
+    [],
+    [
+      {
+        "id": "garlic"
+      },
+      {
+        "id": "italian-seasoning"
+      },
+      {
+        "id": "salt"
+      },
+      {
+        "id": "pepper"
+      }
+    ],
+    [
+      {
+        "id": "parmesan-cheese"
+      }
+    ],
+    []
+  ],
   "notes": "Makes about 2 cups."
 }

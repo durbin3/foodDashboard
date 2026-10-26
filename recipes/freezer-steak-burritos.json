@@ -96,5 +96,32 @@
     "Next, fold the bottom of your tortilla up so it covers the ingredients but not to the top of the tortilla. Fold in the sides before rolling the burrito in.",
     "If freezing, wrap them individually in saran wrap or parchment paper so they do not stick together before storing it in the freezer."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "large-tortilla"
+      },
+      {
+        "id": "rice"
+      },
+      {
+        "id": "cooked-steak"
+      },
+      {
+        "id": "corn"
+      },
+      {
+        "id": "red-onion"
+      },
+      {
+        "id": "shredded-cheese"
+      },
+      {
+        "id": "navy-beans"
+      }
+    ],
+    [],
+    []
+  ],
   "notes": ""
 }

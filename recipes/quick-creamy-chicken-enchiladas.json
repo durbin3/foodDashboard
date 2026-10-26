@@ -75,5 +75,27 @@
     "Place 1/2 cup chicken and 1 tablespoon cheese down the center of each tortilla; roll up and place in the baking dish. Top with remaining soup mixture; sprinkle with remaining cheese.",
     "Bake, uncovered, at 350° for 18-22 minutes or until heated through."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "cream-of-chicken-soup"
+      },
+      {
+        "id": "sour-cream"
+      }
+    ],
+    [
+      {
+        "id": "chicken-breast"
+      },
+      {
+        "id": "shredded-cheese"
+      },
+      {
+        "id": "flour-tortilla"
+      }
+    ],
+    []
+  ],
   "notes": ""
 }

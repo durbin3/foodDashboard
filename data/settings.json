@@ -1,0 +1,26 @@
+{
+  "people": [
+    "Eric",
+    "Sarah"
+  ],
+  "cycleStart": "2026-10-26",
+  "dayEffort": {
+    "mon": 3,
+    "tue": 3,
+    "wed": 3,
+    "thu": 3,
+    "fri": 1,
+    "sat": 4,
+    "sun": 4
+  },
+  "noCookDays": [
+    "thu"
+  ],
+  "weights": {
+    "effort": 1,
+    "freshness": 1,
+    "variety": 1,
+    "cost": 1,
+    "recency": 1
+  }
+}

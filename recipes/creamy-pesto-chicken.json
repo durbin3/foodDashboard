@@ -109,5 +109,52 @@
     "Add the heavy cream and pesto to the skillet with the tomatoes and stir to combine. Allow the sauce to come up to a simmer. Taste the sauce and adjust the salt or pepper to your liking.",
     "Add the chicken back to the skillet with the tomatoes and sauce, turning to coat the chicken. Allow the chicken to simmer in the sauce for just a few minutes more to heat through. Serve hot."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "chicken-breast"
+      },
+      {
+        "id": "salt"
+      },
+      {
+        "id": "black-pepper"
+      }
+    ],
+    [
+      {
+        "id": "olive-oil",
+        "quantity": "1",
+        "unit": "tbsp"
+      },
+      {
+        "id": "chicken-breast"
+      }
+    ],
+    [
+      {
+        "id": "olive-oil"
+      },
+      {
+        "id": "garlic"
+      },
+      {
+        "id": "grape-tomato"
+      }
+    ],
+    [
+      {
+        "id": "heavy-cream"
+      },
+      {
+        "id": "pesto"
+      }
+    ],
+    [
+      {
+        "id": "chicken-breast"
+      }
+    ]
+  ],
   "notes": ""
 }

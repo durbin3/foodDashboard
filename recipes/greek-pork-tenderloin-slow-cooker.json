@@ -76,5 +76,34 @@
     "When the pork is done, carefully transfer to a cutting board. Shred or dice the pork (I like to shred and then mince a bit with a knife). Discard the cooking liquid.",
     "Add the pork back to the slow cooker along with 1/2 cup of the Greek yogurt sauce, tossing to combine. Allow to sit on high for 5 minutes for the pork to warm back through if necessary. Serve with the remaining Greek yogurt sauce on the side for dipping or drizzled on top stuffed in pitas, in rice bowls, on its own."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "greek-yogurt"
+      },
+      {
+        "id": "garlic"
+      },
+      {
+        "id": "lemon"
+      },
+      {
+        "id": "kosher-salt",
+        "quantity": "1",
+        "unit": "tsp"
+      }
+    ],
+    [
+      {
+        "id": "kosher-salt"
+      },
+      {
+        "id": "pork-tenderloin"
+      }
+    ],
+    [],
+    [],
+    []
+  ],
   "notes": ""
 }

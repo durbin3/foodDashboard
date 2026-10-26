@@ -175,5 +175,60 @@
     "In a separate small bowl, stir together the glaze ingredients (ketchup, brown sugar, Worcestershire sauce, and mustard). Spread the glaze evenly over the top and sides of the meatloaf.",
     "Bake the meatloaf for 50-55 minutes, or until the internal temperature reaches 165ºF. Allow the meatloaf to rest for 5-10 minutes after baking, then slice and serve."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "egg"
+      },
+      {
+        "id": "whole-milk"
+      },
+      {
+        "id": "worcestershire-sauce"
+      },
+      {
+        "id": "breadcrumbs"
+      },
+      {
+        "id": "italian-seasoning"
+      },
+      {
+        "id": "garlic-powder"
+      },
+      {
+        "id": "salt"
+      },
+      {
+        "id": "black-pepper"
+      },
+      {
+        "id": "yellow-onion"
+      }
+    ],
+    [
+      {
+        "id": "ground-beef"
+      },
+      {
+        "id": "yellow-onion"
+      }
+    ],
+    [],
+    [
+      {
+        "id": "ketchup"
+      },
+      {
+        "id": "brown-sugar"
+      },
+      {
+        "id": "glaze-worcestershire-sauce"
+      },
+      {
+        "id": "yellow-mustard"
+      }
+    ],
+    []
+  ],
   "notes": ""
 }

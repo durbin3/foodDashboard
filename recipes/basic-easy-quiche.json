@@ -98,5 +98,36 @@
     "Bake at 350°F for 50-60 minutes or until set.",
     "Optional: add whatever you like to the quiche, such as spinach, broccoli, bacon, ham, onions, mushrooms, or tomatoes."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "sharp-cheddar-cheese"
+      },
+      {
+        "id": "flour"
+      }
+    ],
+    [
+      {
+        "id": "whole-milk"
+      },
+      {
+        "id": "egg"
+      },
+      {
+        "id": "parmesan-cheese"
+      },
+      {
+        "id": "pepper"
+      }
+    ],
+    [
+      {
+        "id": "pie-crust"
+      }
+    ],
+    [],
+    []
+  ],
   "notes": ""
 }

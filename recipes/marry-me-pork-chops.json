@@ -163,5 +163,73 @@
     "Nestle pork chops into the casserole so that the bottom halves of chops sit in the broth mixture. Season tops with remaining Italian seasoning, smoked paprika, and pepper; sprinkle with salt and red pepper flakes. Cover tightly with foil.",
     "Bake in the preheated oven for 30 to 35 minutes. Uncover and add remaining Parmesan cheese. Bake for another 10 minutes. An instant read thermometer inserted in the center of pork chops should reach 145 degrees F (63 degrees C)."
   ],
+  "stepIngredients": [
+    [],
+    [
+      {
+        "id": "orzo"
+      },
+      {
+        "id": "chicken-broth"
+      },
+      {
+        "id": "heavy-cream"
+      },
+      {
+        "id": "garlic"
+      },
+      {
+        "id": "sundried-tomatoes"
+      },
+      {
+        "id": "spinach"
+      },
+      {
+        "id": "parmesan",
+        "quantity": "3/8",
+        "unit": "cup"
+      },
+      {
+        "id": "italian-seasoning",
+        "quantity": "1/2",
+        "unit": "tsp"
+      },
+      {
+        "id": "smoked-paprika",
+        "quantity": "1/4",
+        "unit": "tsp"
+      },
+      {
+        "id": "black-pepper",
+        "quantity": "1/8",
+        "unit": "tsp"
+      }
+    ],
+    [
+      {
+        "id": "pork-chop"
+      },
+      {
+        "id": "italian-seasoning"
+      },
+      {
+        "id": "smoked-paprika"
+      },
+      {
+        "id": "black-pepper"
+      },
+      {
+        "id": "salt"
+      },
+      {
+        "id": "red-pepper-flakes"
+      }
+    ],
+    [
+      {
+        "id": "parmesan"
+      }
+    ]
+  ],
   "notes": ""
 }

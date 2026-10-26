@@ -200,5 +200,85 @@
     "In a large bowl, combine the softened cream cheese and butter using a hand mixer. Blend well.",
     "Add in your favorite extract and the powdered sugar. Beat until combined. Spread the frosting over the cooled rolls."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "milk"
+      },
+      {
+        "id": "instant-yeast"
+      }
+    ],
+    [
+      {
+        "id": "egg"
+      },
+      {
+        "id": "salted-butter-dough"
+      },
+      {
+        "id": "granulated-sugar"
+      }
+    ],
+    [
+      {
+        "id": "salt"
+      },
+      {
+        "id": "bread-flour",
+        "quantity": "4",
+        "unit": "cup"
+      }
+    ],
+    [],
+    [
+      {
+        "id": "bread-flour",
+        "note": "only if needed"
+      }
+    ],
+    [],
+    [],
+    [
+      {
+        "id": "salted-butter-filling"
+      },
+      {
+        "id": "brown-sugar"
+      },
+      {
+        "id": "cinnamon"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        "id": "heavy-cream"
+      }
+    ],
+    [],
+    [],
+    [
+      {
+        "id": "cream-cheese"
+      },
+      {
+        "id": "salted-butter-frosting"
+      }
+    ],
+    [
+      {
+        "id": "maple-extract"
+      },
+      {
+        "id": "powdered-sugar"
+      }
+    ]
+  ],
   "notes": ""
 }

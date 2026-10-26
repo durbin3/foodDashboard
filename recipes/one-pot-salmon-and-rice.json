@@ -1,0 +1,286 @@
+{
+  "id": "one-pot-salmon-and-rice",
+  "name": "One Pot Salmon and Rice",
+  "source": "https://www.jocooks.com/recipes/one-pot-salmon-and-rice/",
+  "servings": 4,
+  "category": "main",
+  "effort": 2,
+  "prepMinutes": 10,
+  "cookMinutes": 30,
+  "tags": [
+    "salmon",
+    "stovetop",
+    "dinner"
+  ],
+  "ingredients": [
+    {
+      "id": "salmon-fillet",
+      "group": "",
+      "original": {
+        "quantity": "4",
+        "unit": "",
+        "ingredientId": "salmon-fillet",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "seasoning-salt",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "tsp",
+        "ingredientId": "seasoning-salt",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "olive-oil",
+      "group": "",
+      "original": {
+        "quantity": "3",
+        "unit": "tbsp",
+        "ingredientId": "olive-oil",
+        "note": "divided"
+      },
+      "modified": null
+    },
+    {
+      "id": "onion",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "onion",
+        "note": "large, finely diced"
+      },
+      "modified": null
+    },
+    {
+      "id": "green-pepper",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "green-pepper",
+        "note": "medium, finely diced"
+      },
+      "modified": null
+    },
+    {
+      "id": "red-bell-pepper",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "red-pepper",
+        "note": "medium, finely diced"
+      },
+      "modified": null
+    },
+    {
+      "id": "garlic",
+      "group": "",
+      "original": {
+        "quantity": "3",
+        "unit": "clove",
+        "ingredientId": "garlic",
+        "note": "minced"
+      },
+      "modified": null
+    },
+    {
+      "id": "chicken-bouillon",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "cube",
+        "ingredientId": "chicken-bouillon",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "paprika",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "tsp",
+        "ingredientId": "paprika",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "turmeric",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "tsp",
+        "ingredientId": "turmeric",
+        "note": ""
+      },
+      "modified": null
+    },
+    {
+      "id": "salt",
+      "group": "",
+      "original": {
+        "quantity": "",
+        "unit": "",
+        "ingredientId": "salt",
+        "note": "to taste"
+      },
+      "modified": null
+    },
+    {
+      "id": "pepper",
+      "group": "",
+      "original": {
+        "quantity": "",
+        "unit": "",
+        "ingredientId": "black-pepper",
+        "note": "to taste"
+      },
+      "modified": null
+    },
+    {
+      "id": "rice",
+      "group": "",
+      "original": {
+        "quantity": "1 1/2",
+        "unit": "cup",
+        "ingredientId": "rice",
+        "note": "long grain, rinsed"
+      },
+      "modified": null
+    },
+    {
+      "id": "chicken-broth",
+      "group": "",
+      "original": {
+        "quantity": "3",
+        "unit": "cup",
+        "ingredientId": "chicken-broth",
+        "note": "low sodium, or vegetable broth"
+      },
+      "modified": null
+    },
+    {
+      "id": "lemon",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "",
+        "ingredientId": "lemon",
+        "note": "zest and juice"
+      },
+      "modified": null
+    },
+    {
+      "id": "fresh-parsley",
+      "group": "",
+      "original": {
+        "quantity": "1",
+        "unit": "tbsp",
+        "ingredientId": "fresh-parsley",
+        "note": "chopped, for garnish"
+      },
+      "modified": null
+    }
+  ],
+  "steps": [
+    "Start by seasoning the salmon fillets with seasoning salt on both sides.",
+    "In a large skillet, heat 1 tablespoon of olive oil over medium-high heat. Place the salmon fillets skin-side down (if they have skin) and sear for about 2-3 minutes per side, just to get a nice color. Remove the salmon from the skillet and set aside.",
+    "In the same skillet, reduce the heat to medium and add an additional 2 tablespoons of olive oil. Add the chopped onion, bell peppers and cook until translucent, about 3-4 minutes. Stir in the minced garlic and cook for another minute until fragrant.",
+    "Add the rinsed rice, chicken bouillon, paprika, turmeric, salt and pepper to the skillet and stir for a couple of minutes to lightly toast it.",
+    "Pour in the chicken or vegetable broth, and add lemon zest. Bring the mixture to a simmer.",
+    "Gently place the seared salmon fillets on top of the rice. Cover the skillet with a lid and let it cook over low heat for about 18-20 minutes, or until the rice is cooked through and the salmon is flaky.",
+    "Once everything is cooked, drizzle lemon juice over the salmon and rice. Check for seasoning and adjust if needed.",
+    "Sprinkle chopped parsley and/or lemon wedges over the dish and serve warm."
+  ],
+  "stepIngredients": [
+    [
+      {
+        "id": "salmon-fillet"
+      },
+      {
+        "id": "seasoning-salt"
+      }
+    ],
+    [
+      {
+        "id": "olive-oil",
+        "quantity": "1",
+        "unit": "tbsp"
+      },
+      {
+        "id": "salmon-fillet"
+      }
+    ],
+    [
+      {
+        "id": "olive-oil"
+      },
+      {
+        "id": "onion"
+      },
+      {
+        "id": "green-pepper"
+      },
+      {
+        "id": "red-bell-pepper"
+      },
+      {
+        "id": "garlic"
+      }
+    ],
+    [
+      {
+        "id": "rice"
+      },
+      {
+        "id": "chicken-bouillon"
+      },
+      {
+        "id": "paprika"
+      },
+      {
+        "id": "turmeric"
+      },
+      {
+        "id": "salt"
+      },
+      {
+        "id": "pepper"
+      }
+    ],
+    [
+      {
+        "id": "chicken-broth"
+      },
+      {
+        "id": "lemon",
+        "note": "zest"
+      }
+    ],
+    [
+      {
+        "id": "salmon-fillet"
+      }
+    ],
+    [
+      {
+        "id": "lemon",
+        "note": "juice"
+      }
+    ],
+    [
+      {
+        "id": "fresh-parsley"
+      }
+    ]
+  ],
+  "notes": ""
+}

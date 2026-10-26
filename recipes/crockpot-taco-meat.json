@@ -162,5 +162,51 @@
     "Set to LOW for 4 hours or HIGH for 2 hours.",
     "Stir well when done, chopping up the beef further. Serve inside taco shells with your favorite toppings. Alternatively, use as the stuffing for burritos, burrito and rice bowls, enchiladas, quesadillas and on tostadas."
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "ground-beef"
+      },
+      {
+        "id": "water"
+      },
+      {
+        "id": "chili-powder"
+      },
+      {
+        "id": "cumin"
+      },
+      {
+        "id": "paprika"
+      },
+      {
+        "id": "garlic-powder"
+      },
+      {
+        "id": "onion-powder"
+      },
+      {
+        "id": "dried-oregano"
+      },
+      {
+        "id": "red-pepper-flakes"
+      },
+      {
+        "id": "black-pepper"
+      },
+      {
+        "id": "salt"
+      }
+    ],
+    [],
+    [
+      {
+        "id": "tortilla"
+      },
+      {
+        "id": "toppings"
+      }
+    ]
+  ],
   "notes": ""
 }

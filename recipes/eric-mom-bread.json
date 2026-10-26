@@ -59,5 +59,23 @@
     "shape into ball",
     "bake at 450 for 30m"
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "custom-mvo30uua"
+      },
+      {
+        "id": "custom-mvo30z5e"
+      },
+      {
+        "id": "custom-mvo311k1"
+      },
+      {
+        "id": "custom-mvo315sl"
+      }
+    ],
+    [],
+    []
+  ],
   "notes": ""
 }

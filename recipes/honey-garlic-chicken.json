@@ -213,5 +213,72 @@
     "Now add the cooked chicken back to the skillet and stir with the sauce until all of the pieces are evenly coated. Continue to cook for 1-2 more minutes to allow the chicken to heat through.",
     "Remove the skillet from the heat, top with sliced green onions, and enjoy!"
   ],
+  "stepIngredients": [
+    [
+      {
+        "id": "honey"
+      },
+      {
+        "id": "soy-sauce"
+      },
+      {
+        "id": "rice-vinegar"
+      },
+      {
+        "id": "sriracha"
+      },
+      {
+        "id": "sesame-oil"
+      },
+      {
+        "id": "cornstarch"
+      }
+    ],
+    [
+      {
+        "id": "chicken-breast"
+      },
+      {
+        "id": "salt"
+      },
+      {
+        "id": "black-pepper"
+      },
+      {
+        "id": "garlic-powder"
+      },
+      {
+        "id": "flour"
+      }
+    ],
+    [
+      {
+        "id": "olive-oil",
+        "note": "2 tbsp, then 1 tbsp"
+      },
+      {
+        "id": "chicken-breast"
+      }
+    ],
+    [
+      {
+        "id": "butter"
+      },
+      {
+        "id": "garlic"
+      }
+    ],
+    [],
+    [
+      {
+        "id": "chicken-breast"
+      }
+    ],
+    [
+      {
+        "id": "green-onion"
+      }
+    ]
+  ],
   "notes": "1.5x sauce\n3 tsp rice vinegar\n2 tsp sesame oil\nDon't forget the flour step"
 }

@@ -214,5 +214,101 @@
     "Bake in the preheated oven for 35 to 40 minutes.",
     "Serve and enjoy!"
   ],
+  "stepIngredients": [
+    [],
+    [
+      {
+        "id": "lasagna-noodle"
+      }
+    ],
+    [
+      {
+        "id": "butter"
+      },
+      {
+        "id": "yellow-onion"
+      },
+      {
+        "id": "garlic"
+      },
+      {
+        "id": "flour"
+      },
+      {
+        "id": "chicken-broth"
+      },
+      {
+        "id": "whole-milk"
+      },
+      {
+        "id": "salt"
+      }
+    ],
+    [
+      {
+        "id": "shredded-cheese",
+        "quantity": "2",
+        "unit": "cup"
+      },
+      {
+        "id": "parmesan",
+        "quantity": "1/4",
+        "unit": "cup"
+      },
+      {
+        "id": "dried-basil"
+      },
+      {
+        "id": "dried-oregano"
+      },
+      {
+        "id": "black-pepper"
+      }
+    ],
+    [],
+    [
+      {
+        "id": "lasagna-noodle",
+        "quantity": "3"
+      },
+      {
+        "id": "ricotta"
+      },
+      {
+        "id": "cooked-chicken"
+      }
+    ],
+    [
+      {
+        "id": "lasagna-noodle",
+        "quantity": "3"
+      },
+      {
+        "id": "frozen-spinach"
+      },
+      {
+        "id": "shredded-cheese"
+      },
+      {
+        "id": "parmesan",
+        "quantity": "1/2",
+        "unit": "cup"
+      }
+    ],
+    [
+      {
+        "id": "lasagna-noodle",
+        "quantity": "3"
+      },
+      {
+        "id": "parsley"
+      },
+      {
+        "id": "parmesan"
+      }
+    ],
+    [],
+    []
+  ],
   "notes": ""
 }

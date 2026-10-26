@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { formatIngredient } from '../lib/quantity.js'
+import { formatIngredient, normalizeUnit, parseQuantity } from '../lib/quantity.js'
 import { matchIngredient, suggestIngredients } from '../lib/match.js'
-import { CATEGORIES, categoryOf, effectiveIngredient, newRecipe, sameIngredient, unparsedQuantity } from '../lib/recipe.js'
+import { activeIngredients, CATEGORIES, categoryOf, effectiveIngredient, newRecipe, sameIngredient, unparsedQuantity } from '../lib/recipe.js'
+import { stepIngredientsOf } from '../lib/steps.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 import { KNOWN_UNITS } from '../lib/units.js'
 
@@ -14,12 +15,21 @@ const FIELDS = [
 
 const isBlankIngredient = (i) => !i.original && !['quantity', 'unit', 'item', 'note'].some((k) => String(i.modified?.[k] ?? '').trim())
 
-/** What gets saved: no blank steps or never-filled-in ingredient rows. */
-const cleaned = (draft) => ({
-  ...draft,
-  steps: draft.steps.filter((s) => s.trim()),
-  ingredients: draft.ingredients.filter((i) => !isBlankIngredient(i)),
-})
+// Each step's ingredient list (stepIngredients) lines up with its step, so it moves with it.
+const hasStepUses = (d) => Array.isArray(d.stepIngredients) && d.stepIngredients.length === d.steps.length
+
+/** What gets saved: no blank steps or never-filled-in ingredient rows, and no step uses of deleted ingredients. */
+const cleaned = (draft) => {
+  const ingredients = draft.ingredients.filter((i) => !isBlankIngredient(i))
+  const kept = draft.steps.map((s) => !!s.trim())
+  const ids = new Set(ingredients.filter((i) => !i.removed).map((i) => i.id))
+  return {
+    ...draft,
+    steps: draft.steps.filter((_, i) => kept[i]),
+    ...(hasStepUses(draft) && { stepIngredients: draft.stepIngredients.filter((_, i) => kept[i]).map((uses) => uses.filter((u) => ids.has(u.id))) }),
+    ingredients,
+  }
+}
 
 /**
  * Edits a saved recipe, or, with `isNew`, a blank unsaved one that's created
@@ -100,7 +110,12 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
     return true
   }
 
-  const setSteps = (fn) => update((d) => ({ steps: fn(d.steps) }))
+  // Steps change along with their ingredient lists, when the recipe has them.
+  const setSteps = (fn) =>
+    update((d) => {
+      const pairs = fn(d.steps.map((text, i) => ({ text, uses: hasStepUses(d) ? d.stepIngredients[i] : null })))
+      return { steps: pairs.map((p) => p.text), ...(hasStepUses(d) && { stepIngredients: pairs.map((p) => p.uses ?? []) }) }
+    })
   function moveStep(index, delta) {
     setSteps((steps) => {
       const next = [...steps]
@@ -111,12 +126,18 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
   }
   function deleteStep(index) {
     const text = draft.steps[index]
+    const uses = hasStepUses(draft) ? draft.stepIngredients[index] : null
     setSteps((steps) => steps.filter((_, j) => j !== index))
     if (text.trim())
       actions.notify(`Deleted step ${index + 1}.`, {
-        undo: () => setSteps((steps) => [...steps.slice(0, index), text, ...steps.slice(index)]),
+        undo: () => setSteps((steps) => [...steps.slice(0, index), { text, uses }, ...steps.slice(index)]),
       })
   }
+  // Until a step's ingredients are edited, they're a guess from the step text; editing one saves them all.
+  const draftIngredients = activeIngredients(draft)
+  const stepUses = stepIngredientsOf(draft, draftIngredients, registry)
+  const setStepUses = (index, uses) =>
+    update((d) => ({ stepIngredients: stepIngredientsOf(d, activeIngredients(d), registry).map((u, j) => (j === index ? uses : u)) }))
 
   async function save() {
     if (!draft.name.trim() || (!isNew && !dirty)) return
@@ -419,7 +440,7 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
         {draft.steps.map((step, i) => (
           <li key={i}>
             <div className="step-row">
-              <AutoTextarea aria-label={`Step ${i + 1}`} value={step} onChange={(e) => setSteps((steps) => steps.map((s, j) => (j === i ? e.target.value : s)))} />
+              <AutoTextarea aria-label={`Step ${i + 1}`} value={step} onChange={(e) => setSteps((steps) => steps.map((s, j) => (j === i ? { ...s, text: e.target.value } : s)))} />
               <div className="step-actions">
                 <button title="Move up" aria-label={`Move step ${i + 1} up`} disabled={i === 0} onClick={() => moveStep(i, -1)}>
                   ↑
@@ -432,10 +453,11 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                 </button>
               </div>
             </div>
+            <StepUsesEditor step={i + 1} uses={stepUses[i] ?? []} ingredients={draftIngredients} guessed={!hasStepUses(draft)} onChange={(uses) => setStepUses(i, uses)} />
           </li>
         ))}
       </ol>
-      <button className="link" onClick={() => setSteps((steps) => [...steps, ''])}>
+      <button className="link" onClick={() => setSteps((steps) => [...steps, { text: '', uses: [] }])}>
         + Add step
       </button>
 
@@ -447,6 +469,57 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
         </div>
       )}
     </section>
+  )
+}
+
+/** "1 tbsp" as { quantity, unit }; anything else ("zest", "only if needed") is a note. Blank means all that's left. */
+function parseUse(text) {
+  const t = text.trim()
+  const m = t.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d*\.?\d+)\s*(.*)$/)
+  if (m && parseQuantity(m[1]) != null && (!m[2] || KNOWN_UNITS.includes(normalizeUnit(m[2])))) return { quantity: m[1], unit: normalizeUnit(m[2]) }
+  return t ? { note: text } : {}
+}
+const useText = (u) => (u.quantity ? [u.quantity, u.unit].filter(Boolean).join(' ') : (u.note ?? ''))
+
+/**
+ * The ingredients a step uses, as chips with how much (blank for "all that's
+ * left"), plus a menu to add another.
+ */
+function StepUsesEditor({ step, uses, ingredients, guessed, onChange }) {
+  const byId = Object.fromEntries(ingredients.map((i) => [i.id, i]))
+  const shown = uses.filter((u) => byId[u.id])
+  const rest = ingredients.filter((i) => i.item?.trim() && !uses.some((u) => u.id === i.id))
+  const label = (i) => [i.item, i.group && `(${i.group})`].filter(Boolean).join(' ')
+  return (
+    <div className="step-uses-edit" role="group" aria-label={`Ingredients for step ${step}`}>
+      <span className="muted small">Uses{guessed && shown.length > 0 ? ' (guessed from the text)' : ''}:</span>
+      {shown.map((u) => (
+        <span key={u.id} className="tag static">
+          {label(byId[u.id])}
+          <input
+            className="use-amount"
+            aria-label={`How much ${byId[u.id].item} step ${step} uses`}
+            placeholder="all"
+            title="How much this step uses, e.g. 1 tbsp. Leave blank for all that's left, or write a note like zest."
+            value={useText(u)}
+            onChange={(e) => onChange(uses.map((x) => (x.id === u.id ? { id: u.id, ...parseUse(e.target.value) } : x)))}
+          />
+          <button className="link" aria-label={`Remove ${byId[u.id].item} from step ${step}`} onClick={() => onChange(uses.filter((x) => x.id !== u.id))}>
+            ×
+          </button>
+        </span>
+      ))}
+      {rest.length > 0 && (
+        <select className="side-add" aria-label={`Add an ingredient to step ${step}`} value="" onChange={(e) => e.target.value && onChange([...uses, { id: e.target.value }])}>
+          <option value="">+ ingredient…</option>
+          {rest.map((i) => (
+            <option key={i.id} value={i.id}>
+              {label(i)}
+            </option>
+          ))}
+        </select>
+      )}
+    </div>
   )
 }
 

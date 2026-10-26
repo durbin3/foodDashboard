@@ -64,6 +64,9 @@
       "name": "celery",
       "shelfLifeDays": 14
     },
+    "chicken-bouillon": {
+      "name": "chicken bouillon"
+    },
     "chicken-breast": {
       "name": "chicken breast",
       "shelfLifeDays": 2,
@@ -356,6 +359,9 @@
       "name": "rubbed sage",
       "staple": true
     },
+    "salmon-fillet": {
+      "name": "salmon fillet"
+    },
     "salt": {
       "name": "salt",
       "staple": true,
@@ -367,6 +373,9 @@
           "toUnit": "pinch"
         }
       ]
+    },
+    "seasoning-salt": {
+      "name": "seasoning salt"
     },
     "sharp-cheddar-cheese": {
       "name": "sharp cheddar cheese",
@@ -431,6 +440,9 @@
       "name": "tortilla",
       "conversions": [],
       "shelfLifeDays": 14
+    },
+    "turmeric": {
+      "name": "turmeric"
     },
     "vanilla-extract": {
       "name": "vanilla extract",
