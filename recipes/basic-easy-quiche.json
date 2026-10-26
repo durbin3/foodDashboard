@@ -3,6 +3,10 @@
   "name": "Basic Easy Quiche",
   "source": "https://www.bigoven.com/recipe/basic-easy-quiche/170897",
   "servings": 6,
+  "category": "breakfast",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "breakfast",
     "baked",

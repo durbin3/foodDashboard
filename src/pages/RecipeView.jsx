@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { formatQuantity } from '../lib/quantity.js'
-import { formatDay, today } from '../lib/plan.js'
-import { activeIngredients, recipeIssues, scaleQuantity } from '../lib/recipe.js'
+import { addDays, formatCycle, formatDay, today } from '../lib/plan.js'
+import { formatRating, recipeRatings } from '../lib/ratings.js'
+import { activeIngredients, categoryOf, formatMinutes, recipeIssues, scaleQuantity, totalMinutes } from '../lib/recipe.js'
+import { EFFORT_LABELS } from '../lib/settings.js'
 
 const SCALES = [0.5, 1, 1.5, 2, 3]
 
@@ -22,8 +24,11 @@ export default function RecipeView({ recipe, plan, actions }) {
   const groups = [...new Set(ingredients.map((i) => i.group ?? ''))]
   const steps = recipe.steps.filter((s) => s.trim())
   const issues = recipeIssues(recipe)
+  const minutes = totalMinutes(recipe)
+  const category = categoryOf(recipe)
   const now = today()
-  const upcoming = plan.entries.filter((e) => e.recipeId === recipe.id && (!e.date || e.date >= now))
+  const upcoming = plan.meals.filter((m) => m.recipeId === recipe.id && (m.date ? m.date >= now : m.cycle >= addDays(now, -13)))
+  const rating = recipeRatings(plan, recipe.id)
   const toggle = (id) =>
     setTicked((t) => {
       const next = new Set(t)
@@ -33,13 +38,13 @@ export default function RecipeView({ recipe, plan, actions }) {
 
   return (
     <article className="recipe-view">
-      <a href="#/" className="small back-link">
+      <a href={category === 'main' ? '#/' : `#/?cat=${category}`} className="small back-link">
         ← Recipes
       </a>
       <div className="recipe-head">
         <h1>{recipe.name}</h1>
         <div className="head-actions">
-          <button onClick={(e) => e.detail <= 1 && actions.addToPlan(recipe.id, null, scale)}>+ Add to plan</button>
+          <button onClick={(e) => e.detail <= 1 && actions.addToPlan(recipe.id, scale)}>+ Add to plan</button>
           <a className="button primary" href={`#/recipe/${recipe.id}/edit`}>
             Edit
           </a>
@@ -52,10 +57,26 @@ export default function RecipeView({ recipe, plan, actions }) {
             Original recipe ↗
           </a>
         )}
+        {recipe.effort && (
+          <span>
+            Effort {recipe.effort}/5 ({EFFORT_LABELS[recipe.effort]})
+          </span>
+        )}
+        {minutes != null && (
+          <span>
+            {formatMinutes(minutes)}
+            {recipe.prepMinutes != null && recipe.cookMinutes != null && ` (${recipe.prepMinutes} prep + ${recipe.cookMinutes} cook)`}
+          </span>
+        )}
         {(recipe.tags ?? []).length > 0 && <span>{recipe.tags.join(' · ')}</span>}
+        {rating.times > 0 && (
+          <a href="#ratings">
+            ★ {formatRating(rating.average)} ({Object.entries(rating.byPerson).map(([p, n]) => `${p} ${formatRating(n)}`).join(', ')})
+          </a>
+        )}
         {upcoming.length > 0 && (
-          <a href={`#/plan/${upcoming[0].date ?? ''}`}>
-            Planned: {upcoming.map((e) => (e.date ? formatDay(e.date) : 'unscheduled')).join(', ')}
+          <a href={`#/plan/${upcoming[0].cycle}`}>
+            Planned: {upcoming.map((m) => (m.date ? formatDay(m.date) : `${formatCycle(m.cycle)}, not on a day`)).join('; ')}
           </a>
         )}
       </div>
@@ -129,6 +150,23 @@ export default function RecipeView({ recipe, plan, actions }) {
           {scale !== 1 && <p className="muted small">Amounts in the steps are as written, not scaled.</p>}
         </section>
       </div>
+
+      {rating.times > 0 && (
+        <section id="ratings" className="rating-history">
+          <h2>Ratings</h2>
+          <ul>
+            {rating.history.map((h) => (
+              <li key={h.id}>
+                <span className="muted small">{h.date ? formatDay(h.date) : 'Undated'}</span>{' '}
+                {Object.entries(h.ratings)
+                  .map(([p, n]) => `${p} ${n}/5`)
+                  .join(' · ')}
+                {h.note && <span className="muted"> — {h.note}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </article>
   )
 }

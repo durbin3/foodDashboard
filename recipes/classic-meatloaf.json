@@ -3,6 +3,10 @@
   "name": "Classic Meatloaf",
   "source": "https://www.budgetbytes.com/classic-homemade-meatloaf/",
   "servings": 7,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "beef",
     "baked",

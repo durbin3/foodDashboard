@@ -1,6 +1,9 @@
 # Food Dashboard — TODO
 
 ## Next - High Priority
+
+The plan of work for these items is in [PLAN.md](PLAN.md).
+
 - Add meal effort rating to recipes
 - Add Rating system / tracking for recipes so we can keep track of what meals we liked
 - Improve Meal Planning:

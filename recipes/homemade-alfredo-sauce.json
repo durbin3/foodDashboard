@@ -3,6 +3,10 @@
   "name": "Homemade Alfredo Sauce",
   "source": "https://thesaltymarshmallow.com/best-homemade-alfredo-sauce/",
   "servings": null,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "pasta",
     "quick",

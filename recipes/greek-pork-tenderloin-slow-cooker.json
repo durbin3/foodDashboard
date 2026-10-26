@@ -3,6 +3,10 @@
   "name": "Greek Pork Tenderloin (Slow Cooker)",
   "source": "https://realfoodwholelife.com/recipes/greek-pork/",
   "servings": 6,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "pork",
     "slow cooker",

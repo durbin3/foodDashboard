@@ -1,5 +1,16 @@
 import { formatQuantity, parseQuantity } from './quantity.js'
 
+// What kind of recipe it is. Each has its own subtab on the Recipes page, and
+// only mains are planned as meals (sides attach to them).
+export const CATEGORIES = [
+  ['main', 'Mains'],
+  ['side', 'Sides'],
+  ['breakfast', 'Breakfast'],
+  ['dessert', 'Desserts'],
+  ['drink', 'Drinks'],
+]
+export const categoryOf = (recipe) => (CATEGORIES.some(([c]) => c === recipe.category) ? recipe.category : 'main')
+
 // Each ingredient keeps the imported `original` and an optional `modified`
 // override, so personal changes sit alongside the source recipe.
 //   { id, group, original: {quantity, unit, ingredientId, note} | null, modified: {...} | null, removed?: true }
@@ -46,7 +57,20 @@ export function newRecipe(name, takenIds) {
   const base = slugify(name) || 'recipe'
   let id = base
   for (let n = 2; takenIds.has(id); n++) id = `${base}-${n}`
-  return { id, name: name.trim(), source: '', servings: null, tags: [], ingredients: [], steps: [], notes: '' }
+  return {
+    id,
+    name: name.trim(),
+    source: '',
+    servings: null,
+    category: 'main',
+    effort: null,
+    prepMinutes: null,
+    cookMinutes: null,
+    tags: [],
+    ingredients: [],
+    steps: [],
+    notes: '',
+  }
 }
 
 export const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
@@ -63,11 +87,23 @@ export function modificationCount(recipe) {
 /** Quantities that aren't numbers ("lil bit"), which the grocery list can't add up. */
 export const unparsedQuantity = (q) => !!String(q ?? '').trim() && parseQuantity(q) == null
 
-/** Gaps worth fixing, as short labels: no steps, no servings, unreadable quantities. */
+/** Prep plus cook time in minutes, or null when neither is set. */
+export const totalMinutes = (recipe) => (recipe.prepMinutes == null && recipe.cookMinutes == null ? null : (recipe.prepMinutes ?? 0) + (recipe.cookMinutes ?? 0))
+
+/** 95 → '1 hr 35 min'. */
+export function formatMinutes(min) {
+  if (min == null) return ''
+  const h = Math.floor(min / 60)
+  const m = min % 60
+  return [h && `${h} hr`, (m || !h) && `${m} min`].filter(Boolean).join(' ')
+}
+
+/** Gaps worth fixing, as short labels: no steps, no servings, no effort, unreadable quantities. */
 export function recipeIssues(recipe) {
   const issues = []
   if (!recipe.steps?.some((s) => s.trim())) issues.push('no steps')
   if (!recipe.servings) issues.push('no servings')
+  if (!recipe.effort) issues.push('no effort')
   if (activeIngredients(recipe).some((i) => unparsedQuantity(i.quantity))) issues.push('unclear amounts')
   return issues
 }

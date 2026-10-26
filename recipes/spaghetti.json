@@ -3,6 +3,10 @@
   "name": "Spaghetti",
   "source": "",
   "servings": null,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "dinner"
   ],

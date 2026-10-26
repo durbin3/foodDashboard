@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import { formatDay, today } from '../lib/plan.js'
-import { activeIngredients, isHandMade, modificationCount, recipeIssues } from '../lib/recipe.js'
+import { cycleStart, formatDay, today } from '../lib/plan.js'
+import { formatRating, recipeRatings } from '../lib/ratings.js'
+import { activeIngredients, CATEGORIES, categoryOf, formatMinutes, isHandMade, modificationCount, recipeIssues, totalMinutes } from '../lib/recipe.js'
+import { EFFORT_LABELS } from '../lib/settings.js'
 
 const SORTS = {
   name: (a, b) => a.name.localeCompare(b.name),
   servings: (a, b) => (a.servings ?? Infinity) - (b.servings ?? Infinity),
+  effort: (a, b) => (a.effort ?? Infinity) - (b.effort ?? Infinity),
+  minutes: (a, b) => (a.minutes ?? Infinity) - (b.minutes ?? Infinity),
+  // Best first when ascending; unrated last.
+  rating: (a, b) => (b.rating.average ?? -Infinity) - (a.rating.average ?? -Infinity),
   // Most recent first when ascending; never-made recipes last.
   lastMade: (a, b) => (b.lastMade ?? '').localeCompare(a.lastMade ?? ''),
 }
@@ -20,6 +26,7 @@ const sourceSite = (url) => {
 /** Filters and sort live in the URL, so they survive opening a recipe and coming back. */
 function useUrlState(query) {
   const [state, setState] = useState(() => ({
+    cat: CATEGORIES.some(([c]) => c === query.get('cat')) ? query.get('cat') : 'main',
     q: query.get('q') ?? '',
     tags: query.get('tags')?.split(',').filter(Boolean) ?? [],
     attention: query.get('attention') === '1',
@@ -27,6 +34,7 @@ function useUrlState(query) {
   }))
   useEffect(() => {
     const p = new URLSearchParams()
+    if (state.cat !== 'main') p.set('cat', state.cat)
     if (state.q) p.set('q', state.q)
     if (state.tags.length) p.set('tags', state.tags.join(','))
     if (state.attention) p.set('attention', '1')
@@ -38,26 +46,31 @@ function useUrlState(query) {
   return [state, (patch) => setState((s) => ({ ...s, ...(typeof patch === 'function' ? patch(s) : patch) }))]
 }
 
-export default function Library({ recipes, plan, registry, query, actions }) {
-  const [{ q: search, tags: activeTags, attention, sort }, set] = useUrlState(query)
+export default function Library({ recipes, plan, anchor, registry, query, actions }) {
+  const [{ cat, q: search, tags: activeTags, attention, sort }, set] = useUrlState(query)
   const highlight = query.get('new')
 
   useEffect(() => {
     if (highlight) document.getElementById(`recipe-${highlight}`)?.scrollIntoView({ block: 'center' })
   }, [highlight])
 
-  const allTags = useMemo(() => [...new Set(recipes.flatMap((r) => r.tags ?? []))].sort(), [recipes])
+  const counts = useMemo(() => Object.fromEntries(CATEGORIES.map(([c]) => [c, recipes.filter((r) => categoryOf(r) === c).length])), [recipes])
+  const inTab = useMemo(() => recipes.filter((r) => categoryOf(r) === cat), [recipes, cat])
+  const allTags = useMemo(() => [...new Set(inTab.flatMap((r) => r.tags ?? []))].sort(), [inTab])
 
   const rows = useMemo(() => {
     const now = today()
-    return recipes.map((r) => {
+    const current = cycleStart(anchor)
+    return inTab.map((r) => {
       const ingredients = activeIngredients(r)
       // Non-staples are what distinguish a recipe (and what you'd shop for); if
       // everything is a staple (e.g. gravy), show the ingredients themselves.
       const distinctive = ingredients.filter((i) => i.item && !registry.ingredients[i.ingredientId]?.staple).map((i) => i.item)
-      const entries = plan.entries.filter((e) => e.recipeId === r.id)
-      const past = entries.filter((e) => e.date && e.date < now).map((e) => e.date).sort()
-      const upcoming = entries.filter((e) => !e.date || e.date >= now).sort((a, b) => (a.date ?? '￿').localeCompare(b.date ?? '￿'))
+      const meals = plan.meals.filter((m) => m.recipeId === r.id)
+      const past = meals.filter((m) => m.date && m.date < now).map((m) => m.date).sort()
+      const upcoming = meals
+        .filter((m) => (m.date ? m.date >= now : m.cycle >= current))
+        .sort((a, b) => (a.date ?? `${a.cycle}~`).localeCompare(b.date ?? `${b.cycle}~`))
       return {
         ...r,
         ingredients,
@@ -67,9 +80,11 @@ export default function Library({ recipes, plan, registry, query, actions }) {
         issues: recipeIssues(r),
         lastMade: past.at(-1) ?? null,
         upcoming,
+        minutes: totalMinutes(r),
+        rating: recipeRatings(plan, r.id),
       }
     })
-  }, [recipes, plan, registry])
+  }, [inTab, plan, anchor, registry])
 
   const q = search.trim().toLowerCase()
   const matches = (r) =>
@@ -99,6 +114,18 @@ export default function Library({ recipes, plan, registry, query, actions }) {
 
   return (
     <section>
+      <nav className="subtabs" aria-label="Kind of recipe">
+        {CATEGORIES.filter(([c]) => counts[c] > 0 || c === cat || c === 'main').map(([c, label]) => (
+          <button
+            key={c}
+            className={c === cat ? 'active' : ''}
+            aria-current={c === cat ? 'page' : undefined}
+            onClick={() => set({ cat: c, tags: [], attention: false })}
+          >
+            {label} <span className="muted small">{counts[c]}</span>
+          </button>
+        ))}
+      </nav>
       <div className="toolbar">
         <input
           type="search"
@@ -128,10 +155,12 @@ export default function Library({ recipes, plan, registry, query, actions }) {
 
       {recipes.length === 0 ? (
         <p className="muted">No recipes yet. Add one with "+ New recipe", or ask Claude to import one with the import-recipe skill.</p>
+      ) : inTab.length === 0 ? (
+        <p className="muted">None of this kind yet. Set a recipe's Kind in its editor to file it here.</p>
       ) : (
         <>
           <p className="muted small">
-            Showing {visible.length} of {recipes.length} recipes
+            Showing {visible.length} of {inTab.length} {CATEGORIES.find(([c]) => c === cat)[1].toLowerCase()}
             {activeTags.length > 1 && ` tagged ${activeTags.join(' and ')}`}
             {filtered && (
               <>
@@ -148,6 +177,9 @@ export default function Library({ recipes, plan, registry, query, actions }) {
                 {sortHeader('name', 'Recipe', 'col-name')}
                 <th className="col-key">Key ingredients</th>
                 <th className="col-tags">Tags</th>
+                {sortHeader('rating', 'Rating', 'col-num')}
+                {sortHeader('effort', 'Effort', 'col-num')}
+                {sortHeader('minutes', 'Time', 'col-num col-time')}
                 {sortHeader('servings', 'Servings', 'col-num')}
                 {sortHeader('lastMade', 'Last made', 'col-date')}
                 <th className="col-plan">Plan</th>
@@ -189,12 +221,28 @@ export default function Library({ recipes, plan, registry, query, actions }) {
                       ))}
                     </div>
                   </td>
+                  <td
+                    className="col-num"
+                    title={
+                      r.rating.times
+                        ? `${Object.entries(r.rating.byPerson)
+                            .map(([p, n]) => `${p} ${formatRating(n)}`)
+                            .join(' · ')} (rated ${r.rating.times} time${r.rating.times === 1 ? '' : 's'})`
+                        : 'Not rated yet'
+                    }
+                  >
+                    {r.rating.times ? `★ ${formatRating(r.rating.average)}` : <span className="muted">—</span>}
+                  </td>
+                  <td className="col-num" title={r.effort ? EFFORT_LABELS[r.effort] : 'Effort not set'}>
+                    {r.effort ?? <span className="muted">—</span>}
+                  </td>
+                  <td className="col-num col-time small">{r.minutes != null ? formatMinutes(r.minutes) : <span className="muted">—</span>}</td>
                   <td className="col-num">{r.servings ?? <span className="muted">—</span>}</td>
                   <td className="col-date small">{r.lastMade ? formatDay(r.lastMade) : <span className="muted">—</span>}</td>
                   <td className="col-plan">
                     <button
                       onClick={(e) => e.detail <= 1 && actions.addToPlan(r.id)}
-                      title="Add to the meal plan (unscheduled)"
+                      title="Add to the meal plan"
                       aria-label={`Add ${r.name} to meal plan`}
                     >
                       + Add
@@ -202,8 +250,8 @@ export default function Library({ recipes, plan, registry, query, actions }) {
                     {/* Always takes a line, so adding a meal doesn't shift the button under the cursor. */}
                     <div className="planned small">
                       {r.upcoming.length > 0 ? (
-                        <a className="muted" href={`#/plan/${r.upcoming[0].date ?? ''}`}>
-                          {r.upcoming[0].date ? formatDay(r.upcoming[0].date) : 'unscheduled'}
+                        <a className="muted" href={`#/plan/${r.upcoming[0].cycle}`}>
+                          {r.upcoming[0].date ? formatDay(r.upcoming[0].date) : 'not on a day'}
                           {r.upcoming.length > 1 && ` +${r.upcoming.length - 1}`}
                         </a>
                       ) : (

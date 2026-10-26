@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { buildGroceryList, groceryListText } from '../lib/grocery.js'
-import { addDays, entriesForWeek, formatDay, formatWeek, weekStart } from '../lib/plan.js'
+import { addDays, CYCLE_DAYS, cycleStart, formatCycle, formatDay, mealsForCycle } from '../lib/plan.js'
 
 const LIST_AS = [
   ['grocery', 'Groceries'],
@@ -14,12 +14,12 @@ const listAsPatch = {
 }
 
 /**
- * Ticks are kept in this browser only, per week, as { ingredientId: amount }.
+ * Ticks are kept in this browser only, per shopping cycle, as { ingredientId: amount }.
  * A tick counts only while the amount is unchanged, so adding a meal that
  * needs more of something un-ticks it.
  */
-function useTicks(week) {
-  const key = `grocery-ticks:${week}`
+function useTicks(cycle) {
+  const key = `grocery-ticks:${cycle}`
   const read = () => {
     try {
       return JSON.parse(localStorage.getItem(key)) ?? {}
@@ -40,11 +40,11 @@ function useTicks(week) {
   return [ticks, save]
 }
 
-export default function GroceryPage({ plan, week, recipesById, registry, actions }) {
+export default function GroceryPage({ plan, cycle, anchor, recipesById, registry, actions }) {
   const [copied, setCopied] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [ticks, setTicks] = useTicks(week)
-  const entries = entriesForWeek(plan, week)
+  const [ticks, setTicks] = useTicks(cycle)
+  const entries = mealsForCycle(plan, cycle).sort((a, b) => (a.date ?? '~').localeCompare(b.date ?? '~'))
   const list = buildGroceryList(entries, recipesById, registry)
   const isTicked = (l) => ticks[l.id] === l.amount
   const all = [...list.groceries, ...list.pantry]
@@ -67,16 +67,17 @@ export default function GroceryPage({ plan, week, recipesById, registry, actions
 
   const weekNav = (
     <div className="week-nav">
-      <a className="button" href={`#/grocery/${addDays(week, -7)}`} aria-label="Previous week">
+      <a className="button" href={`#/grocery/${addDays(cycle, -CYCLE_DAYS)}`} aria-label="Previous shopping trip">
         ‹
       </a>
-      <h2>Groceries for {formatWeek(week)}</h2>
-      <a className="button" href={`#/grocery/${addDays(week, 7)}`} aria-label="Next week">
+      <h2>Shopping on {formatDay(addDays(cycle, -1))}</h2>
+      <a className="button" href={`#/grocery/${addDays(cycle, CYCLE_DAYS)}`} aria-label="Next shopping trip">
         ›
       </a>
-      {week !== weekStart() && (
-        <a className="small" href={`#/grocery/${weekStart()}`}>
-          This week
+      <span className="muted small">for {formatCycle(cycle)}</span>
+      {cycle !== cycleStart(anchor) && (
+        <a className="small" href={`#/grocery/${cycleStart(anchor)}`}>
+          Current cycle
         </a>
       )}
     </div>
@@ -87,7 +88,7 @@ export default function GroceryPage({ plan, week, recipesById, registry, actions
       <section>
         {weekNav}
         <p className="muted">
-          Nothing planned this week. <a href={`#/plan/${week}`}>Plan some meals</a> to build a grocery list.
+          Nothing planned for these two weeks. <a href={`#/plan/${cycle}`}>Plan some meals</a> to build a grocery list.
         </p>
       </section>
     )
@@ -142,7 +143,7 @@ export default function GroceryPage({ plan, week, recipesById, registry, actions
         <ul>
           {entries.map((e) => (
             <li key={e.id}>
-              {e.date ? formatDay(e.date) : 'Unscheduled'}: {recipesById[e.recipeId]?.name ?? e.recipeId}
+              {e.date ? formatDay(e.date) : 'Not on a day'}: {recipesById[e.recipeId]?.name ?? e.recipeId}
               {e.scale !== 1 && ` ×${e.scale}`}
             </li>
           ))}

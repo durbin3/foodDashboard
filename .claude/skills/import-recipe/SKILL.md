@@ -28,6 +28,7 @@ The extractor reads standard schema.org recipe data when the page has it, and ot
 
 - `from`: `json-ld` or `wprm-html`, showing which source was used.
 - `name`, `yield`, `ingredients` (full lines), `steps`.
+- `prepMinutes`, `cookMinutes`: the stated times in minutes, or `null` when the page doesn't give them.
 - `ingredientParts`: each ingredient already split into `amount` / `unit` / `name` / `notes`, with its `group`. Start from these when normalizing, but still apply the rules below. WPRM sometimes puts a size word in `unit` (e.g. `"large"` for tortillas), and on some sites `notes` holds the price.
 - `ingredientGroups`: group name and count, in order.
 - `recipeNotes`: footnotes, e.g. what `*` on an ingredient means.
@@ -64,6 +65,10 @@ Write each ingredient with an `item` **name**, as below. Stored recipes refer to
   "name": "Honey Garlic Chicken",
   "source": "https://…",
   "servings": 4,
+  "category": "main",
+  "effort": 2,
+  "prepMinutes": 15,
+  "cookMinutes": 20,
   "tags": ["chicken", "quick"],
   "ingredients": [
     {
@@ -97,6 +102,9 @@ For example, "milk" becomes `whole milk`, "pepper" becomes `black pepper`, "oreg
 - **group**: the heading the ingredient sits under ("Sauce"), or `""` if the recipe has no groups.
 - **tags**: 2–4 lowercase tags (main protein, cuisine, method, "quick" for about 30 minutes or less). Reuse tags already used in other `recipes/*.json` files where they fit.
 - **servings**: a number if the recipe states one; otherwise `null`.
+- **category**: `main`, `side`, `breakfast`, `dessert` or `drink`. Sauces and condiments that go with something (salsa, gravy over biscuits) take the category of what they're served with or `side`.
+- **prepMinutes** / **cookMinutes**: whole minutes from the recipe's stated prep and cook times (schema.org `prepTime`/`cookTime`, e.g. `PT15M`). Fold "inactive" or "chill" time into `cookMinutes`. Use `null` when the recipe doesn't say.
+- **effort**: 1–5, where 1 is dump-and-go (a slow cooker recipe with no browning), 2 easy, 3 some work (a couple of pans, some chopping), 4 involved (many steps or components), 5 a project (dough, layering, an afternoon). Base it on hands-on work and the number of steps, not total time. Say in the report what you chose so the user can correct it.
 
 ## 3. Apply the user's notes and tweaks
 

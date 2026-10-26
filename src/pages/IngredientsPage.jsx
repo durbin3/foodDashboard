@@ -128,6 +128,8 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
     ['grocery', 'Groceries', (e) => listAsOf(e.info) === 'grocery'],
     ['pantry', 'Pantry', (e) => listAsOf(e.info) === 'pantry'],
     ['none', 'Not listed', (e) => listAsOf(e.info) === 'none'],
+    ['perishable', 'Perishable', (e) => e.info.shelfLifeDays != null],
+    ['thaw', 'Thaw first', (e) => e.info.thaw],
     ['convert', 'Needs conversion', (e) => e.needsConversion],
     ['duplicates', 'Possible duplicates', (e) => inDuplicates.has(e.id)],
     ['unused', 'Unused', (e) => e.recipes.size === 0],
@@ -200,6 +202,8 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
               <th>Units seen</th>
               <th title="Where it goes on the grocery list">List as</th>
               <th title="The unit the grocery list totals it in">Buy as</th>
+              <th title="Days it keeps after shopping. Blank = doesn't go off">Keeps</th>
+              <th title="Kept frozen unless used within its shelf life, so it needs a day to thaw">Thaw</th>
               <th title="How its units relate, e.g. 1 each = 1/2 lb">Conversions</th>
             </tr>
           </thead>
@@ -309,6 +313,12 @@ function IngredientRow({ entry, open, index, allUnits, onToggleOpen, onUpdate, o
             ))}
           </select>
         </td>
+        <td>
+          <ShelfLifeInput name={info.name} value={info.shelfLifeDays} onChange={(shelfLifeDays) => onUpdate({ shelfLifeDays })} />
+        </td>
+        <td>
+          <input type="checkbox" aria-label={`${info.name} needs thawing`} checked={!!info.thaw} onChange={(e) => onUpdate({ thaw: e.target.checked || undefined })} />
+        </td>
         <td className="small">
           {conversions.length ? conversions.map(formatConversion).join('; ') : <span className="muted">—</span>}
           {entry.needsConversion && (
@@ -320,7 +330,7 @@ function IngredientRow({ entry, open, index, allUnits, onToggleOpen, onUpdate, o
       </tr>
       {open && (
         <tr className="detail">
-          <td colSpan={6}>
+          <td colSpan={8}>
             <div className="detail-panel">
               <div>
                 <h4>Used in</h4>
@@ -356,6 +366,20 @@ function IngredientRow({ entry, open, index, allUnits, onToggleOpen, onUpdate, o
                 <span className="muted small">Points recipes using “{info.name}” at the other ingredient, then removes this one.</span>
               </form>
               <div>
+                <h4>Storage</h4>
+                <div className="storage-fields small">
+                  <label>
+                    Keeps <ShelfLifeInput name={info.name} value={info.shelfLifeDays} onChange={(shelfLifeDays) => onUpdate({ shelfLifeDays })} /> days after shopping
+                  </label>
+                  <label>
+                    <input type="checkbox" checked={!!info.thaw} onChange={(e) => onUpdate({ thaw: e.target.checked || undefined })} /> Frozen unless used within that
+                    time; needs a day to thaw
+                  </label>
+                  <PurchaseInput purchase={info.purchase} onChange={(purchase) => onUpdate({ purchase })} />
+                </div>
+                <p className="muted small">Blank shelf life means it doesn't go off. No pack size means buy exactly what recipes use.</p>
+              </div>
+              <div>
                 <h4>Conversions for {info.name}</h4>
                 <ConversionEditor
                   conversions={conversions}
@@ -375,6 +399,54 @@ function IngredientRow({ entry, open, index, allUnits, onToggleOpen, onUpdate, o
         </tr>
       )}
     </>
+  )
+}
+
+/** Days as a whole number, saved on blur; blank clears it (non-perishable). */
+function ShelfLifeInput({ name, value, onChange }) {
+  const [text, setText] = useState(value == null ? '' : String(value))
+  useEffect(() => setText(value == null ? '' : String(value)), [value])
+  const commit = () => {
+    const n = text.trim() === '' ? undefined : Math.round(Number(text))
+    if (n !== undefined && !(n > 0)) return setText(value == null ? '' : String(value))
+    if (n !== value) onChange(n)
+  }
+  return (
+    <input
+      className="days-input"
+      type="number"
+      min="1"
+      aria-label={`Days ${name} keeps`}
+      placeholder="—"
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+    />
+  )
+}
+
+/** The smallest amount you can buy, e.g. 2 lb. Saved once the amount is a number. */
+function PurchaseInput({ purchase, onChange }) {
+  const [qty, setQty] = useState(purchase?.qty ?? '')
+  const [unit, setUnit] = useState(purchase?.unit ?? '')
+  useEffect(() => {
+    setQty(purchase?.qty ?? '')
+    setUnit(purchase?.unit ?? '')
+  }, [purchase?.qty, purchase?.unit])
+  const commit = () => {
+    if (!String(qty).trim()) return purchase && onChange(undefined)
+    if (!(parseQuantity(qty) > 0)) return
+    if (qty !== purchase?.qty || unit !== (purchase?.unit ?? '')) onChange({ qty: String(qty).trim(), unit: unit.trim() })
+  }
+  const bad = String(qty).trim() && !(parseQuantity(qty) > 0)
+  return (
+    <label onBlur={commit}>
+      Sold in packs of{' '}
+      <input className={`num ${bad ? 'invalid' : ''}`} aria-label="Pack amount" placeholder="any" value={qty} onChange={(e) => setQty(e.target.value)} />{' '}
+      <input className="unit" list="unit-options" aria-label="Pack unit" placeholder="each" value={unit} onChange={(e) => setUnit(e.target.value)} />
+      {bad && <span className="field-warning">Use a number, e.g. 2 or 1/2</span>}
+    </label>
   )
 }
 

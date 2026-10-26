@@ -3,6 +3,10 @@
   "name": "Marry Me Pork Chops",
   "source": "https://www.allrecipes.com/marry-me-pork-chops-recipe-11993270",
   "servings": 4,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "pork",
     "baked",

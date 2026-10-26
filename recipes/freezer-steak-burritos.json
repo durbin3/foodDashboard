@@ -3,6 +3,10 @@
   "name": "Freezer Steak Burritos",
   "source": "https://carmyy.com/freezer-friendly-steak-burritos/",
   "servings": 7,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "beef",
     "mexican",

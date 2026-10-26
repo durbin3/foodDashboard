@@ -3,6 +3,10 @@
   "name": "No-Bake Cookies",
   "source": "",
   "servings": null,
+  "category": "dessert",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "dessert",
     "stovetop",

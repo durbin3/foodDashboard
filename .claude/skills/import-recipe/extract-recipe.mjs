@@ -95,11 +95,25 @@ if (!jsonLd && !wprmIngredients.length) {
   process.exit(1)
 }
 
+// ISO 8601 durations ("PT1H15M") to whole minutes.
+const isoMinutes = (d) => {
+  const m = String(d ?? '').match(/^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?/)
+  return m && (m[1] || m[2] || m[3]) ? (+(m[1] ?? 0)) * 1440 + (+(m[2] ?? 0)) * 60 + (+(m[3] ?? 0)) : null
+}
+// WPRM shows times as separate hour and minute spans, e.g. wprm-recipe-prep_time-minutes.
+const wprmMinutes = (kind) => {
+  const part = (unit) => html.match(new RegExp(`class="[^"]*wprm-recipe-${kind}_time-${unit}[^"]*"[^>]*>\\s*(\\d+)`))?.[1]
+  const [h, m] = [part('hours'), part('minutes')]
+  return h || m ? (+(h ?? 0)) * 60 + (+(m ?? 0)) : null
+}
+
 const result = jsonLd
   ? {
       from: 'json-ld',
       name: decode(jsonLd.name),
       yield: jsonLd.recipeYield,
+      prepMinutes: isoMinutes(jsonLd.prepTime),
+      cookMinutes: isoMinutes(jsonLd.cookTime),
       ingredients: (jsonLd.recipeIngredient ?? []).map(decode),
       steps: flattenSteps(jsonLd.recipeInstructions).map(decode),
     }
@@ -107,6 +121,8 @@ const result = jsonLd
       from: 'wprm-html',
       name: wprmName,
       yield: wprmServings || null,
+      prepMinutes: wprmMinutes('prep'),
+      cookMinutes: wprmMinutes('cook'),
       ingredients: wprmIngredients.map((i) => i.line),
       steps: wprmSteps,
     }

@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './api.js'
-import { formatDay, normalizePlan, weekStart } from './lib/plan.js'
+import { cycleStart, formatCycle, normalizePlan } from './lib/plan.js'
 import { newRecipe, withNames } from './lib/recipe.js'
+import { DEFAULT_SETTINGS, normalizeSettings } from './lib/settings.js'
 import Library from './pages/Library.jsx'
 import RecipeView from './pages/RecipeView.jsx'
 import RecipePage from './pages/RecipePage.jsx'
 import PlanPage from './pages/PlanPage.jsx'
 import GroceryPage from './pages/GroceryPage.jsx'
 import IngredientsPage from './pages/IngredientsPage.jsx'
+import SettingsPage from './pages/SettingsPage.jsx'
 
 /**
  * The current hash as path parts plus query, e.g. "#/recipe/x/edit" → ['recipe', 'x', 'edit'].
@@ -63,6 +65,7 @@ const NAV = [
   ['plan', 'Meal plan'],
   ['grocery', 'Grocery list'],
   ['ingredients', 'Ingredients'],
+  ['settings', 'Settings'],
 ]
 
 const byName = (a, b) => a.name.localeCompare(b.name)
@@ -72,28 +75,33 @@ export default function App() {
   const [toasts, setToasts] = useState([])
   const [pending, setPending] = useState(0)
   const onSaving = (d) => setPending((n) => n + d)
-  const [plan, updatePlan, replacePlan] = usePersisted({ entries: [] }, (p) => run(api.savePlan(p)), onSaving)
+  const [storedPlan, updatePlan, replacePlan] = usePersisted({ meals: [] }, (p) => run(api.savePlan(p)), onSaving)
   const [registry, updateRegistry, replaceRegistry, latestRegistry] = usePersisted(
     { ingredients: {} },
     (r) => run(api.saveIngredients(r)),
     onSaving,
   )
+  const [settings, updateSettings, replaceSettings] = usePersisted(DEFAULT_SETTINGS, (s) => run(api.saveSettings(s)), onSaving)
   const leaveGuard = useRef(null)
   const { parts, query } = useHashRoute(leaveGuard)
   const [page, param, sub] = parts
   // Recipe pages belong under the Recipes tab.
   const section = page === 'new' || page === 'recipe' ? '' : page || ''
-  // The week the plan and grocery pages show; remembered across tabs.
-  const [week, setWeek] = useState(weekStart())
+  // The shopping cycle the plan and grocery pages show; remembered across tabs.
+  const anchor = settings.cycleStart
+  const [cycle, setCycle] = useState(() => cycleStart(anchor))
   useEffect(() => {
-    if ((page === 'plan' || page === 'grocery') && param) setWeek(weekStart(param))
-  }, [page, param])
+    setCycle((c) => cycleStart(anchor, (page === 'plan' || page === 'grocery') && param ? param : c))
+  }, [page, param, anchor])
+  const plan = useMemo(() => normalizePlan(storedPlan, anchor), [storedPlan, anchor])
 
   function loadAll() {
-    return Promise.all([api.listRecipes(), api.getPlan(), api.getIngredients()])
-      .then(([r, p, i]) => {
+    return Promise.all([api.listRecipes(), api.getPlan(), api.getIngredients(), api.getSettings()])
+      .then(([r, p, i, s]) => {
         setStoredRecipes(r)
-        replacePlan(normalizePlan(p))
+        const loaded = normalizeSettings(s)
+        replaceSettings(loaded)
+        replacePlan(normalizePlan(p, loaded.cycleStart))
         replaceRegistry(i)
       })
       .catch((err) => notify(err.message, { kind: 'error' }))
@@ -132,9 +140,8 @@ export default function App() {
   }
 
   const recipeName = (id) => recipesById[id]?.name ?? 'Recipe'
-  const whenLabel = (date) => (date ? formatDay(date) : 'the plan (unscheduled)')
-  const removeEntries = (ids) => updatePlan((p) => ({ ...p, entries: p.entries.filter((e) => !ids.includes(e.id)) }))
-  const restoreEntries = (entries) => updatePlan((p) => ({ ...p, entries: [...p.entries, ...entries] }))
+  const removeMeals = (ids) => updatePlan((p) => ({ ...p, meals: p.meals.filter((m) => !ids.includes(m.id)) }))
+  const restoreMeals = (meals) => updatePlan((p) => ({ ...p, meals: [...p.meals, ...meals] }))
 
   const actions = {
     notify,
@@ -144,25 +151,28 @@ export default function App() {
     deleteRecipe: async (id) => {
       await run(api.deleteRecipe(id))
       setStoredRecipes((rs) => rs.filter((r) => r.id !== id))
-      await updatePlan((p) => ({ ...p, entries: p.entries.filter((e) => e.recipeId !== id) }))
+      await updatePlan((p) => ({ ...p, meals: p.meals.filter((m) => m.recipeId !== id) }))
     },
-    addToPlan: (recipeId, date = null, scale = 1) => {
-      const entry = { id: crypto.randomUUID(), recipeId, date, scale }
-      notify(`Added ${recipeName(recipeId)} to ${whenLabel(date)}.`, {
-        undo: () => removeEntries([entry.id]),
-        link: date ? null : { href: '#/plan', label: 'Pick a day' },
-      })
-      return updatePlan((p) => ({ ...p, entries: [...p.entries, entry] }))
+    /** Adds a meal to the cycle being planned (the one last shown on the plan page), not on a day yet. */
+    addToPlan: (recipeId, scale = 1, { quiet = false } = {}) => {
+      const meal = { id: crypto.randomUUID(), recipeId, cycle, date: null, scale }
+      if (!quiet)
+        notify(`Added ${recipeName(recipeId)} to the ${formatCycle(cycle)} plan.`, {
+          undo: () => removeMeals([meal.id]),
+          link: page === 'plan' ? null : { href: `#/plan/${cycle}`, label: 'Pick a day' },
+        })
+      return updatePlan((p) => ({ ...p, meals: [...p.meals, meal] }))
     },
-    updateEntry: (id, patch) => updatePlan((p) => ({ ...p, entries: p.entries.map((e) => (e.id === id ? { ...e, ...patch } : e)) })),
-    removeEntry: (entry) => {
-      notify(`Removed ${recipeName(entry.recipeId)} from the plan.`, { undo: () => restoreEntries([entry]) })
-      return removeEntries([entry.id])
+    updateMeal: (id, patch) => updatePlan((p) => ({ ...p, meals: p.meals.map((m) => (m.id === id ? { ...m, ...patch } : m)) })),
+    removeMeal: (meal) => {
+      notify(`Removed ${recipeName(meal.recipeId)} from the plan.`, { undo: () => restoreMeals([meal]) })
+      return removeMeals([meal.id])
     },
-    clearEntries: (entries) => {
-      notify(`Cleared ${entries.length} meal${entries.length === 1 ? '' : 's'}.`, { undo: () => restoreEntries(entries) })
-      return removeEntries(entries.map((e) => e.id))
+    clearMeals: (meals) => {
+      notify(`Cleared ${meals.length} meal${meals.length === 1 ? '' : 's'}.`, { undo: () => restoreMeals(meals) })
+      return removeMeals(meals.map((m) => m.id))
     },
+    updateSettings,
     /** Patch one ingredient's settings (registering it if a recipe used an unknown id); undefined values are dropped when saved. */
     updateIngredient: (id, patch) =>
       updateRegistry((r) => ({ ...r, ingredients: { ...r.ingredients, [id]: { name: id, ...r.ingredients[id], ...patch } } })),
@@ -226,16 +236,19 @@ export default function App() {
     content = <RecipeView key={param} recipe={recipesById[param]} plan={plan} actions={actions} />
   } else if (page === 'plan') {
     title = 'Meal plan'
-    content = <PlanPage plan={plan} week={week} recipes={recipes} recipesById={recipesById} actions={actions} />
+    content = <PlanPage plan={plan} cycle={cycle} settings={settings} recipes={recipes} recipesById={recipesById} actions={actions} />
   } else if (page === 'grocery') {
     title = 'Grocery list'
-    content = <GroceryPage plan={plan} week={week} recipesById={recipesById} registry={registry} actions={actions} />
+    content = <GroceryPage plan={plan} cycle={cycle} anchor={anchor} recipesById={recipesById} registry={registry} actions={actions} />
   } else if (page === 'ingredients') {
     title = 'Ingredients'
     content = <IngredientsPage recipes={recipes} registry={registry} focus={param} actions={actions} />
+  } else if (page === 'settings') {
+    title = 'Settings'
+    content = <SettingsPage settings={settings} actions={actions} />
   } else {
     title = 'Recipes'
-    content = <Library recipes={recipes} plan={plan} registry={registry} query={query} actions={actions} />
+    content = <Library recipes={recipes} plan={plan} anchor={anchor} registry={registry} query={query} actions={actions} />
   }
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { formatIngredient } from '../lib/quantity.js'
-import { effectiveIngredient, newRecipe, sameIngredient, unparsedQuantity } from '../lib/recipe.js'
+import { CATEGORIES, categoryOf, effectiveIngredient, newRecipe, sameIngredient, unparsedQuantity } from '../lib/recipe.js'
+import { EFFORT_LABELS } from '../lib/settings.js'
 import { KNOWN_UNITS } from '../lib/units.js'
 
 const FIELDS = [
@@ -126,7 +127,8 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
         await actions.createRecipe(cleaned({ ...draft, id }))
         actions.setLeaveGuard(null)
         actions.notify(`Created ${draft.name.trim()}.`)
-        window.location.hash = `#/?new=${id}`
+        const cat = categoryOf(draft)
+        window.location.hash = cat === 'main' ? `#/?new=${id}` : `#/?cat=${cat}&new=${id}`
         return
       }
       await actions.saveRecipe(cleaned(draft))
@@ -215,6 +217,31 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
         <div className="field">
           <span id="tags-label">Tags</span>
           <TagInput tags={draft.tags ?? []} allTags={allTags} onChange={(tags) => update({ tags })} />
+        </div>
+        <label className="field">
+          Kind
+          <select value={categoryOf(draft)} onChange={(e) => update({ category: e.target.value })}>
+            {CATEGORIES.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label.replace(/s$/, '')}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          Effort
+          <select value={draft.effort ?? ''} onChange={(e) => update({ effort: e.target.value ? Number(e.target.value) : null })}>
+            <option value="">Not set</option>
+            {Object.entries(EFFORT_LABELS).map(([n, label]) => (
+              <option key={n} value={n}>
+                {n}: {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="field minutes-fields">
+          <MinutesInput label="Prep" value={draft.prepMinutes} onChange={(prepMinutes) => update({ prepMinutes })} />
+          <MinutesInput label="Cook" value={draft.cookMinutes} onChange={(cookMinutes) => update({ cookMinutes })} />
         </div>
       </div>
 
@@ -391,6 +418,22 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
         </div>
       )}
     </section>
+  )
+}
+
+/** Whole minutes, or null when cleared. */
+function MinutesInput({ label, value, onChange }) {
+  return (
+    <label>
+      {label} <span className="muted small">(min)</span>
+      <input
+        type="number"
+        min="0"
+        step="5"
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value === '' ? null : Math.max(0, Math.round(Number(e.target.value))))}
+      />
+    </label>
   )
 }
 

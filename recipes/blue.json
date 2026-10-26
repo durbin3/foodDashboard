@@ -3,6 +3,10 @@
   "name": "Blue",
   "source": "",
   "servings": null,
+  "category": "drink",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "drink"
   ],

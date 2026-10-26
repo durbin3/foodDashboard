@@ -1,160 +1,336 @@
 import { useEffect, useRef, useState } from 'react'
 import { formatQuantity } from '../lib/quantity.js'
-import { addDays, entriesForWeek, formatDay, formatWeek, today, weekDates, weekStart } from '../lib/plan.js'
+import { addDays, CYCLE_DAYS, cycleDates, cycleStart, formatCycle, formatDay, formatShortDay, mealsForCycle, today, weekdayKey } from '../lib/plan.js'
+import { categoryOf, formatMinutes, totalMinutes } from '../lib/recipe.js'
+import { EFFORT_LABELS } from '../lib/settings.js'
 
-export default function PlanPage({ plan, week, recipes, recipesById, actions }) {
+/**
+ * One shopping cycle: the meals picked for it, and 14 day slots to drag them
+ * into. Clicking a meal opens a panel with the same moves (for touch screens
+ * and keyboards), its scale, and ratings once it's been made.
+ */
+export default function PlanPage({ plan, cycle, settings, recipes, recipesById, actions }) {
   const [recipeText, setRecipeText] = useState('')
-  const [date, setDate] = useState('')
+  const [selectedId, setSelectedId] = useState(null)
+  const [dropTarget, setDropTarget] = useState(null)
   const recipeInput = useRef(null)
-  const days = weekDates(week)
+  const days = cycleDates(cycle)
   const now = today()
-  const shown = entriesForWeek(plan, week)
-  const byName = new Map(recipes.map((r) => [r.name.toLowerCase(), r]))
+  const current = cycleStart(settings.cycleStart)
+  const meals = mealsForCycle(plan, cycle)
+  const unplaced = meals.filter((m) => !m.date)
+  const selected = meals.find((m) => m.id === selectedId)
+  // Sides get attached to a meal rather than planned on their own.
+  const plannable = recipes.filter((r) => categoryOf(r) !== 'side')
+  const byName = new Map(plannable.map((r) => [r.name.toLowerCase(), r]))
   const picked = byName.get(recipeText.trim().toLowerCase())
 
-  // Keep the chosen day inside the week being shown.
-  useEffect(() => setDate((d) => (d && days.includes(d) ? d : '')), [week])
+  useEffect(() => setSelectedId(null), [cycle])
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && setSelectedId(null)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   function add(e) {
     e.preventDefault()
     if (!picked) return
-    actions.addToPlan(picked.id, date || null)
-    // Back to Unscheduled, so the next meal isn't quietly put on the same day.
-    setDate('')
+    actions.addToPlan(picked.id)
     setRecipeText('')
     recipeInput.current?.focus()
   }
 
-  const dayOptions = [
-    ...days.map((d) => (
-      <option key={d} value={d}>
-        {formatDay(d)}
-      </option>
-    )),
-    <option key="" value="">
-      Unscheduled
-    </option>,
-  ]
+  const budget = (date) => (settings.noCookDays.includes(weekdayKey(date)) ? null : settings.dayEffort[weekdayKey(date)])
+  const needsRating = (m) => m.date && m.date < now && settings.people.some((p) => m.ratings?.[p] == null)
 
-  const section = (key, heading, entries, dayDate) => (
-    <div key={key} className={`day ${dayDate && dayDate < now ? 'past' : ''}`}>
-      <h3>
-        {heading}
-        {dayDate === now && <span className="pill">today</span>}
-      </h3>
-      {entries.length === 0 ? (
-        <p className="empty-day muted small">
-          Nothing planned.{' '}
-          <button
-            className="link small"
-            onClick={() => {
-              setDate(dayDate ?? '')
-              recipeInput.current?.focus()
-            }}
-          >
-            + Add a meal
-          </button>
-        </p>
-      ) : (
-        entries.map((entry) => <PlanRow key={entry.id} entry={entry} recipe={recipesById[entry.recipeId]} dayOptions={dayOptions} actions={actions} />)
-      )}
-    </div>
+  /** Drop handlers for a day (`date`) or the Meals section (`date` null). */
+  const dropZone = (key, date) => ({
+    onDragOver: (e) => {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+      if (dropTarget !== key) setDropTarget(key)
+    },
+    onDragLeave: (e) => !e.currentTarget.contains(e.relatedTarget) && setDropTarget(null),
+    onDrop: (e) => {
+      e.preventDefault()
+      setDropTarget(null)
+      const meal = meals.find((m) => m.id === e.dataTransfer.getData('text/plain'))
+      if (meal && meal.date !== date) actions.updateMeal(meal.id, { date })
+    },
+  })
+
+  const card = (m, date) => (
+    <MealCard
+      key={m.id}
+      meal={m}
+      recipe={recipesById[m.recipeId]}
+      budget={date ? budget(date) : null}
+      needsRating={needsRating(m)}
+      selected={m.id === selectedId}
+      onSelect={() => setSelectedId(m.id === selectedId ? null : m.id)}
+    />
   )
 
+  const week = (i) => {
+    const dates = days.slice(i * 7, i * 7 + 7)
+    return (
+      <div key={i} className="plan-week">
+        <h3>
+          Week {i + 1} <span className="muted small">{`${formatDay(dates[0])} – ${formatDay(dates[6])}`}</span>
+        </h3>
+        <div className="day-slots">
+          {dates.map((d) => {
+            const b = budget(d)
+            const dayMeals = meals.filter((m) => m.date === d)
+            const classes = ['slot', d < now && 'past', d === now && 'today', b == null && 'no-cook', dropTarget === d && 'drop']
+            return (
+              <div key={d} className={classes.filter(Boolean).join(' ')} {...dropZone(d, d)}>
+                <div className="slot-head">
+                  <span className="slot-day">{formatShortDay(d)}</span>
+                  <span className="muted small" title={b == null ? 'Set in Settings' : `Effort up to ${b}: ${EFFORT_LABELS[b]}`}>
+                    {b == null ? 'no cooking' : `effort ≤ ${b}`}
+                  </span>
+                </div>
+                {dayMeals.map((m) => card(m, d))}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <section>
+    <section className="plan">
       <div className="week-nav">
-        <a className="button" href={`#/plan/${addDays(week, -7)}`} aria-label="Previous week">
+        <a className="button" href={`#/plan/${addDays(cycle, -CYCLE_DAYS)}`} aria-label="Previous two weeks">
           ‹
         </a>
-        <h2>Week of {formatWeek(week)}</h2>
-        <a className="button" href={`#/plan/${addDays(week, 7)}`} aria-label="Next week">
+        <h2>{formatCycle(cycle)}</h2>
+        <a className="button" href={`#/plan/${addDays(cycle, CYCLE_DAYS)}`} aria-label="Next two weeks">
           ›
         </a>
-        {week !== weekStart() && (
-          <a className="small" href={`#/plan/${weekStart()}`}>
-            This week
+        <span className="muted small">Shopping {formatDay(addDays(cycle, -1))}</span>
+        {cycle !== current && (
+          <a className="small" href={`#/plan/${current}`}>
+            Current cycle
           </a>
         )}
         <span className="spacer" />
-        <a className="button primary" href={`#/grocery/${week}`}>
-          Grocery list for this week →
+        <a className="button primary" href={`#/grocery/${cycle}`}>
+          Grocery list →
         </a>
       </div>
 
-      <form className="toolbar" onSubmit={add}>
-        <datalist id="recipe-names">
-          {recipes.map((r) => (
-            <option key={r.id} value={r.name} />
-          ))}
-        </datalist>
-        <input
-          ref={recipeInput}
-          type="search"
-          list="recipe-names"
-          placeholder="Search recipes to add…"
-          aria-label="Recipe to add"
-          value={recipeText}
-          onChange={(e) => setRecipeText(e.target.value)}
-        />
-        <select value={date} onChange={(e) => setDate(e.target.value)} aria-label="Day">
-          {dayOptions}
-        </select>
-        <button className="primary" disabled={!picked}>
-          Add meal
-        </button>
-      </form>
+      <div className={`meals-pool ${dropTarget === 'pool' ? 'drop' : ''}`} {...dropZone('pool', null)}>
+        <div className="pool-head">
+          <h3>
+            Meals{' '}
+            <span className="muted small">
+              {meals.length === 0
+                ? 'none picked yet'
+                : `${meals.length} picked · ${unplaced.length ? `${unplaced.length} not on a day yet` : 'all on a day'}`}
+            </span>
+          </h3>
+          <form className="toolbar" onSubmit={add}>
+            <datalist id="recipe-names">
+              {plannable.map((r) => (
+                <option key={r.id} value={r.name} />
+              ))}
+            </datalist>
+            <input
+              ref={recipeInput}
+              type="search"
+              list="recipe-names"
+              placeholder="Add a meal…"
+              aria-label="Recipe to add"
+              value={recipeText}
+              onChange={(e) => setRecipeText(e.target.value)}
+            />
+            <button className="primary" disabled={!picked}>
+              Add
+            </button>
+          </form>
+        </div>
+        {unplaced.length > 0 ? (
+          <div className="pool-cards">{unplaced.map((m) => card(m, null))}</div>
+        ) : (
+          <p className="muted small pool-empty">
+            {meals.length ? 'Drag a meal here to take it off its day.' : 'Pick the meals that sound good for these two weeks, then drag each onto a day.'}
+          </p>
+        )}
+      </div>
+
+      {[0, 1].map(week)}
+
       <p className="muted small">
-        Changes save automatically. Unscheduled meals show every week and count toward each week's grocery list.
-        {shown.length > 0 && (
+        Changes save automatically. Drag meals between days, or click one for more options.
+        {meals.length > 0 && (
           <>
             {' '}
-            <button className="link small" onClick={() => actions.clearEntries(shown)}>
-              Clear this week ({shown.length})
+            <button className="link small" onClick={() => actions.clearMeals(meals)}>
+              Clear these two weeks ({meals.length})
             </button>
           </>
         )}
       </p>
 
-      {days.map((d) => section(d, formatDay(d), shown.filter((e) => e.date === d), d))}
-      {section('unscheduled', 'Unscheduled', shown.filter((e) => !e.date), null)}
+      {selected && (
+        <MealPanel
+          key={selected.id}
+          meal={selected}
+          recipe={recipesById[selected.recipeId]}
+          days={days}
+          budget={budget}
+          people={settings.people}
+          now={now}
+          actions={actions}
+          onClose={() => setSelectedId(null)}
+        />
+      )}
     </section>
   )
 }
 
-function PlanRow({ entry, recipe, dayOptions, actions }) {
-  // The scale is edited as text and saved only when it's a positive number,
-  // so clearing the box to type a new value doesn't save a blank.
-  const [scaleText, setScaleText] = useState(String(entry.scale))
-  useEffect(() => setScaleText(String(entry.scale)), [entry.scale])
-  const commitScale = () => {
-    const n = Number(scaleText)
-    if (n > 0) n !== entry.scale && actions.updateEntry(entry.id, { scale: n })
-    else setScaleText(String(entry.scale))
-  }
-  const scale = Number(scaleText) > 0 ? Number(scaleText) : entry.scale
-
+function MealCard({ meal, recipe, budget, needsRating, selected, onSelect }) {
+  const over = budget != null && recipe?.effort > budget
+  const minutes = recipe && totalMinutes(recipe)
+  const meta = [recipe?.effort && `effort ${recipe.effort}`, minutes != null && formatMinutes(minutes), meal.scale !== 1 && `×${formatQuantity(meal.scale)}`]
   return (
-    <div className="plan-row">
-      {recipe ? <a href={`#/recipe/${recipe.id}`}>{recipe.name}</a> : <span className="muted">Missing recipe: {entry.recipeId}</span>}
-      <label className="small">
-        Scale ×
-        <input
-          type="number"
-          min="0.25"
-          step="0.25"
-          value={scaleText}
-          onChange={(e) => setScaleText(e.target.value)}
-          onBlur={commitScale}
-          onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-        />
-      </label>
-      <span className="muted small servings">{recipe?.servings ? `${formatQuantity(recipe.servings * scale)} servings` : 'servings not set'}</span>
-      <select value={entry.date ?? ''} onChange={(e) => actions.updateEntry(entry.id, { date: e.target.value || null })} aria-label={`Day for ${recipe?.name ?? 'meal'}`}>
-        {entry.date && !dayOptions.some((o) => o.key === entry.date) && <option value={entry.date}>{formatDay(entry.date)}</option>}
-        {dayOptions}
-      </select>
-      <button onClick={() => actions.removeEntry(entry)}>Remove</button>
+    <div
+      className={`meal-card ${selected ? 'selected' : ''} ${over ? 'over' : ''}`}
+      draggable
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
+      title={over ? `Effort ${recipe.effort} is more than this day's ${budget}` : 'Drag to a day, or click for options'}
+      onDragStart={(e) => {
+        e.dataTransfer.setData('text/plain', meal.id)
+        e.dataTransfer.effectAllowed = 'move'
+      }}
+      onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onSelect()
+        }
+      }}
+    >
+      <span className="meal-name">{recipe?.name ?? `Missing recipe: ${meal.recipeId}`}</span>
+      <span className="meal-meta muted">
+        {meta.filter(Boolean).join(' · ')}
+        {over && <span className="warn"> · over</span>}
+        {needsRating && <span className="pill">rate</span>}
+      </span>
     </div>
+  )
+}
+
+function MealPanel({ meal, recipe, days, budget, people, now, actions, onClose }) {
+  const madeIt = meal.date && meal.date <= now
+  const name = recipe?.name ?? meal.recipeId
+  return (
+    <div className="meal-panel" role="region" aria-label={`Options for ${name}`}>
+      <div className="panel-row">
+        <strong>{recipe ? <a href={`#/recipe/${recipe.id}`}>{name}</a> : name}</strong>
+        <label className="small">
+          Day{' '}
+          <select value={meal.date ?? ''} onChange={(e) => actions.updateMeal(meal.id, { date: e.target.value || null })}>
+            <option value="">Not on a day</option>
+            {days.map((d) => (
+              <option key={d} value={d}>
+                {formatDay(d)}
+                {budget(d) == null ? ' (no cooking)' : ` (effort ≤ ${budget(d)})`}
+              </option>
+            ))}
+          </select>
+        </label>
+        <ScaleInput meal={meal} recipe={recipe} actions={actions} />
+        <span className="spacer" />
+        <button
+          onClick={() => {
+            onClose()
+            actions.removeMeal(meal)
+          }}
+        >
+          Remove
+        </button>
+        <button className="link" aria-label="Close" onClick={onClose}>
+          ×
+        </button>
+      </div>
+      {madeIt && (
+        <div className="panel-row ratings-row">
+          <span className="small">How was it?</span>
+          {people.map((p) => (
+            <span key={p} className="rating-input small" role="group" aria-label={`${p}'s rating`}>
+              <span className="rating-person">{p}</span>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  className={meal.ratings?.[p] >= n ? 'on' : ''}
+                  aria-pressed={meal.ratings?.[p] === n}
+                  aria-label={`${p}: ${n} out of 5`}
+                  onClick={() => {
+                    const { [p]: _, ...rest } = meal.ratings ?? {}
+                    // Clicking the current score clears it.
+                    actions.updateMeal(meal.id, { ratings: meal.ratings?.[p] === n ? rest : { ...rest, [p]: n } })
+                  }}
+                >
+                  ★
+                </button>
+              ))}
+            </span>
+          ))}
+          <NoteInput meal={meal} actions={actions} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ScaleInput({ meal, recipe, actions }) {
+  // Edited as text and saved only when it's a positive number, so clearing
+  // the box to type a new value doesn't save a blank.
+  const [text, setText] = useState(String(meal.scale))
+  useEffect(() => setText(String(meal.scale)), [meal.scale])
+  const commit = () => {
+    const n = Number(text)
+    if (n > 0) n !== meal.scale && actions.updateMeal(meal.id, { scale: n })
+    else setText(String(meal.scale))
+  }
+  const scale = Number(text) > 0 ? Number(text) : meal.scale
+  return (
+    <label className="small">
+      Scale ×
+      <input
+        className="scale-input"
+        type="number"
+        min="0.25"
+        step="0.25"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+      />{' '}
+      <span className="muted">{recipe?.servings ? `${formatQuantity(recipe.servings * scale)} servings` : ''}</span>
+    </label>
+  )
+}
+
+function NoteInput({ meal, actions }) {
+  const [text, setText] = useState(meal.ratingNote ?? '')
+  useEffect(() => setText(meal.ratingNote ?? ''), [meal.ratingNote])
+  const commit = () => text.trim() !== (meal.ratingNote ?? '') && actions.updateMeal(meal.id, { ratingNote: text.trim() || undefined })
+  return (
+    <input
+      className="rating-note"
+      aria-label="Note about this meal"
+      placeholder="Note (e.g. needed more salt)"
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+    />
   )
 }

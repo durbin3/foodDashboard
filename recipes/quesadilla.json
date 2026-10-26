@@ -3,6 +3,10 @@
   "name": "Steak Quesadilla",
   "source": "",
   "servings": 2,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "dinner"
   ],

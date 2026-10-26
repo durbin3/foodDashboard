@@ -3,6 +3,10 @@
   "name": "Salsa",
   "source": "",
   "servings": 30,
+  "category": "side",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [],
   "ingredients": [
     {

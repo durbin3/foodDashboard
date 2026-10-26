@@ -3,6 +3,10 @@
   "name": "Creamy Pesto Chicken",
   "source": "https://www.budgetbytes.com/creamy-pesto-chicken/",
   "servings": 4,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "chicken",
     "quick",

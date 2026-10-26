@@ -1,7 +1,8 @@
 {
   "ingredients": {
     "2-greek-yogurt": {
-      "name": "greek yogurt"
+      "name": "greek yogurt",
+      "shelfLifeDays": 14
     },
     "black-pepper": {
       "name": "pepper",
@@ -56,13 +57,17 @@
       "name": "canned tomatoes"
     },
     "carrot": {
-      "name": "carrot"
+      "name": "carrot",
+      "shelfLifeDays": 21
     },
     "celery": {
-      "name": "celery"
+      "name": "celery",
+      "shelfLifeDays": 14
     },
     "chicken-breast": {
-      "name": "chicken breast"
+      "name": "chicken breast",
+      "shelfLifeDays": 2,
+      "thaw": true
     },
     "chicken-broth": {
       "name": "chicken broth"
@@ -75,7 +80,8 @@
       "staple": true
     },
     "cilantro": {
-      "name": "cilantro"
+      "name": "cilantro",
+      "shelfLifeDays": 7
     },
     "cinnamon": {
       "name": "cinnamon"
@@ -105,7 +111,8 @@
       "staple": true
     },
     "cream-cheese": {
-      "name": "cream cheese"
+      "name": "cream cheese",
+      "shelfLifeDays": 21
     },
     "cream-of-chicken-soup": {
       "name": "cream of chicken soup"
@@ -138,7 +145,8 @@
       "staple": true
     },
     "egg": {
-      "name": "egg"
+      "name": "egg",
+      "shelfLifeDays": 28
     },
     "flour": {
       "name": "flour",
@@ -154,7 +162,8 @@
     },
     "fresh-parsley": {
       "name": "fresh parsley",
-      "staple": true
+      "staple": true,
+      "shelfLifeDays": 7
     },
     "frozen-mixed-vegetables": {
       "name": "frozen mixed vegetables"
@@ -172,20 +181,26 @@
       "staple": true
     },
     "grape-tomato": {
-      "name": "grape tomato"
+      "name": "grape tomato",
+      "shelfLifeDays": 7
     },
     "green-onion": {
-      "name": "green onion"
+      "name": "green onion",
+      "shelfLifeDays": 7
     },
     "green-pepper": {
-      "name": "green pepper"
+      "name": "green pepper",
+      "shelfLifeDays": 7
     },
     "ground-beef": {
-      "name": "ground beef"
+      "name": "ground beef",
+      "shelfLifeDays": 2,
+      "thaw": true
     },
     "heavy-cream": {
       "name": "heavy cream",
-      "staple": true
+      "staple": true,
+      "shelfLifeDays": 14
     },
     "honey": {
       "name": "honey"
@@ -197,7 +212,8 @@
       "name": "italian seasoning"
     },
     "jalapeno": {
-      "name": "jalapeno"
+      "name": "jalapeno",
+      "shelfLifeDays": 10
     },
     "jolly-rancher-blue-raspberry": {
       "name": "jolly rancher blue raspberry"
@@ -207,13 +223,15 @@
       "staple": true
     },
     "large-tortilla": {
-      "name": "large tortilla"
+      "name": "large tortilla",
+      "shelfLifeDays": 14
     },
     "lasagna-noodle": {
       "name": "lasagna noodle"
     },
     "lemon": {
-      "name": "lemon"
+      "name": "lemon",
+      "shelfLifeDays": 21
     },
     "macaroni": {
       "name": "macaroni"
@@ -225,7 +243,8 @@
       "name": "meatballs"
     },
     "mexican-cheese": {
-      "name": "mexican cheese"
+      "name": "mexican cheese",
+      "shelfLifeDays": 21
     },
     "mikes-hard-lemonade": {
       "name": "mikes hard lemonade"
@@ -233,7 +252,8 @@
     "milk": {
       "name": "milk",
       "staple": true,
-      "conversions": []
+      "conversions": [],
+      "shelfLifeDays": 10
     },
     "navy-beans": {
       "name": "navy beans"
@@ -249,7 +269,8 @@
       "name": "onion powder"
     },
     "orange": {
-      "name": "orange"
+      "name": "orange",
+      "shelfLifeDays": 14
     },
     "orange-sparkling-water": {
       "name": "orange sparkling water"
@@ -277,13 +298,19 @@
       "name": "popov"
     },
     "pork-butt-roast": {
-      "name": "pork butt roast"
+      "name": "pork butt roast",
+      "shelfLifeDays": 3,
+      "thaw": true
     },
     "pork-chop": {
-      "name": "pork chop"
+      "name": "pork chop",
+      "shelfLifeDays": 3,
+      "thaw": true
     },
     "pork-tenderloin": {
-      "name": "pork tenderloin"
+      "name": "pork tenderloin",
+      "shelfLifeDays": 3,
+      "thaw": true
     },
     "potato": {
       "name": "potato"
@@ -299,7 +326,8 @@
       "name": "red onion"
     },
     "red-pepper": {
-      "name": "red bell pepper"
+      "name": "red bell pepper",
+      "shelfLifeDays": 7
     },
     "red-pepper-flakes": {
       "name": "red pepper flakes",
@@ -321,7 +349,8 @@
       "staple": true
     },
     "ricotta-cheese": {
-      "name": "ricotta cheese"
+      "name": "ricotta cheese",
+      "shelfLifeDays": 7
     },
     "rubbed-sage": {
       "name": "rubbed sage",
@@ -340,11 +369,13 @@
       ]
     },
     "sharp-cheddar-cheese": {
-      "name": "sharp cheddar cheese"
+      "name": "sharp cheddar cheese",
+      "shelfLifeDays": 21
     },
     "shredded-cheese": {
       "name": "shredded cheese",
-      "conversions": []
+      "conversions": [],
+      "shelfLifeDays": 21
     },
     "sierra-mist": {
       "name": "sierra mist"
@@ -354,7 +385,8 @@
       "staple": true
     },
     "sour-cream": {
-      "name": "sour cream"
+      "name": "sour cream",
+      "shelfLifeDays": 14
     },
     "soy-sauce": {
       "name": "soy sauce",
@@ -368,14 +400,17 @@
     },
     "spinach": {
       "name": "spinach",
-      "conversions": []
+      "conversions": [],
+      "shelfLifeDays": 5
     },
     "sriracha": {
       "name": "sriracha",
       "staple": true
     },
     "steak": {
-      "name": "steak"
+      "name": "steak",
+      "shelfLifeDays": 3,
+      "thaw": true
     },
     "steak-seasoning": {
       "name": "steak seasoning",
@@ -394,7 +429,8 @@
     },
     "tortilla": {
       "name": "tortilla",
-      "conversions": []
+      "conversions": [],
+      "shelfLifeDays": 14
     },
     "vanilla-extract": {
       "name": "vanilla extract",

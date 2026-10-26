@@ -3,6 +3,10 @@
   "name": "Homemade Cinnamon Rolls (Cinnabon Copycat)",
   "source": "https://www.tastesoflizzyt.com/homemade-cinnamon-rolls/",
   "servings": 12,
+  "category": "breakfast",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "breakfast",
     "dessert",

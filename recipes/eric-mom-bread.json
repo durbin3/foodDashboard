@@ -3,6 +3,10 @@
   "name": "Eric Mom Bread",
   "source": "",
   "servings": null,
+  "category": "side",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [],
   "ingredients": [
     {

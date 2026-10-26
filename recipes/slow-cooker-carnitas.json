@@ -3,6 +3,10 @@
   "name": "Slow Cooker Carnitas",
   "source": "https://www.budgetbytes.com/slow-cooker-carnitas/",
   "servings": 8,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "pork",
     "slow cooker",

@@ -3,6 +3,10 @@
   "name": "Crockpot Taco Meat",
   "source": "https://tastyoven.com/crockpot-ground-beef-taco-meat/",
   "servings": 8,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "beef",
     "mexican",

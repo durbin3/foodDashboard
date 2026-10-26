@@ -3,6 +3,10 @@
   "name": "Mandi's Cheesy Potato Soup",
   "source": "",
   "servings": 5,
+  "category": "main",
+  "effort": null,
+  "prepMinutes": null,
+  "cookMinutes": null,
   "tags": [
     "soup",
     "comfort food",

@@ -2,6 +2,7 @@
 // straight into the repo (recipes/*.json, data/*.json) and can be committed.
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { DEFAULT_SETTINGS } from '../src/lib/settings.js'
 import {
   RECIPES_DIR,
   ROOT,
@@ -18,7 +19,8 @@ const DATA_DIR = path.join(ROOT, 'data')
 const ID_RE = /^[a-z0-9-]+$/
 
 const DATA_FILES = {
-  plan: { file: 'plan.json', fallback: { entries: [] } },
+  plan: { file: 'plan.json', fallback: { meals: [] } },
+  settings: { file: 'settings.json', fallback: DEFAULT_SETTINGS },
 }
 
 function readBody(req) {
@@ -84,6 +86,9 @@ async function mergeIngredient(from, into) {
     ...target,
     staple: !!(source.staple || target.staple) || undefined,
     buyUnit: target.buyUnit ?? source.buyUnit,
+    shelfLifeDays: target.shelfLifeDays ?? source.shelfLifeDays,
+    thaw: !!(source.thaw || target.thaw) || undefined,
+    purchase: target.purchase ?? source.purchase,
     conversions: [...(target.conversions ?? []), ...(source.conversions ?? [])],
   }
   delete registry.ingredients[from]

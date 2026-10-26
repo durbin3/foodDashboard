@@ -1,7 +1,8 @@
 // The ingredient registry (data/ingredients.json) and linking recipe
 // ingredients to it. Recipes reference ingredients by id; the registry holds
-// each ingredient's display name, staple and not-listed flags, "buy as" unit and conversions:
-//   { ingredients: { "<id>": { name, staple?, notListed?, buyUnit?, conversions? } } }
+// each ingredient's display name, staple and not-listed flags, "buy as" unit,
+// conversions, and storage (days it keeps, whether it's frozen and thawed, pack size):
+//   { ingredients: { "<id>": { name, staple?, notListed?, buyUnit?, conversions?, shelfLifeDays?, thaw?, purchase? } } }
 // Shared by the dev-server API and the import skill's link script.
 import fs from 'node:fs/promises'
 import path from 'node:path'
