@@ -251,6 +251,13 @@ The goal is to **find recipes we don't have yet** and add them without creating 
 ### 6.1 Finding candidates
 
 - Start with a few sites that publish schema.org recipe data and have searchable sitemaps or listing pages: Budget Bytes, Allrecipes, Serious Eats, RecipeTin Eats. A server script crawls their recipe sitemaps (politely: cached, rate-limited) and saves the extracted recipe data to `data/candidates/`, using the existing `extract-recipe.mjs`.
+- **Fetch test (2026-10-26),** plain HTTPS with a browser user agent:
+  - **Allrecipes:** sitemap index and recipe pages both fine. The extractor read the name, ingredients, steps, and prep and cook times from schema.org data.
+  - **RecipeTin Eats:** sitemap index and recipe pages both fine, same result.
+  - **Budget Bytes:** sitemaps fine, but recipe pages return 403 (a Cloudflare challenge). They'd need the Wayback Machine fallback.
+  - **The Kitchn:** 403 on the sitemap.
+  - **NYT Cooking:** no public sitemap (and it's paywalled).
+  - **Serious Eats, Simply Recipes:** the sitemap URLs return almost nothing. They need a different discovery route (category pages or site search).
 - **Risk:** some sites block automated requests (we've already seen 403s in the import skill). Expect to keep a list of which sites work, using the Wayback Machine as a fallback. Test this before building any UI.
 - Alternative or addition: a `find-recipes` Claude skill that uses web search for requests like "easy chicken dinners under 30 minutes" and saves its finds into the same candidates folder.
 
