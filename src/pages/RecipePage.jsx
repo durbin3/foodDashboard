@@ -335,30 +335,32 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                         )}
                         {FIELDS.map(([field, label, cls]) => (
                           <td key={field} className={cls} data-label={label}>
-                            <input
-                              ref={(el) => {
-                                if (el && field === FIELDS[0][0] && focusOnMount.current === ing.id) {
-                                  focusOnMount.current = null
-                                  el.focus()
+                            <span className="input-wrap">
+                              <input
+                                ref={(el) => {
+                                  if (el && field === FIELDS[0][0] && focusOnMount.current === ing.id) {
+                                    focusOnMount.current = null
+                                    el.focus()
+                                  }
+                                }}
+                                aria-label={`${label} for ${name}`}
+                                value={eff[field] ?? ''}
+                                className={field === 'quantity' && badQty ? 'invalid' : undefined}
+                                title={
+                                  field === 'quantity' && badQty
+                                    ? 'Not a number, so the grocery list can’t add it up. Use e.g. 1/2, 1 1/2 or 0.25.'
+                                    : undefined
                                 }
-                              }}
-                              aria-label={`${label} for ${name}`}
-                              value={eff[field] ?? ''}
-                              className={field === 'quantity' && badQty ? 'invalid' : undefined}
-                              title={
-                                field === 'quantity' && badQty
-                                  ? 'Not a number, so the grocery list can’t add it up. Use e.g. 1/2, 1 1/2 or 0.25.'
-                                  : undefined
-                              }
-                              list={field === 'item' ? 'known-items' : field === 'unit' ? 'known-units' : undefined}
-                              placeholder={field === 'unit' ? 'each' : undefined}
-                              onChange={(e) => setField(ing, field, e.target.value)}
-                            />
-                            {field === 'item' && isNewItem && (
-                              <span className="pill new" title="Not a known ingredient yet; saving creates it">
-                                new
-                              </span>
-                            )}
+                                list={field === 'item' ? 'known-items' : field === 'unit' ? 'known-units' : undefined}
+                                placeholder={field === 'unit' ? 'each' : undefined}
+                                onChange={(e) => setField(ing, field, e.target.value)}
+                              />
+                              {field === 'item' && isNewItem && (
+                                <span className="pill new" title="Not a known ingredient yet; saving creates it">
+                                  new
+                                </span>
+                              )}
+                            </span>
                             {field === 'item' && linksTo && (
                               <span className="field-note" title="Saved as this ingredient">
                                 = {linksTo}

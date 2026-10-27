@@ -158,10 +158,8 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .section-head h2, .view-steps h2 { margin: 0 0 8px; }
 .scale-picker select { margin-left: 6px; padding: 2px 6px; }
 .group-label { margin: 14px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
-.check-list { list-style: none; padding: 0; margin: 0; }
-.check-list li { padding: 5px 0; border-bottom: 1px solid var(--border); }
-.check-list label { display: flex; gap: 10px; align-items: baseline; cursor: pointer; }
-.check-list li.done span { text-decoration: line-through; color: var(--muted); }
+.ingredient-list { list-style: none; padding: 0; margin: 0; }
+.ingredient-list li { padding: 5px 0; border-bottom: 1px solid var(--border); }
 .read-steps { padding-left: 22px; margin: 0; font-size: 16px; line-height: 1.6; }
 .read-steps li { margin-bottom: 14px; padding-left: 4px; }
 .read-steps p { margin: 0; }
@@ -170,7 +168,6 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .steps-uses-label { padding-left: 12px; }
 .step-uses { list-style: none; margin: 0; padding: 0 0 0 12px; border-left: 2px solid var(--border); font-size: 14px; line-height: 1.45; }
 .read-steps .step-uses li { margin: 0 0 3px; padding: 0; }
-.step-uses li.done { text-decoration: line-through; color: var(--muted); }
 
 /* An amount that can be shown in other units: click it for the menu. */
 .amount-swap { position: relative; display: inline-block; }
@@ -204,14 +201,16 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .ing-group { margin-bottom: 20px; }
 .ing-table { width: 100%; border-collapse: collapse; }
 .ing-table th { text-align: left; font-weight: 500; font-size: 12px; color: var(--muted); padding: 4px; }
-.ing-table td { padding: 3px 4px; vertical-align: middle; }
+/* Top-aligned, so a note under one input ("Did you mean…?") grows the row downwards instead of shifting that input. */
+.ing-table td { padding: 3px 4px; vertical-align: top; }
+.ing-table td.original, .ing-table td.row-actions { padding-top: 7px; }
+.ing-table .input-wrap { position: relative; display: block; }
 .ing-table input { width: 100%; padding: 4px 6px; }
 .ing-table .original { width: 24%; font-size: 14px; }
 .ing-table .qty { width: 9%; }
 .ing-table .unit { width: 10%; }
 .ing-table .item { width: 22%; }
-.ing-table td.item { position: relative; }
-.ing-table td.item .pill { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); margin: 0; background: var(--surface); }
+.ing-table .input-wrap .pill { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); margin: 0; background: var(--surface); }
 .ing-table .note { width: 16%; }
 .ing-table .row-actions { white-space: nowrap; text-align: right; }
 .ing-table .row-actions button, .ing-table .row-actions select { padding: 2px 8px; font-size: 13px; margin-left: 4px; }
@@ -244,7 +243,6 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
   .ing-table .row-actions button, .ing-table .row-actions select { margin-left: 0; }
   /* Without the header row, label each box. */
   .ing-table td[data-label]::before { content: attr(data-label); display: block; font-size: 11px; line-height: 1.3; color: var(--muted); }
-  .ing-table td.item .pill { top: auto; bottom: 6px; transform: none; }
   .ing-table .row-actions select { max-width: 90px; }
   .view-columns { grid-template-columns: 1fr; gap: 8px; }
   .step-body { grid-template-columns: 1fr; gap: 6px; }

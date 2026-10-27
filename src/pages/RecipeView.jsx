@@ -15,10 +15,8 @@ const STANDARD_EDGES = unitGraph(BUILTIN_CONVERSIONS)
 /** The recipe for reading and cooking from; editing is one click away. */
 export default function RecipeView({ recipe, recipes, recipesById, plan, registry, actions }) {
   const [scale, setScale] = useState(1)
-  // Ingredients ticked off while prepping. Not saved; it's for this cook only.
-  const [ticked, setTicked] = useState(() => new Set())
   // Units picked to show amounts in (the tablespoon's dirty, so teaspoons): per
-  // ingredient, and per amount written in a step's text. Also just for this cook.
+  // ingredient, and per amount written in a step's text. Just for this cook.
   const [units, setUnits] = useState({})
   const [textUnits, setTextUnits] = useState({})
   const edgesById = useMemo(
@@ -54,12 +52,6 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
   const upcoming = plan.meals.filter((m) => usesThis(m) && (m.date ? m.date >= now : m.cycle >= addDays(now, -13)))
   const goesWith = isSide ? mainsFor(recipe.id, recipes) : pairedSides(recipe, recipesById)
   const rating = recipeRatings(plan, recipe.id)
-  const toggle = (id) =>
-    setTicked((t) => {
-      const next = new Set(t)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
 
   return (
     <article className="recipe-view">
@@ -154,21 +146,16 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
           {groups.map((group) => (
             <div key={group}>
               {group && <h3 className="group-label">{group}</h3>}
-              <ul className="check-list">
+              <ul className="ingredient-list">
                 {ingredients
                   .filter((i) => (i.group ?? '') === group)
                   .map((i) => (
-                    <li key={i.id} className={ticked.has(i.id) ? 'done' : ''}>
-                      <label>
-                        <input type="checkbox" checked={ticked.has(i.id)} onChange={() => toggle(i.id)} />
-                        <span>
-                          <strong>
-                            <IngredientAmount ing={i} scale={scale} edges={edgesOf(i)} picked={units[i.id]} onPick={(u) => pickUnit(i.id, u)} />
-                          </strong>{' '}
-                          {i.item}
-                          {i.note && <span className="muted">, {i.note}</span>}
-                        </span>
-                      </label>
+                    <li key={i.id}>
+                      <strong>
+                        <IngredientAmount ing={i} scale={scale} edges={edgesOf(i)} picked={units[i.id]} onPick={(u) => pickUnit(i.id, u)} />
+                      </strong>{' '}
+                      {i.item}
+                      {i.note && <span className="muted">, {i.note}</span>}
                     </li>
                   ))}
               </ul>
@@ -210,7 +197,7 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
                     {usesByStep[i].length > 0 && (
                       <ul className="step-uses" aria-label={`Ingredients for step ${i + 1}`}>
                         {usesByStep[i].map((line) => (
-                          <li key={line.id} className={ticked.has(line.id) ? 'done' : ''}>
+                          <li key={line.id}>
                             <StepUse line={line} edges={edgesOf(line)} picked={units[line.id]} onPick={(u) => pickUnit(line.id, u)} />
                           </li>
                         ))}
