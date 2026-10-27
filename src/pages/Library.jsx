@@ -2,12 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { cycleStart, formatDay, today } from '../lib/plan.js'
 import { formatRating, recipeRatings } from '../lib/ratings.js'
 import { activeIngredients, CATEGORIES, categoryOf, formatMinutes, isHandMade, modificationCount, recipeIssues, totalMinutes } from '../lib/recipe.js'
-import { realServings } from '../lib/meals.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 
 const SORTS = {
   name: (a, b) => a.name.localeCompare(b.name),
-  servings: (a, b) => (realServings(a) ?? Infinity) - (realServings(b) ?? Infinity),
   effort: (a, b) => (a.effort ?? Infinity) - (b.effort ?? Infinity),
   minutes: (a, b) => (a.minutes ?? Infinity) - (b.minutes ?? Infinity),
   // Best first when ascending; unrated last.
@@ -47,7 +45,7 @@ function useUrlState(query) {
   return [state, (patch) => setState((s) => ({ ...s, ...(typeof patch === 'function' ? patch(s) : patch) }))]
 }
 
-export default function Library({ recipes, plan, anchor, registry, query, actions }) {
+export default function Library({ recipes, plan, anchor, query, actions }) {
   const [{ cat, q: search, tags: activeTags, attention, sort }, set] = useUrlState(query)
   const highlight = query.get('new')
 
@@ -63,10 +61,6 @@ export default function Library({ recipes, plan, anchor, registry, query, action
     const now = today()
     const current = cycleStart(anchor)
     return inTab.map((r) => {
-      const ingredients = activeIngredients(r)
-      // Non-staples are what distinguish a recipe (and what you'd shop for); if
-      // everything is a staple (e.g. gravy), show the ingredients themselves.
-      const distinctive = ingredients.filter((i) => i.item && !registry.ingredients[i.ingredientId]?.staple).map((i) => i.item)
       const meals = plan.meals.filter((m) => m.recipeId === r.id || m.sides?.some((s) => s.recipeId === r.id))
       const past = meals.filter((m) => m.date && m.date < now).map((m) => m.date).sort()
       const upcoming = meals
@@ -74,8 +68,8 @@ export default function Library({ recipes, plan, anchor, registry, query, action
         .sort((a, b) => (a.date ?? `${a.cycle}~`).localeCompare(b.date ?? `${b.cycle}~`))
       return {
         ...r,
-        ingredients,
-        keyIngredients: distinctive.length ? distinctive : ingredients.map((i) => i.item).filter(Boolean),
+        // Kept for search, which also looks in ingredient names.
+        ingredients: activeIngredients(r),
         mods: modificationCount(r),
         handMade: isHandMade(r),
         issues: recipeIssues(r),
@@ -85,7 +79,7 @@ export default function Library({ recipes, plan, anchor, registry, query, action
         rating: recipeRatings(plan, r.id),
       }
     })
-  }, [inTab, plan, anchor, registry])
+  }, [inTab, plan, anchor])
 
   const q = search.trim().toLowerCase()
   const matches = (r) =>
@@ -176,12 +170,9 @@ export default function Library({ recipes, plan, anchor, registry, query, action
             <thead>
               <tr>
                 {sortHeader('name', 'Recipe', 'col-name')}
-                <th className="col-key">Key ingredients</th>
-                <th className="col-tags">Tags</th>
                 {sortHeader('rating', 'Rating', 'col-num')}
                 {sortHeader('effort', 'Effort', 'col-num')}
                 {sortHeader('minutes', 'Time', 'col-num col-time')}
-                {sortHeader('servings', 'Servings', 'col-num')}
                 {sortHeader('lastMade', 'Last made', 'col-date')}
                 <th className="col-plan">Plan</th>
               </tr>
@@ -204,24 +195,6 @@ export default function Library({ recipes, plan, anchor, registry, query, action
                       )}
                     </div>
                   </td>
-                  <td className="col-key small" title={r.keyIngredients.join(', ')}>
-                    <span className="clamp">{r.keyIngredients.join(', ')}</span>
-                  </td>
-                  <td className="col-tags">
-                    <div className="tags compact">
-                      {(r.tags ?? []).map((t) => (
-                        <button
-                          key={t}
-                          className={`tag ${activeTags.includes(t) ? 'on' : 'static'}`}
-                          aria-pressed={activeTags.includes(t)}
-                          onClick={() => toggleTag(t)}
-                          title={`Filter by ${t}`}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  </td>
                   <td
                     className="col-num"
                     title={
@@ -238,9 +211,6 @@ export default function Library({ recipes, plan, anchor, registry, query, action
                     {r.effort ?? <span className="muted">—</span>}
                   </td>
                   <td className="col-num col-time small">{r.minutes != null ? formatMinutes(r.minutes) : <span className="muted">—</span>}</td>
-                  <td className="col-num" title={r.trueServings != null && r.servings != null ? `Recipe says ${r.servings}` : undefined}>
-                    {realServings(r) ?? <span className="muted">—</span>}
-                  </td>
                   <td className="col-date small">{r.lastMade ? formatDay(r.lastMade) : <span className="muted">—</span>}</td>
                   <td className="col-plan">
                     {cat !== 'side' && (

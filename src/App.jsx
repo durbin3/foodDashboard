@@ -332,7 +332,7 @@ export default function App() {
     content = <SettingsPage settings={settings} actions={actions} />
   } else {
     title = 'Recipes'
-    content = <Library recipes={recipes} plan={plan} anchor={anchor} registry={registry} query={query} actions={actions} />
+    content = <Library recipes={recipes} plan={plan} anchor={anchor} query={query} actions={actions} />
   }
 
   useEffect(() => {
