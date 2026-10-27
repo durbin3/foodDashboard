@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { formatQuantity, normalizeUnit, parseQuantity } from '../lib/quantity.js'
 import { addDays, formatCycle, formatDay, today } from '../lib/plan.js'
-import { formatRating, recipeRatings } from '../lib/ratings.js'
+import { formatRating, recentMeal, recipeRatings } from '../lib/ratings.js'
 import { mainsFor, pairedSides, realServings } from '../lib/meals.js'
 import ServingsEditor from './ServingsEditor.jsx'
 import { activeIngredients, categoryOf, effectiveIngredient, formatMinutes, recipeIssues, scaleQuantity, totalMinutes } from '../lib/recipe.js'
@@ -13,7 +13,7 @@ const SCALES = [0.5, 1, 1.5, 2, 3]
 const STANDARD_EDGES = unitGraph(BUILTIN_CONVERSIONS)
 
 /** The recipe for reading and cooking from; editing is one click away. */
-export default function RecipeView({ recipe, recipes, recipesById, plan, registry, actions }) {
+export default function RecipeView({ recipe, recipes, recipesById, plan, registry, people, actions }) {
   const [scale, setScale] = useState(1)
   // Units picked to show amounts in (the tablespoon's dirty, so teaspoons): per
   // ingredient, and per amount written in a step's text. Just for this cook.
@@ -86,10 +86,16 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
           </span>
         )}
         {(recipe.tags ?? []).length > 0 && <span>{recipe.tags.join(' · ')}</span>}
-        {rating.times > 0 && (
+        {rating.times > 0 ? (
           <button className="link small" onClick={() => document.getElementById('ratings')?.scrollIntoView({ behavior: 'smooth' })}>
             ★ {formatRating(rating.average)} ({Object.entries(rating.byPerson).map(([p, n]) => `${p} ${formatRating(n)}`).join(', ')})
           </button>
+        ) : (
+          !isSide && (
+            <button className="link small" onClick={() => document.getElementById('ratings')?.scrollIntoView({ behavior: 'smooth' })}>
+              ☆ Rate it
+            </button>
+          )
         )}
         {goesWith.length > 0 && (
           <span>
@@ -212,9 +218,10 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
         </section>
       </div>
 
-      {rating.times > 0 && (
+      {(rating.times > 0 || !isSide) && (
         <section id="ratings" className="rating-history">
           <h2>Ratings</h2>
+          {!isSide && <RateForm key={recipe.id} meal={recentMeal(plan, recipe.id, now)} people={people} onSave={(r, note) => actions.rateRecipe(recipe.id, r, note)} />}
           <ul>
             {rating.history.map((h) => (
               <li key={h.id}>
@@ -229,6 +236,52 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
         </section>
       )}
     </article>
+  )
+}
+
+/**
+ * Rate it after cooking: a score per person and a note. Fills in from this
+ * week's meal of it if there is one; otherwise saving counts it as made today.
+ */
+function RateForm({ meal, people, onSave }) {
+  const [ratings, setRatings] = useState(meal?.ratings ?? {})
+  const [note, setNote] = useState(meal?.ratingNote ?? '')
+  useEffect(() => {
+    setRatings(meal?.ratings ?? {})
+    setNote(meal?.ratingNote ?? '')
+  }, [meal?.id, JSON.stringify(meal?.ratings), meal?.ratingNote])
+  const changed = JSON.stringify(ratings) !== JSON.stringify(meal?.ratings ?? {}) || note.trim() !== (meal?.ratingNote ?? '')
+  const any = Object.keys(ratings).length > 0
+  return (
+    <div className="rate-form small">
+      <span>{meal ? `How was it on ${formatDay(meal.date)}?` : 'Made it this week? Rate it:'}</span>
+      {people.map((p) => (
+        <span key={p} className="rating-input" role="group" aria-label={`${p}'s rating`}>
+          <span className="rating-person">{p}</span>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              className={ratings[p] >= n ? 'on' : ''}
+              aria-pressed={ratings[p] === n}
+              aria-label={`${p}: ${n} out of 5`}
+              onClick={() =>
+                setRatings((r) => {
+                  const { [p]: _, ...rest } = r
+                  // Clicking the current score clears it.
+                  return r[p] === n ? rest : { ...rest, [p]: n }
+                })
+              }
+            >
+              ★
+            </button>
+          ))}
+        </span>
+      ))}
+      <input className="rating-note" aria-label="Note about this meal" placeholder="Note (e.g. needed more salt)" value={note} onChange={(e) => setNote(e.target.value)} />
+      <button className="primary" disabled={!changed || (!any && !meal)} onClick={() => onSave(ratings, note.trim())}>
+        Save rating
+      </button>
+    </div>
   )
 }
 

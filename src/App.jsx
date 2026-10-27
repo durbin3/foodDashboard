@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './api.js'
-import { cycleStart, formatCycle, moveMeal, normalizePlan } from './lib/plan.js'
+import { cycleStart, formatCycle, formatDay, moveMeal, normalizePlan, today } from './lib/plan.js'
+import { recentMeal } from './lib/ratings.js'
 import { categoryOf, newRecipe, withNames } from './lib/recipe.js'
 import { DEFAULT_SETTINGS, normalizeSettings } from './lib/settings.js'
 import Library from './pages/Library.jsx'
@@ -234,6 +235,22 @@ export default function App() {
       notify(`Cleared ${meals.length} meal${meals.length === 1 ? '' : 's'}.`, { undo: () => restoreMeals(meals) })
       return removeMeals(meals.map((m) => m.id))
     },
+    /**
+     * Rate a recipe from its page: the ratings go on its meal from the last
+     * week, or, if it wasn't planned, on a new meal dated today.
+     */
+    rateRecipe: (recipeId, ratings, note) => {
+      const now = today()
+      const meal = recentMeal(plan, recipeId, now)
+      const patch = { ratings, ratingNote: note || undefined }
+      if (meal) {
+        notify(`Rated ${recipeName(recipeId)} (made ${formatDay(meal.date)}).`, { undo: () => updatePlan((p) => ({ ...p, meals: p.meals.map((m) => (m.id === meal.id ? meal : m)) })) })
+        return updatePlan((p) => ({ ...p, meals: p.meals.map((m) => (m.id === meal.id ? { ...m, ...patch } : m)) }))
+      }
+      const made = { id: crypto.randomUUID(), recipeId, cycle: cycleStart(anchor, now), date: now, scale: 1, ...patch }
+      notify(`Rated ${recipeName(recipeId)} and added it to the plan as made today.`, { undo: () => removeMeals([made.id]) })
+      return updatePlan((p) => ({ ...p, meals: [...p.meals, made] }))
+    },
     updateSettings,
     updateInventory,
     /** Patch one ingredient's settings (registering it if a recipe used an unknown id); undefined values are dropped when saved. */
@@ -310,6 +327,7 @@ export default function App() {
         recipesById={recipesById}
         plan={plan}
         registry={registry}
+        people={settings.people}
         actions={actions}
       />
     )

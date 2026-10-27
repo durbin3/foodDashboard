@@ -358,6 +358,7 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .rating-note { flex: 1; min-width: 180px; padding: 3px 8px; }
 .rating-history ul { list-style: none; padding: 0; margin: 0; }
 .rating-history li { padding: 4px 0; border-bottom: 1px solid var(--border); }
+.rate-form { display: flex; align-items: center; gap: 6px 16px; flex-wrap: wrap; padding: 8px 0 10px; border-bottom: 1px solid var(--border); }
 
 @media (max-width: 760px) {
   .day-slots { grid-template-columns: 1fr; gap: 4px; }

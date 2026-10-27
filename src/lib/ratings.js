@@ -1,3 +1,5 @@
+import { addDays } from './plan.js'
+
 // Ratings live on plan meals (each time a recipe was cooked), one 1-5 score
 // per person. A recipe's rating is the plain average of every score it got.
 
@@ -16,3 +18,17 @@ export function recipeRatings(plan, recipeId) {
 }
 
 export const formatRating = (n) => (n == null ? '' : (Math.round(n * 10) / 10).toFixed(1))
+
+/**
+ * The meal a rating given on the recipe page belongs to: the latest time it
+ * was on the plan in the last week (up to today), or null, in which case the
+ * rating means it was made today.
+ */
+export function recentMeal(plan, recipeId, now) {
+  const weekAgo = addDays(now, -6)
+  return (
+    plan.meals
+      .filter((m) => m.recipeId === recipeId && m.date && m.date >= weekAgo && m.date <= now)
+      .sort((a, b) => b.date.localeCompare(a.date))[0] ?? null
+  )
+}
