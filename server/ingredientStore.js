@@ -92,7 +92,7 @@ export function fillKnownConversions(registry, recipes) {
   const unitsById = new Map()
   for (const recipe of recipes) {
     for (const ing of recipe.ingredients) {
-      const version = ing.removed ? null : (ing.modified ?? ing.original)
+      const version = ing.modified ?? ing.original
       if (!version?.ingredientId || parseQuantity(version.quantity) == null) continue
       if (!unitsById.has(version.ingredientId)) unitsById.set(version.ingredientId, new Set())
       unitsById.get(version.ingredientId).add(version.unit ?? '')

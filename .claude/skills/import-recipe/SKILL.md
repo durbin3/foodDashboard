@@ -121,7 +121,7 @@ For example, "milk" becomes `whole milk`, "pepper" becomes `black pepper`, "oreg
 - When a note changes an amount or ingredient, keep `original` as imported and set `modified` to the user's version, a full `{quantity, unit, item, note}` object. Don't change `original`.
   - "1.5x sauce" means: multiply every ingredient in the Sauce group by 1.5 in `modified`, unless another note gives an explicit amount for that ingredient (the explicit amount wins).
   - If a tweak works out to the same amount as the original, leave `modified` as `null`.
-- To remove an ingredient, add `"removed": true`. For an ingredient the user adds, set `"original": null` and put it in `modified`.
+- To remove an ingredient, leave it out of `ingredients`. For an ingredient the user adds, set `"original": null` and put it in `modified`.
 - If a note is ambiguous, ask before encoding it as a modification. It's always safe to keep it in `notes`.
 
 ## 3b. Link ingredients to the registry

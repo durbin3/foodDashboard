@@ -22,7 +22,7 @@ const hasStepUses = (d) => Array.isArray(d.stepIngredients) && d.stepIngredients
 const cleaned = (draft) => {
   const ingredients = draft.ingredients.filter((i) => !isBlankIngredient(i))
   const kept = draft.steps.map((s) => !!s.trim())
-  const ids = new Set(ingredients.filter((i) => !i.removed).map((i) => i.id))
+  const ids = new Set(ingredients.map((i) => i.id))
   return {
     ...draft,
     steps: draft.steps.filter((_, i) => kept[i]),
@@ -300,13 +300,13 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                     const eff = effectiveIngredient(ing)
                     const changed = !!ing.modified && !!ing.original
                     const added = !ing.original && hasOriginals
-                    const rowClass = ing.removed ? 'removed' : changed ? 'changed' : added ? 'added' : ''
+                    const rowClass = changed ? 'changed' : added ? 'added' : ''
                     const name = eff.item?.trim() || 'new ingredient'
                     // A name links to an existing ingredient by its name, an alias, or the same words in another form.
                     const match = eff.item?.trim() ? matchIngredient(eff.item, registry) : null
                     const isNewItem = eff.item?.trim() && !match
                     const linksTo = match && match.how !== 'name' ? registry.ingredients[match.id]?.name : null
-                    const maybe = isNewItem && !ing.removed ? suggestIngredients(eff.item, registry, { limit: 2 }) : []
+                    const maybe = isNewItem ? suggestIngredients(eff.item, registry, { limit: 2 }) : []
                     const badQty = unparsedQuantity(eff.quantity)
                     return (
                       <tr key={ing.id} className={rowClass}>
@@ -314,9 +314,8 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                           <td className="original">
                             {ing.original ? (
                               <>
-                                <span className={changed || ing.removed ? 'struck' : ''}>{formatIngredient(ing.original)}</span>
+                                <span className={changed ? 'struck' : ''}>{formatIngredient(ing.original)}</span>
                                 {changed && <span className="pill">changed</span>}
-                                {ing.removed && <span className="pill">left out</span>}
                               </>
                             ) : (
                               <span className="pill">added by you</span>
@@ -334,7 +333,6 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                               }}
                               aria-label={`${label} for ${name}`}
                               value={eff[field] ?? ''}
-                              disabled={ing.removed}
                               className={field === 'quantity' && badQty ? 'invalid' : undefined}
                               title={
                                 field === 'quantity' && badQty
@@ -345,12 +343,12 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                               placeholder={field === 'unit' ? 'each' : undefined}
                               onChange={(e) => setField(ing, field, e.target.value)}
                             />
-                            {field === 'item' && isNewItem && !ing.removed && (
+                            {field === 'item' && isNewItem && (
                               <span className="pill new" title="Not a known ingredient yet; saving creates it">
                                 new
                               </span>
                             )}
-                            {field === 'item' && linksTo && !ing.removed && (
+                            {field === 'item' && linksTo && (
                               <span className="field-note" title="Saved as this ingredient">
                                 = {linksTo}
                               </span>
@@ -391,15 +389,7 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                               Undo edit
                             </button>
                           )}
-                          {!ing.original ? (
-                            <button onClick={() => update((d) => ({ ingredients: d.ingredients.filter((i) => i.id !== ing.id) }))}>Delete</button>
-                          ) : ing.removed ? (
-                            <button onClick={() => updateIngredient(ing.id, ({ removed, ...i }) => i)}>Put back</button>
-                          ) : (
-                            <button title="Leave this out of your version; the original stays for reference" onClick={() => updateIngredient(ing.id, (i) => ({ ...i, removed: true }))}>
-                              Leave out
-                            </button>
-                          )}
+                          <button onClick={() => update((d) => ({ ingredients: d.ingredients.filter((i) => i.id !== ing.id) }))}>Delete</button>
                         </td>
                       </tr>
                     )

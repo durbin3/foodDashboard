@@ -13,7 +13,7 @@ export const categoryOf = (recipe) => (CATEGORIES.some(([c]) => c === recipe.cat
 
 // Each ingredient keeps the imported `original` and an optional `modified`
 // override, so personal changes sit alongside the source recipe.
-//   { id, group, original: {quantity, unit, ingredientId, note} | null, modified: {...} | null, removed?: true }
+//   { id, group, original: {quantity, unit, ingredientId, note} | null, modified: {...} | null }
 // Ingredients added by hand have `original: null`. `ingredientId` points into
 // the registry (data/ingredients.json), which holds the display name.
 
@@ -34,9 +34,7 @@ export function effectiveIngredient(ing) {
 }
 
 export function activeIngredients(recipe) {
-  return recipe.ingredients
-    .filter((ing) => !ing.removed)
-    .map((ing) => ({ ...effectiveIngredient(ing), id: ing.id, group: ing.group }))
+  return recipe.ingredients.map((ing) => ({ ...effectiveIngredient(ing), id: ing.id, group: ing.group }))
 }
 
 export function sameIngredient(a, b) {
@@ -81,7 +79,7 @@ export const isHandMade = (recipe) => !recipe.ingredients.some((ing) => ing.orig
 /** Changes made to an imported recipe. Hand-made recipes have nothing to compare against, so 0. */
 export function modificationCount(recipe) {
   if (isHandMade(recipe)) return 0
-  return recipe.ingredients.filter((ing) => ing.removed || ing.modified || !ing.original).length
+  return recipe.ingredients.filter((ing) => ing.modified || !ing.original).length
 }
 
 /** Quantities that aren't numbers ("lil bit"), which the grocery list can't add up. */
