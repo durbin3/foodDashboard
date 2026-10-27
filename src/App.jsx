@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './api.js'
-import { cycleStart, formatCycle, normalizePlan } from './lib/plan.js'
+import { cycleStart, formatCycle, moveMeal, normalizePlan } from './lib/plan.js'
 import { categoryOf, newRecipe, withNames } from './lib/recipe.js'
 import { DEFAULT_SETTINGS, normalizeSettings } from './lib/settings.js'
 import Library from './pages/Library.jsx'
@@ -74,6 +74,9 @@ const byName = (a, b) => a.name.localeCompare(b.name)
 
 export default function App() {
   const [storedRecipes, setStoredRecipes] = useState(null)
+  // The latest recipes, including patches not yet re-rendered, so quick successive patches build on each other.
+  const latestRecipes = useRef(null)
+  latestRecipes.current = storedRecipes
   const [toasts, setToasts] = useState([])
   const [pending, setPending] = useState(0)
   const onSaving = (d) => setPending((n) => n + d)
@@ -144,6 +147,8 @@ export default function App() {
   }
 
   const recipeName = (id) => recipesById[id]?.name ?? 'Recipe'
+  // A meal changing day takes its leftover nights with it.
+  const withDate = (m, date) => moveMeal(m, date, date ? cycleStart(anchor, date) : m.cycle)
   const removeMeals = (ids) => updatePlan((p) => ({ ...p, meals: p.meals.filter((m) => !ids.includes(m.id)) }))
   const restoreMeals = (meals) => updatePlan((p) => ({ ...p, meals: [...p.meals, ...meals] }))
 
@@ -152,6 +157,15 @@ export default function App() {
     setLeaveGuard: (fn) => (leaveGuard.current = fn),
     createRecipe: (recipe) => run(api.createRecipe(recipe)).then(applySaved),
     saveRecipe: (recipe) => run(api.saveRecipe(recipe)).then(applySaved),
+    /** Change a few fields of a saved recipe outside the editor (e.g. its real servings from the plan). */
+    patchRecipe: (id, patch) => {
+      const stored = latestRecipes.current?.find((r) => r.id === id)
+      if (!stored) return
+      const next = { ...stored, ...patch }
+      latestRecipes.current = latestRecipes.current.map((r) => (r.id === id ? next : r))
+      setStoredRecipes(latestRecipes.current)
+      return run(api.saveRecipe(next)).then(applySaved)
+    },
     deleteRecipe: async (id) => {
       await run(api.deleteRecipe(id))
       setStoredRecipes((rs) => rs.filter((r) => r.id !== id))
@@ -183,9 +197,35 @@ export default function App() {
       return updatePlan((p) => ({ ...p, meals: [...p.meals, ...meals] }))
     },
     /** Put several meals on days at once: { mealId: date }. */
-    placeMeals: (dates) => updatePlan((p) => ({ ...p, meals: p.meals.map((m) => (m.id in dates ? { ...m, date: dates[m.id] } : m)) })),
+    placeMeals: (dates) => updatePlan((p) => ({ ...p, meals: p.meals.map((m) => (m.id in dates ? withDate(m, dates[m.id]) : m)) })),
     setRecommendation: (cycleStart, rec) => updatePlan((p) => ({ ...p, recommendations: { ...p.recommendations, [cycleStart]: rec } })),
-    updateMeal: (id, patch) => updatePlan((p) => ({ ...p, meals: p.meals.map((m) => (m.id === id ? { ...m, ...patch } : m)) })),
+    updateMeal: (id, patch) =>
+      updatePlan((p) => ({
+        ...p,
+        meals: p.meals.map((m) => {
+          if (m.id !== id) return m
+          const { date, ...rest } = patch
+          const next = { ...m, ...rest }
+          return 'date' in patch && date !== m.date ? withDate(next, date) : next
+        }),
+      })),
+    /** A meal's leftover nights (dates after it's cooked); an empty list removes them. */
+    setLeftovers: (id, dates) =>
+      updatePlan((p) => ({
+        ...p,
+        meals: p.meals.map((m) => {
+          if (m.id !== id) return m
+          const { leftovers, ...rest } = m
+          return dates.length ? { ...rest, leftovers: [...new Set(dates)].sort() } : rest
+        }),
+      })),
+    /** Change one date's effort or whether we cook, away from its weekday's usual; null goes back to the usual. */
+    setDay: (date, patch) =>
+      updatePlan((p) => {
+        const { [date]: old, ...days } = p.days ?? {}
+        const next = patch && { ...old, ...patch }
+        return { ...p, days: next ? { ...days, [date]: next } : days }
+      }),
     removeMeal: (meal) => {
       notify(`Removed ${recipeName(meal.recipeId)} from the plan.`, { undo: () => restoreMeals([meal]) })
       return removeMeals([meal.id])
@@ -262,7 +302,18 @@ export default function App() {
     )
   } else if (page === 'recipe') {
     title = recipesById[param]?.name ?? 'Recipe not found'
-    content = <RecipeView key={param} recipe={recipesById[param]} recipes={recipes} recipesById={recipesById} plan={plan} registry={registry} actions={actions} />
+    content = (
+      <RecipeView
+        key={param}
+        recipe={recipesById[param]}
+        recipes={recipes}
+        recipesById={recipesById}
+        plan={plan}
+        registry={registry}
+        people={settings.people}
+        actions={actions}
+      />
+    )
   } else if (page === 'plan') {
     title = 'Meal plan'
     content = <PlanPage plan={plan} cycle={cycle} settings={settings} recipes={recipes} recipesById={recipesById} registry={registry} inventory={inventory} actions={actions} />

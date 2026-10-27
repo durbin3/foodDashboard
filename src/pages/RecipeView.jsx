@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { formatQuantity, normalizeUnit, parseQuantity } from '../lib/quantity.js'
 import { addDays, formatCycle, formatDay, today } from '../lib/plan.js'
 import { formatRating, recipeRatings } from '../lib/ratings.js'
-import { mainsFor, pairedSides } from '../lib/meals.js'
+import { mainsFor, pairedSides, realServings } from '../lib/meals.js'
+import ServingsEditor from './ServingsEditor.jsx'
 import { activeIngredients, categoryOf, effectiveIngredient, formatMinutes, recipeIssues, scaleQuantity, totalMinutes } from '../lib/recipe.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 import { convertQty, edgesFor, formatAmount, splitAmounts, stepIngredientsOf, stepLines, unitChoices } from '../lib/steps.js'
@@ -12,7 +13,7 @@ const SCALES = [0.5, 1, 1.5, 2, 3]
 const STANDARD_EDGES = unitGraph(BUILTIN_CONVERSIONS)
 
 /** The recipe for reading and cooking from; editing is one click away. */
-export default function RecipeView({ recipe, recipes, recipesById, plan, registry, actions }) {
+export default function RecipeView({ recipe, recipes, recipesById, plan, registry, people, actions }) {
   const [scale, setScale] = useState(1)
   // Ingredients ticked off while prepping. Not saved; it's for this cook only.
   const [ticked, setTicked] = useState(() => new Set())
@@ -116,6 +117,10 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
         )}
       </div>
 
+      <p className="view-servings">
+        <ServingsEditor recipe={recipe} people={people} actions={actions} />
+      </p>
+
       {issues.length > 0 && (
         <p className="notice small">
           This recipe has {issues.join(', ')}. <a href={`#/recipe/${recipe.id}/edit`}>Edit it</a> to fill that in.
@@ -139,7 +144,7 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
                 {SCALES.map((s) => (
                   <option key={s} value={s}>
                     ×{formatQuantity(s)}
-                    {recipe.servings ? ` (${formatQuantity(recipe.servings * s)} servings)` : ''}
+                    {realServings(recipe) ? ` (${formatQuantity(realServings(recipe) * s)} servings)` : ''}
                   </option>
                 ))}
               </select>

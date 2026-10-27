@@ -329,7 +329,14 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .slot.today { border-color: var(--accent); }
 .slot.past { opacity: 0.75; }
 .slot.no-cook { background: transparent; border-style: dashed; }
-.slot-head { display: flex; justify-content: space-between; align-items: baseline; gap: 4px; margin-bottom: 4px; flex-wrap: wrap; }
+/* Day name and "cook" on the first line, the day's effort under them. */
+.slot-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 4px; margin-bottom: 6px; }
+.day-controls { display: contents; }
+.day-cook { display: inline-flex; align-items: center; gap: 3px; color: var(--muted); cursor: pointer; }
+.day-cook input { margin: 0; }
+.day-effort { grid-column: 1; min-width: 0; width: 100%; padding: 1px 4px; font-size: 12px; }
+.day-reset { grid-column: 2; padding: 0 4px; }
+.slot.no-cook .day-effort { opacity: 0.5; }
 .slot-day { font-weight: 600; font-size: 13px; }
 .slot.today .slot-day { color: var(--accent); }
 
@@ -357,7 +364,7 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 
 @media (max-width: 760px) {
   .day-slots { grid-template-columns: 1fr; gap: 4px; }
-  .slot { min-height: 0; display: grid; grid-template-columns: 92px 1fr; gap: 0 8px; align-items: start; }
+  .slot { min-height: 0; display: grid; grid-template-columns: 120px 1fr; gap: 0 8px; align-items: start; }
   .slot-head { flex-direction: column; gap: 0; margin: 0; }
   .slot .meal-card { grid-column: 2; }
   .slot:not(:has(.meal-card))::after { content: ''; min-height: 24px; }
@@ -548,3 +555,16 @@ a.button.primary { background: var(--accent); color: var(--accent-text); border-
 .step-uses-edit .tag button { padding: 0 0 0 2px; color: var(--muted); }
 .step-uses-edit .use-amount { width: 7ch; padding: 0 4px; font-size: 12px; border-radius: 4px; }
 .step-uses-edit .side-add { border: 1px dashed var(--border); border-radius: 999px; padding: 2px 8px; font-size: 13px; color: var(--muted); }
+
+/* Leftovers: a later dinner from a meal cooked earlier. */
+.meal-card.leftover { background: transparent; border-style: dotted; }
+.meal-card.suggested.leftover { border-style: dashed; }
+.pool-leftovers { margin-top: 8px; }
+.pool-leftovers p { margin: 0; display: flex; align-items: center; gap: 8px; }
+.servings-row { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; gap: 6px 12px; }
+.servings-row .warn { color: var(--warn); }
+.leftover-days { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.leftover-days .tag { display: inline-flex; align-items: center; gap: 2px; }
+.leftover-days .tag button { padding: 0 0 0 4px; color: var(--muted); }
+.servings-input { width: 64px; padding: 2px 6px; }
+.view-servings { margin: -8px 0 16px; }

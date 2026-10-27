@@ -75,14 +75,19 @@ export function suggestMeals({ picked, recipes, recipesById, registry, inventory
     .sort((a, b) => b.score - a.score || a.recipe.name.localeCompare(b.recipe.name))
 }
 
-/** Pick `count` meals one at a time, each the best given those before it. Returns recipe ids in order. */
-export function fillCycle({ picked, count, ...rest }) {
+/**
+ * Pick meals one at a time, each the best given those before it, until they
+ * cover `count` dinners. `nights(recipeId)` is how many dinners one batch
+ * covers, leftovers included (default 1). Returns recipe ids in order.
+ */
+export function fillCycle({ picked, count, nights = () => 1, ...rest }) {
   const chosen = []
   let meals = picked
-  for (let i = 0; i < count; i++) {
+  for (let i = 0, covered = 0; covered < count; i++) {
     const [best] = suggestMeals({ picked: meals, ...rest })
     if (!best) break
     chosen.push(best.recipe.id)
+    covered += nights(best.recipe.id)
     meals = [...meals, { id: `fill-${i}`, recipeId: best.recipe.id, scale: 1 }]
   }
   return chosen

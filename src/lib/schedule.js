@@ -5,10 +5,12 @@
 // + perishable ingredients near or past their shelf life, weighted by
 // settings.weights, + a variety penalty for meals sharing a main protein on
 // the same or neighbouring days. Meals already on a day stay put; the rest
-// are assigned to the free days (cookable, not past, nothing on them) with the
-// Hungarian algorithm, then improved by swapping pairs to account for variety.
+// are assigned to the free days (cookable, not past, no meal or leftovers on
+// them) with the Hungarian algorithm, then improved by swapping pairs to
+// account for variety. Leftover nights of placed meals are then suggested for
+// the days still empty soon after.
 
-import { mealEffort, mealParts } from './meals.js'
+import { LEFTOVER_DAYS, leftoversToPlace, mealEffort, mealParts, mealServings } from './meals.js'
 import { addDays, cycleDates, daysBetween, formatDay, weekdayKey } from './plan.js'
 import { activeIngredients, capitalize } from './recipe.js'
 
@@ -16,15 +18,25 @@ const PROTEINS = new Set(['chicken', 'beef', 'pork', 'turkey', 'fish', 'seafood'
 // Cost of leaving a meal with no day, when there are more meals than free days.
 const NO_DAY = 1000
 
-/** The cycle's 14 days: date, days since the shopping trip (1-14), effort allowed (null on no-cook days). */
-export function cycleDays(cycle, settings) {
+/**
+ * The cycle's 14 days: { date, age: days since the shopping trip (1-14), effort, cook,
+ * budget: effort allowed (null on no-cook days), custom: changed from the usual for its weekday }.
+ * Each day takes its weekday's settings unless `overrides` (plan.days) changes that date.
+ */
+export function cycleDays(cycle, settings, overrides = {}) {
   const shopping = addDays(cycle, -1)
   return cycleDates(cycle).map((date) => {
     const key = weekdayKey(date)
-    const cook = !settings.noCookDays.includes(key)
-    return { date, age: daysBetween(shopping, date), budget: cook ? settings.dayEffort[key] : null }
+    const o = overrides[date] ?? {}
+    const effort = o.effort ?? settings.dayEffort[key]
+    const cook = o.cook ?? !settings.noCookDays.includes(key)
+    const custom = (o.effort != null && o.effort !== settings.dayEffort[key]) || (o.cook != null && o.cook === settings.noCookDays.includes(key))
+    return { date, age: daysBetween(shopping, date), effort, cook, budget: cook ? effort : null, custom }
   })
 }
+
+/** Dates with a meal or leftovers on them. */
+export const takenDates = (meals) => new Set(meals.flatMap((m) => (m.date ? [m.date, ...(m.leftovers ?? [])] : [])))
 
 /** What the scheduler needs to know about a meal: effort, main proteins, and ingredients that go off or need thawing. */
 export function mealFacts(meal, recipesById, registry) {
@@ -133,9 +145,9 @@ export function hungarian(cost) {
   return result
 }
 
-/** Days a meal could be recommended for: cookable, today or later, with nothing on them yet. */
+/** Days a meal could be recommended for: cookable, today or later, with no meal or leftovers on them yet. */
 export function freeDays(days, meals, now) {
-  const taken = new Set(meals.filter((m) => m.date).map((m) => m.date))
+  const taken = takenDates(meals)
   return days.filter((d) => d.budget != null && d.date >= now && !taken.has(d.date))
 }
 
@@ -197,13 +209,14 @@ export function recommend({ meals, days, now, recipesById, registry, weights }) 
 // A saved recommendation records what it was based on, so it's reused until
 // something other than following it changes: settings, a meal's recipe, sides
 // or effort, meals added or removed, or a meal placed somewhere else.
-// Only the weights that affect which day a meal goes on (cost and recency rank meal suggestions instead).
-const settingsKey = ({ dayEffort, noCookDays, weights: { effort, freshness, variety } }) => JSON.stringify([dayEffort, noCookDays, effort, freshness, variety])
+// Only the weights that affect which day a meal goes on (cost and recency rank
+// meal suggestions instead), and each day's effort allowed (null: no cooking).
+const settingsKey = (days, { weights: { effort, freshness, variety } }) => JSON.stringify([days.map((d) => d.budget), effort, freshness, variety])
 const mealKey = (m, recipesById) => JSON.stringify([m.recipeId, (m.sides ?? []).map((s) => s.recipeId), mealEffort(m, recipesById)])
 
 export function buildRecommendation({ meals, days, now, recipesById, registry, settings }) {
   return {
-    settings: settingsKey(settings),
+    settings: settingsKey(days, settings),
     meals: Object.fromEntries(meals.map((m) => [m.id, mealKey(m, recipesById)])),
     placed: Object.fromEntries(meals.filter((m) => m.date).map((m) => [m.id, m.date])),
     days: recommend({ meals, days, now, recipesById, registry, weights: settings.weights }),
@@ -211,7 +224,7 @@ export function buildRecommendation({ meals, days, now, recipesById, registry, s
 }
 
 export function recommendationStillFits(rec, { meals, days, now, recipesById, settings }) {
-  if (!rec || rec.settings !== settingsKey(settings)) return false
+  if (!rec || rec.settings !== settingsKey(days, settings)) return false
   const ids = new Set(meals.map((m) => m.id))
   if (Object.keys(rec.meals).length !== ids.size || ![...ids].every((id) => rec.meals[id] === mealKey(meals.find((m) => m.id === id), recipesById)))
     return false
@@ -232,9 +245,9 @@ export function recommendationStillFits(rec, { meals, days, now, recipesById, se
 
 /**
  * Problems with meals already on a day: { byMeal: { mealId: [text] }, thaw: { date: [text] } }.
- * Freshness warnings go on the meal; thaw reminders go on the day before it.
+ * Freshness and leftover warnings go on the meal; thaw reminders go on the day before it.
  */
-export function cycleWarnings({ meals, days, recipesById, registry }) {
+export function cycleWarnings({ meals, days, recipesById, registry, settings }) {
   const byDate = new Map(days.map((d) => [d.date, d]))
   const shopping = days.length ? addDays(days[0].date, -1) : null
   const byMeal = {}
@@ -244,8 +257,16 @@ export function cycleWarnings({ meals, days, recipesById, registry }) {
     if (!day) continue
     const facts = mealFacts(m, recipesById, registry)
     const stale = facts.perishables.filter((p) => day.age > p.shelf)
-    if (stale.length)
-      byMeal[m.id] = stale.map((p) => `${capitalize(p.name)} bought ${formatDay(shopping)} is ${day.age} days old by ${formatDay(m.date)} (keeps ${p.shelf}).`)
+    const notes = stale.map((p) => `${capitalize(p.name)} bought ${formatDay(shopping)} is ${day.age} days old by ${formatDay(m.date)} (keeps ${p.shelf}).`)
+    const leftovers = m.leftovers ?? []
+    if (leftovers.length) {
+      const made = mealServings(m, recipesById[m.recipeId], settings?.people)?.leftovers ?? 0
+      if (leftovers.length > made)
+        notes.push(`Leftovers are planned for ${leftovers.length} night${leftovers.length === 1 ? '' : 's'}, but it only makes enough for ${made}.`)
+      const old = leftovers.filter((d) => daysBetween(m.date, d) > LEFTOVER_DAYS)
+      if (old.length) notes.push(`Leftovers on ${old.map(formatDay).join(', ')} are more than ${LEFTOVER_DAYS} days old.`)
+    }
+    if (notes.length) byMeal[m.id] = notes
     const frozen = facts.thaws.filter((t) => day.age > t.shelf)
     if (frozen.length) {
       const before = addDays(m.date, -1)
@@ -253,4 +274,30 @@ export function cycleWarnings({ meals, days, recipesById, registry }) {
     }
   }
   return { byMeal, thaw }
+}
+
+/**
+ * Days for the leftover nights not on a day yet: { [mealId]: [date] }. Each
+ * goes on the earliest day within LEFTOVER_DAYS after cooking that's today or
+ * later and has nothing on it and no meal suggested (`suggested`: dates the
+ * scheduler picked for meals), no-cook days first, since those are what
+ * leftovers are for.
+ */
+export function suggestLeftovers({ meals, days, now, recipesById, settings, suggested = [] }) {
+  const taken = new Set([...takenDates(meals), ...suggested])
+  const out = {}
+  const placed = meals.filter((m) => m.date).sort((a, b) => a.date.localeCompare(b.date))
+  for (const m of placed) {
+    let left = leftoversToPlace(m, recipesById[m.recipeId], settings.people)
+    const options = days
+      .filter((d) => d.date > m.date && d.date >= now && daysBetween(m.date, d.date) <= LEFTOVER_DAYS && !taken.has(d.date))
+      .sort((a, b) => a.cook - b.cook || a.date.localeCompare(b.date))
+    for (const d of options) {
+      if (left <= 0) break
+      ;(out[m.id] ??= []).push(d.date)
+      taken.add(d.date)
+      left--
+    }
+  }
+  return out
 }

@@ -287,6 +287,19 @@ As built (`src/lib/match.js`, tested in `match.test.js`):
 
 ---
 
+## Phase 7: Day settings on the plan, real servings and leftovers (done)
+
+As built:
+
+- **Per-day settings.** Each day square has a "cook" checkbox and an effort menu, saved for that date only in `plan.days` (`{ "2026-10-28": { "effort": 5, "cook": false } }`). Days start from the usual weekday values in Settings; ↺ on a changed day puts it back. The saved day suggestion is re-solved when a day's effort or cooking changes.
+- **Real servings.** Recipes can record `trueServings` (what a batch really makes, at our portions) and `servingsPerMeal` (default: one per person). Without `trueServings`, the stated `servings` is used and the card shows "~3 dinners". Both are edited inline on the plan's meal panel and the recipe page (saved straight to the recipe), and in the editor. Once a meal's day has passed and it still uses the stated count, the panel asks how many it really made.
+- **Leftovers.** A meal makes `floor(servings × scale / per dinner)` dinners; the extra ones are leftover nights, stored as `meal.leftovers: [dates]` after the cooking day. They show as dotted ↺ cards that drag between days (and back to the Meals section to unplace), or are picked from the meal panel. Unplaced ones wait in the Meals section, with "Place as suggested".
+- **Scheduling.** Days with leftovers aren't free for meal suggestions. Leftover nights are suggested for the earliest empty day within 4 days of cooking, no-cook days first, after the meal suggestions. Moving a meal moves its leftovers by the same number of days; taking it off its day drops them. Warnings flag more leftover nights than a batch makes, and leftovers more than 4 days old.
+- **Counting dinners.** The Meals heading shows how many dinners the picks cover with leftovers, and "Fill the open days" counts each pick's leftover nights.
+- **Not done.** Meal suggestions for days don't reserve room for the leftovers of meals not yet on a day; with leftovers, picking fewer meals is up to us (the dinner count in the heading helps).
+
+---
+
 ## Order and dependencies
 
 | Phase | Depends on | Delivers |
@@ -310,4 +323,4 @@ Phase 6.3 (ingredient matching) doesn't depend on anything else and can be done 
 
 ## Open questions
 
-- **No-cook days:** are leftovers nights common enough to need their own slot type, maybe with a "leftovers of X" link?
+- ~~**No-cook days:** are leftovers nights common enough to need their own slot type?~~ Answered by Phase 7: leftover nights are their own cards on a day.

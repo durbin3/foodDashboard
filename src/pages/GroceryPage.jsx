@@ -157,7 +157,7 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
   return (
     <section>
       {weekNav}
-      <CycleNotes meals={entries} days={cycleDays(cycle, settings)} recipesById={recipesById} registry={registry} />
+      <CycleNotes meals={entries} days={cycleDays(cycle, settings, plan.days)} recipesById={recipesById} registry={registry} settings={settings} />
       <details className="small muted meals-included">
         <summary>
           From {entries.length} meal{entries.length === 1 ? '' : 's'}
@@ -215,8 +215,8 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
 }
 
 /** Thawing reminders and freshness problems for the cycle, so they're seen when shopping. */
-function CycleNotes({ meals, days, recipesById, registry }) {
-  const { byMeal, thaw } = cycleWarnings({ meals, days, recipesById, registry })
+function CycleNotes({ meals, days, recipesById, registry, settings }) {
+  const { byMeal, thaw } = cycleWarnings({ meals, days, recipesById, registry, settings })
   const thawDays = Object.keys(thaw).sort()
   const stale = meals.filter((m) => byMeal[m.id])
   if (!thawDays.length && !stale.length) return null

@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { buildRecommendation, cycleDays, cycleWarnings, hungarian, recommend, recommendationStillFits } from './schedule.js'
+import { buildRecommendation, cycleDays, cycleWarnings, freeDays, hungarian, recommend, recommendationStillFits, suggestLeftovers } from './schedule.js'
 
 const settings = {
+  people: ['Eric', 'Sarah'],
   dayEffort: { mon: 2, tue: 2, wed: 2, thu: 2, fri: 2, sat: 5, sun: 5 },
   noCookDays: ['fri'],
   weights: { effort: 1, freshness: 1, variety: 1 },
@@ -74,7 +75,9 @@ test('a saved recommendation survives following it but not deviating from it', (
 
   assert.ok(!recommendationStillFits(rec, ctx([...meals, meal('d', 'soup')])), 'a new meal re-solves')
   assert.ok(!recommendationStillFits(rec, ctx(meals.slice(1))), 'a removed meal re-solves')
-  assert.ok(!recommendationStillFits(rec, { ...ctx(meals), settings: { ...settings, dayEffort: { ...settings.dayEffort, mon: 5 } } }), 'new settings re-solve')
+  const busierMonday = cycleDays(cycle, settings, { '2026-10-26': { effort: 5 } })
+  assert.ok(!recommendationStillFits(rec, { ...ctx(meals), days: busierMonday }), 'a day with new effort re-solves')
+  assert.ok(!recommendationStillFits(rec, { ...ctx(meals), settings: { ...settings, weights: { ...settings.weights, effort: 2 } } }), 'new weights re-solve')
 })
 
 test('a placed meal taken back off its day re-solves', () => {
@@ -93,4 +96,30 @@ test('warnings: stale perishables on the meal, thawing the day before', () => {
   // Day 2 is within the chicken's 2-day shelf life: still in the fridge.
   assert.equal(thaw['2026-10-26'], undefined)
   assert.equal(byMeal.b, undefined)
+})
+
+test('a single date can change its effort or whether we cook', () => {
+  const custom = cycleDays(cycle, settings, { '2026-10-27': { effort: 4 }, '2026-10-30': { cook: true }, '2026-10-31': { cook: false } })
+  assert.deepEqual([custom[1].budget, custom[1].custom], [4, true])
+  assert.deepEqual([custom[4].budget, custom[4].custom], [2, true]) // Friday, normally no cooking
+  assert.deepEqual([custom[5].budget, custom[5].custom], [null, true])
+  assert.equal(custom[8].budget, 2) // the next Tuesday keeps the usual
+  // An override that matches the usual isn't a change.
+  assert.equal(cycleDays(cycle, settings, { '2026-10-27': { effort: 2 } })[1].custom, false)
+})
+
+test('leftover nights take their day and are suggested soon after cooking', () => {
+  const big = { ...recipe('chili', 2, ['beef']), servings: 8, trueServings: 6 }
+  const byId = { ...recipesById, chili: big }
+  const cooked = { ...meal('a', 'chili', '2026-10-27'), leftovers: ['2026-10-28'] }
+  // 6 servings, 2 per dinner: cooking night plus 2 leftover nights, one placed.
+  assert.ok(!freeDays(days, [cooked], now).some((d) => d.date === '2026-10-28'))
+  // Friday is a no-cook day within 4 days, so the other leftover night goes there first.
+  assert.deepEqual(suggestLeftovers({ meals: [cooked], days, now, recipesById: byId, settings }), { a: ['2026-10-30'] })
+  assert.deepEqual(suggestLeftovers({ meals: [cooked], days, now, recipesById: byId, settings, suggested: ['2026-10-30'] }), { a: ['2026-10-29'] })
+
+  const tooMany = { ...cooked, leftovers: ['2026-10-28', '2026-10-29', '2026-11-02'] }
+  const { byMeal } = cycleWarnings({ ...ctx([tooMany]), recipesById: byId })
+  assert.match(byMeal.a[0], /3 nights, but it only makes enough for 2/)
+  assert.match(byMeal.a[1], /more than 4 days old/)
 })

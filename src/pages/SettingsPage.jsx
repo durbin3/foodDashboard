@@ -28,8 +28,11 @@ export default function SettingsPage({ settings, actions }) {
         <span className="muted">Pick the Monday after any shopping trip. Other dates move to the Monday of their week.</span>
       </label>
 
-      <h2>Effort by day</h2>
-      <p className="muted small">The most effort you're up for on each day. Meal recommendations put harder meals on days that allow them.</p>
+      <h2>Usual effort by weekday</h2>
+      <p className="muted small">
+        The most effort you're up for on each weekday, and whether you usually cook. Every day on the meal plan starts from these; change a
+        single day's effort or cooking right on the plan. Meal recommendations put harder meals on days that allow them.
+      </p>
       <table className="day-settings">
         <thead>
           <tr>

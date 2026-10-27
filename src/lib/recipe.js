@@ -100,7 +100,7 @@ export function formatMinutes(min) {
 export function recipeIssues(recipe) {
   const issues = []
   if (!recipe.steps?.some((s) => s.trim())) issues.push('no steps')
-  if (!recipe.servings) issues.push('no servings')
+  if (!recipe.servings && !recipe.trueServings) issues.push('no servings')
   if (!recipe.effort) issues.push('no effort')
   if (activeIngredients(recipe).some((i) => unparsedQuantity(i.quantity))) issues.push('unclear amounts')
   return issues

@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { cycleStart, formatDay, today } from '../lib/plan.js'
 import { formatRating, recipeRatings } from '../lib/ratings.js'
 import { activeIngredients, CATEGORIES, categoryOf, formatMinutes, isHandMade, modificationCount, recipeIssues, totalMinutes } from '../lib/recipe.js'
+import { realServings } from '../lib/meals.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 
 const SORTS = {
   name: (a, b) => a.name.localeCompare(b.name),
-  servings: (a, b) => (a.servings ?? Infinity) - (b.servings ?? Infinity),
+  servings: (a, b) => (realServings(a) ?? Infinity) - (realServings(b) ?? Infinity),
   effort: (a, b) => (a.effort ?? Infinity) - (b.effort ?? Infinity),
   minutes: (a, b) => (a.minutes ?? Infinity) - (b.minutes ?? Infinity),
   // Best first when ascending; unrated last.
@@ -237,7 +238,9 @@ export default function Library({ recipes, plan, anchor, registry, query, action
                     {r.effort ?? <span className="muted">—</span>}
                   </td>
                   <td className="col-num col-time small">{r.minutes != null ? formatMinutes(r.minutes) : <span className="muted">—</span>}</td>
-                  <td className="col-num">{r.servings ?? <span className="muted">—</span>}</td>
+                  <td className="col-num" title={r.trueServings != null && r.servings != null ? `Recipe says ${r.servings}` : undefined}>
+                    {realServings(r) ?? <span className="muted">—</span>}
+                  </td>
                   <td className="col-date small">{r.lastMade ? formatDay(r.lastMade) : <span className="muted">—</span>}</td>
                   <td className="col-plan">
                     {cat !== 'side' && (
