@@ -217,7 +217,6 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .ing-table .row-actions select { max-width: 110px; }
 .ing-table tr.changed td { background: var(--changed); }
 .ing-table tr.added td { background: var(--added); }
-.struck { text-decoration: line-through; color: var(--muted); }
 
 .steps li { margin-bottom: 8px; }
 

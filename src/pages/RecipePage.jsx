@@ -325,7 +325,9 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
                           <td className="original">
                             {ing.original ? (
                               <>
-                                <span className={changed ? 'struck' : ''}>{formatIngredient(ing.original)}</span>
+                                <span className={changed ? 'muted' : ''} title={changed ? 'As the recipe wrote it, before your change' : undefined}>
+                                  {formatIngredient(ing.original)}
+                                </span>
                                 {changed && <span className="pill">changed</span>}
                               </>
                             ) : (
