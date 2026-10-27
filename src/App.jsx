@@ -310,7 +310,6 @@ export default function App() {
         recipesById={recipesById}
         plan={plan}
         registry={registry}
-        people={settings.people}
         actions={actions}
       />
     )

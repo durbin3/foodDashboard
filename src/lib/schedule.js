@@ -260,7 +260,7 @@ export function cycleWarnings({ meals, days, recipesById, registry, settings }) 
     const notes = stale.map((p) => `${capitalize(p.name)} bought ${formatDay(shopping)} is ${day.age} days old by ${formatDay(m.date)} (keeps ${p.shelf}).`)
     const leftovers = m.leftovers ?? []
     if (leftovers.length) {
-      const made = mealServings(m, recipesById[m.recipeId], settings?.people)?.leftovers ?? 0
+      const made = mealServings(m, recipesById[m.recipeId])?.leftovers ?? 0
       if (leftovers.length > made)
         notes.push(`Leftovers are planned for ${leftovers.length} night${leftovers.length === 1 ? '' : 's'}, but it only makes enough for ${made}.`)
       const old = leftovers.filter((d) => daysBetween(m.date, d) > LEFTOVER_DAYS)
@@ -288,7 +288,7 @@ export function suggestLeftovers({ meals, days, now, recipesById, settings, sugg
   const out = {}
   const placed = meals.filter((m) => m.date).sort((a, b) => a.date.localeCompare(b.date))
   for (const m of placed) {
-    let left = leftoversToPlace(m, recipesById[m.recipeId], settings.people)
+    let left = leftoversToPlace(m, recipesById[m.recipeId])
     const options = days
       .filter((d) => d.date > m.date && d.date >= now && daysBetween(m.date, d.date) <= LEFTOVER_DAYS && !taken.has(d.date))
       .sort((a, b) => a.cook - b.cook || a.date.localeCompare(b.date))

@@ -3,7 +3,6 @@ import { test } from 'node:test'
 import { buildRecommendation, cycleDays, cycleWarnings, freeDays, hungarian, recommend, recommendationStillFits, suggestLeftovers } from './schedule.js'
 
 const settings = {
-  people: ['Eric', 'Sarah'],
   dayEffort: { mon: 2, tue: 2, wed: 2, thu: 2, fri: 2, sat: 5, sun: 5 },
   noCookDays: ['fri'],
   weights: { effort: 1, freshness: 1, variety: 1 },

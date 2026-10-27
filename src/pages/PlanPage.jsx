@@ -43,14 +43,13 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   const suggestedOn = (date) => meals.find((m) => suggestionFor(m) === date)
   const suggestions = meals.filter((m) => suggestionFor(m))
   const warnings = cycleWarnings(context)
-  const people = settings.people
-  const servingsOf = (m) => mealServings(m, recipesById[m.recipeId], people)
+  const servingsOf = (m) => mealServings(m, recipesById[m.recipeId])
   // Leftover nights of placed meals that aren't on a day yet, and where they'd go.
   const leftoverRec = suggestLeftovers({ ...context, suggested: suggestions.map(suggestionFor) })
   const leftoverOn = (date) => meals.find((m) => leftoverRec[m.id]?.includes(date))
   const looseLeftovers = meals
     .filter((m) => m.date)
-    .flatMap((m) => Array.from({ length: leftoversToPlace(m, recipesById[m.recipeId], people) }, (_, i) => [m, i]))
+    .flatMap((m) => Array.from({ length: leftoversToPlace(m, recipesById[m.recipeId]) }, (_, i) => [m, i]))
 
   // Meals worth adding, re-ranked after every pick. Only while there are days left to cook.
   const openDays = freeDays(cycleInfo, meals, now).length
@@ -61,7 +60,7 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   const covered = unplaced.reduce((n, m) => n + (servingsOf(m)?.nights ?? 1), 0) + looseLeftovers.length
   const toFill = Math.max(0, openDays - covered)
   const dinners = meals.reduce((n, m) => n + (servingsOf(m)?.nights ?? 1), 0)
-  const nightsOf = (recipeId) => mealServings({ scale: 1 }, recipesById[recipeId], people)?.nights ?? 1
+  const nightsOf = (recipeId) => mealServings({ scale: 1 }, recipesById[recipeId])?.nights ?? 1
   const selected = meals.find((m) => m.id === selectedId)
   // Sides get attached to a meal rather than planned on their own.
   const plannable = recipes.filter((r) => categoryOf(r) !== 'side')
@@ -587,7 +586,6 @@ function MealPanel({ meal, recipe, recipesById, sides, days, budget, warnings, s
           servings={servings}
           days={days}
           budget={budget}
-          people={people}
           madeIt={madeIt}
           leftoverSuggestion={leftoverSuggestion}
           onLeftover={onLeftover}
@@ -669,13 +667,13 @@ function SidesRow({ meal, recipe, recipesById, sides, actions }) {
  * stated count can be corrected after cooking), and the later days its
  * leftovers are eaten on.
  */
-function ServingsRow({ meal, recipe, servings, days, budget, people, madeIt, leftoverSuggestion, onLeftover, actions }) {
+function ServingsRow({ meal, recipe, servings, days, budget, madeIt, leftoverSuggestion, onLeftover, actions }) {
   const leftovers = meal.leftovers ?? []
   const toPlace = Math.max(0, (servings?.leftovers ?? 0) - leftovers.length)
   const later = days.filter((d) => meal.date && d > meal.date && !leftovers.includes(d))
   return (
     <div className="panel-row servings-row small">
-      <ServingsEditor recipe={recipe} people={people} actions={actions} />
+      <ServingsEditor recipe={recipe} actions={actions} />
       {servings && meal.scale !== 1 && (
         <span className="muted">
           ×{formatQuantity(meal.scale)}: {formatQuantity(servings.servings)} servings, {servings.nights} dinner{servings.nights === 1 ? '' : 's'}

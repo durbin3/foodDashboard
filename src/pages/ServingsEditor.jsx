@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
 import { formatQuantity } from '../lib/quantity.js'
-import { realServings, servingsPerMeal } from '../lib/meals.js'
+import { realServings, SERVINGS_PER_DINNER } from '../lib/meals.js'
 
 /**
- * A recipe's real servings and how many we eat per dinner, edited in place and
- * saved straight to the recipe. The stated servings are usually off, so this
- * is the quick way to correct them after cooking it.
+ * A recipe's real servings, edited in place and saved straight to the recipe.
+ * The stated servings are usually off, so this is the quick way to correct
+ * them after cooking it.
  */
-export default function ServingsEditor({ recipe, people, actions }) {
-  const per = servingsPerMeal(recipe, people)
+export default function ServingsEditor({ recipe, actions }) {
   const batch = realServings(recipe)
-  const dinners = batch ? Math.max(1, Math.floor(batch / per + 1e-9)) : null
+  const dinners = batch ? Math.max(1, Math.floor(batch / SERVINGS_PER_DINNER + 1e-9)) : null
   return (
     <span className="servings-editor small">
       <label title="How many servings a batch really makes, at the portions you eat">
@@ -27,21 +26,10 @@ export default function ServingsEditor({ recipe, people, actions }) {
         <span className="muted"> (recipe says {formatQuantity(recipe.servings)})</span>
       )}
       {recipe.trueServings == null && <span className="muted"> {recipe.servings ? '(recipe’s count)' : ''}</span>}
-      {' · '}
-      <label title="Servings eaten at one dinner of this recipe. Leave blank for one per person.">
-        we eat{' '}
-        <NumberField
-          value={recipe.servingsPerMeal ?? null}
-          placeholder={String(per)}
-          label={`Servings of ${recipe.name} eaten per dinner`}
-          onCommit={(n) => actions.patchRecipe(recipe.id, { servingsPerMeal: n })}
-        />{' '}
-        per dinner
-      </label>
       {dinners != null && (
         <span className="muted">
           {' '}
-          = {dinners} dinner{dinners === 1 ? '' : 's'}
+          = {dinners} dinner{dinners === 1 ? '' : 's'} at {SERVINGS_PER_DINNER} servings each
         </span>
       )}
     </span>

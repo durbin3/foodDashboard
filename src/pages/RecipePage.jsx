@@ -236,7 +236,7 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
           />
         </label>
         <label className="field">
-          Really makes <span className="muted small">(servings as you eat them)</span>
+          Really makes <span className="muted small">(servings as you eat them; a dinner is 2)</span>
           <input
             type="number"
             min="0.5"
@@ -244,16 +244,6 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
             placeholder={draft.servings ? String(draft.servings) : ''}
             value={draft.trueServings ?? ''}
             onChange={(e) => update({ trueServings: e.target.value === '' ? null : Number(e.target.value) })}
-          />
-        </label>
-        <label className="field">
-          Servings per dinner <span className="muted small">(blank: one per person)</span>
-          <input
-            type="number"
-            min="0.5"
-            step="0.5"
-            value={draft.servingsPerMeal ?? ''}
-            onChange={(e) => update({ servingsPerMeal: e.target.value === '' ? null : Number(e.target.value) })}
           />
         </label>
         <div className="field">

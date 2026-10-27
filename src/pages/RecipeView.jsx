@@ -13,7 +13,7 @@ const SCALES = [0.5, 1, 1.5, 2, 3]
 const STANDARD_EDGES = unitGraph(BUILTIN_CONVERSIONS)
 
 /** The recipe for reading and cooking from; editing is one click away. */
-export default function RecipeView({ recipe, recipes, recipesById, plan, registry, people, actions }) {
+export default function RecipeView({ recipe, recipes, recipesById, plan, registry, actions }) {
   const [scale, setScale] = useState(1)
   // Ingredients ticked off while prepping. Not saved; it's for this cook only.
   const [ticked, setTicked] = useState(() => new Set())
@@ -118,7 +118,7 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
       </div>
 
       <p className="view-servings">
-        <ServingsEditor recipe={recipe} people={people} actions={actions} />
+        <ServingsEditor recipe={recipe} actions={actions} />
       </p>
 
       {issues.length > 0 && (
