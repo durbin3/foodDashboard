@@ -56,6 +56,9 @@ export function cycleStart(anchor, iso = today()) {
 export const formatDay = (iso) =>
   fromISODate(iso).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 
+/** 'Oct 26' */
+export const formatMonthDay = (iso) => fromISODate(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+
 /** 'Mon 26' */
 export const formatShortDay = (iso) => fromISODate(iso).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })
 

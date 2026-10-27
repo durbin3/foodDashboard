@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { formatQuantity } from '../lib/quantity.js'
-import { addDays, CYCLE_DAYS, cycleStart, formatCycle, formatDay, formatShortDay, mealsForCycle, today } from '../lib/plan.js'
+import { addDays, CYCLE_DAYS, cycleStart, formatCycle, formatDay, formatMonthDay, formatShortDay, mealsForCycle, today } from '../lib/plan.js'
 import { leftoversToPlace, mealEffort, mealServings, pairedSides, realServings } from '../lib/meals.js'
 import { categoryOf, formatMinutes, totalMinutes } from '../lib/recipe.js'
 import { formatRating } from '../lib/ratings.js'
@@ -139,72 +139,82 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
     />
   )
 
-  const week = (i) => {
-    const dates = days.slice(i * 7, i * 7 + 7)
+  /** One day's square: its effort and cooking, thaw reminders, and what's on it or suggested for it. */
+  const slot = (d) => {
+    const info = cycleInfo.find((x) => x.date === d)
+    const b = info.budget
+    const dayMeals = meals.filter((m) => m.date === d)
+    const dayLeftovers = meals.filter((m) => m.leftovers?.includes(d))
+    const empty = !dayMeals.length && !dayLeftovers.length
+    const suggested = empty && suggestedOn(d)
+    const leftoverSuggested = empty && !suggested && leftoverOn(d)
+    const classes = ['slot', d < now && 'past', d === now && 'today', b == null && 'no-cook', dropTarget === d && 'drop']
     return (
-      <div key={i} className="plan-week">
-        <h3>
-          Week {i + 1} <span className="muted small">{`${formatDay(dates[0])} – ${formatDay(dates[6])}`}</span>
-        </h3>
-        <div className="day-slots">
-          {dates.map((d) => {
-            const info = cycleInfo.find((x) => x.date === d)
-            const b = info.budget
-            const dayMeals = meals.filter((m) => m.date === d)
-            const dayLeftovers = meals.filter((m) => m.leftovers?.includes(d))
-            const empty = !dayMeals.length && !dayLeftovers.length
-            const suggested = empty && suggestedOn(d)
-            const leftoverSuggested = empty && !suggested && leftoverOn(d)
-            const classes = ['slot', d < now && 'past', d === now && 'today', b == null && 'no-cook', dropTarget === d && 'drop']
-            return (
-              <div key={d} className={classes.filter(Boolean).join(' ')} {...dropZone(d, d)}>
-                <div className="slot-head">
-                  <span className="slot-day">{formatShortDay(d)}</span>
-                  <DayControls day={info} onChange={(patch) => actions.setDay(d, patch)} />
-                </div>
-                {warnings.thaw[d]?.map((t) => (
-                  <p key={t} className="thaw-note">
-                    ❄ {t}
-                  </p>
-                ))}
-                {dayMeals.map((m) => card(m, d))}
-                {dayLeftovers.map((m) => (
-                  <LeftoverCard
-                    key={m.id}
-                    meal={m}
-                    date={d}
-                    recipe={recipesById[m.recipeId]}
-                    selected={m.id === selectedId}
-                    onSelect={() => setSelectedId(m.id === selectedId ? null : m.id)}
-                  />
-                ))}
-                {leftoverSuggested && (
-                  <button
-                    className="meal-card suggested leftover"
-                    title="Leftovers suggested for this day. Click to put them here."
-                    onClick={() => moveLeftover(leftoverSuggested, null, d)}
-                  >
-                    <span className="meal-name">↺ {recipesById[leftoverSuggested.recipeId]?.name ?? leftoverSuggested.recipeId}</span>
-                    <span className="meal-meta">Leftovers suggested · click to place</span>
-                  </button>
-                )}
-                {suggested && (
-                  <button
-                    className="meal-card suggested"
-                    title="Suggested for this day. Click to put it here."
-                    onClick={() => actions.updateMeal(suggested.id, { date: d })}
-                  >
-                    <span className="meal-name">{recipesById[suggested.recipeId]?.name ?? suggested.recipeId}</span>
-                    <span className="meal-meta">Suggested · click to place</span>
-                  </button>
-                )}
-              </div>
-            )
-          })}
+      <div key={d} className={classes.filter(Boolean).join(' ')} {...dropZone(d, d)}>
+        <div className="slot-head">
+          <span className="slot-day">{formatMonthDay(d)}</span>
+          <DayControls day={info} onChange={(patch) => actions.setDay(d, patch)} />
         </div>
+        {warnings.thaw[d]?.map((t) => (
+          <p key={t} className="thaw-note">
+            ❄ {t}
+          </p>
+        ))}
+        {dayMeals.map((m) => card(m, d))}
+        {dayLeftovers.map((m) => (
+          <LeftoverCard
+            key={m.id}
+            meal={m}
+            date={d}
+            recipe={recipesById[m.recipeId]}
+            selected={m.id === selectedId}
+            onSelect={() => setSelectedId(m.id === selectedId ? null : m.id)}
+          />
+        ))}
+        {leftoverSuggested && (
+          <button
+            className="meal-card suggested leftover"
+            title="Leftovers suggested for this day. Click to put them here."
+            onClick={() => moveLeftover(leftoverSuggested, null, d)}
+          >
+            <span className="meal-name">↺ {recipesById[leftoverSuggested.recipeId]?.name ?? leftoverSuggested.recipeId}</span>
+            <span className="meal-meta">Leftovers suggested · click to place</span>
+          </button>
+        )}
+        {suggested && (
+          <button
+            className="meal-card suggested"
+            title="Suggested for this day. Click to put it here."
+            onClick={() => actions.updateMeal(suggested.id, { date: d })}
+          >
+            <span className="meal-name">{recipesById[suggested.recipeId]?.name ?? suggested.recipeId}</span>
+            <span className="meal-meta">Suggested · click to place</span>
+          </button>
+        )}
       </div>
     )
   }
+
+  // The two weeks side by side, one row per weekday, so each weekday is named once.
+  const calendar = (
+    <div className="calendar">
+      <div className="cal-row cal-head">
+        <span />
+        {[0, 1].map((w) => (
+          <h3 key={w}>
+            Week {w + 1} <span className="muted small">{`${formatMonthDay(days[w * 7])} – ${formatMonthDay(days[w * 7 + 6])}`}</span>
+          </h3>
+        ))}
+      </div>
+      {days.slice(0, 7).map((d, i) => (
+        <div key={d} className="cal-row">
+          <span className="cal-weekday">{WEEKDAY_SHORT[i]}</span>
+          {slot(d)}
+          {slot(days[i + 7])}
+        </div>
+      ))}
+    </div>
+  )
 
   return (
     <section className="plan">
@@ -228,103 +238,105 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
         </a>
       </div>
 
-      <div className={`meals-pool ${dropTarget === 'pool' ? 'drop' : ''}`} {...dropZone('pool', null)}>
-        <div className="pool-head">
-          <h3>
-            Meals{' '}
-            <span className="muted small">
-              {meals.length === 0
-                ? 'none picked yet'
-                : [
-                    `${meals.length} picked`,
-                    dinners > meals.length && `${dinners} dinners with leftovers`,
-                    unplaced.length ? `${unplaced.length} not on a day yet` : 'all on a day',
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-            </span>
-          </h3>
-          <form className="toolbar" onSubmit={add}>
-            <datalist id="recipe-names">
-              {plannable.map((r) => (
-                <option key={r.id} value={r.name} />
-              ))}
-            </datalist>
-            <input
-              ref={recipeInput}
-              type="search"
-              list="recipe-names"
-              placeholder="Add a meal…"
-              aria-label="Recipe to add"
-              value={recipeText}
-              onChange={(e) => setRecipeText(e.target.value)}
-            />
-            <button className="primary" disabled={!picked}>
-              Add
-            </button>
-          </form>
-        </div>
-        {ranked.length > 0 && (
-          <Suggestions
-            ranked={ranked}
-            toFill={toFill}
-            weights={settings.weights}
-            onAdd={(id) => actions.addToPlan(id)}
-            onFill={() => actions.addMeals(fillCycle({ ...suggestContext, count: toFill, nights: nightsOf }))}
-            onWeights={(weights) => actions.updateSettings((s) => ({ ...s, weights: { ...s.weights, ...weights } }))}
-          />
-        )}
-        {looseLeftovers.length > 0 && (
-          <div className="pool-leftovers">
-            <p className="small">
-              Leftovers not on a day yet{' '}
-              {Object.keys(leftoverRec).length > 0 && (
-                <button
-                  className="small"
-                  onClick={() =>
-                    Object.entries(leftoverRec).forEach(([id, dates]) => actions.setLeftovers(id, [...(meals.find((m) => m.id === id).leftovers ?? []), ...dates]))
-                  }
-                >
-                  Place as suggested
-                </button>
-              )}
-            </p>
-            <div className="pool-cards">
-              {looseLeftovers.map(([m, i]) => (
-                <LeftoverCard
-                  key={`${m.id}-${i}`}
-                  meal={m}
-                  date={null}
-                  recipe={recipesById[m.recipeId]}
-                  selected={m.id === selectedId}
-                  onSelect={() => setSelectedId(m.id === selectedId ? null : m.id)}
-                />
-              ))}
-            </div>
+      <div className="plan-layout">
+        <div className={`meals-pool ${dropTarget === 'pool' ? 'drop' : ''}`} {...dropZone('pool', null)}>
+          <div className="pool-head">
+            <h3>
+              Meals{' '}
+              <span className="muted small">
+                {meals.length === 0
+                  ? 'none picked yet'
+                  : [
+                      `${meals.length} picked`,
+                      dinners > meals.length && `${dinners} dinners with leftovers`,
+                      unplaced.length ? `${unplaced.length} not on a day yet` : 'all on a day',
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+              </span>
+            </h3>
+            <form className="toolbar" onSubmit={add}>
+              <datalist id="recipe-names">
+                {plannable.map((r) => (
+                  <option key={r.id} value={r.name} />
+                ))}
+              </datalist>
+              <input
+                ref={recipeInput}
+                type="search"
+                list="recipe-names"
+                placeholder="Add a meal…"
+                aria-label="Recipe to add"
+                value={recipeText}
+                onChange={(e) => setRecipeText(e.target.value)}
+              />
+              <button className="primary" disabled={!picked}>
+                Add
+              </button>
+            </form>
           </div>
-        )}
-        {unplaced.length > 0 ? (
-          <>
-            <div className="pool-cards">{unplaced.map((m) => card(m, null))}</div>
-            {suggestions.length > 0 && (
-              <p className="small pool-actions">
-                <button onClick={() => actions.placeMeals(Object.fromEntries(suggestions.map((m) => [m.id, suggestionFor(m)])))}>
-                  Place {suggestions.length === unplaced.length ? 'all' : suggestions.length} as suggested
-                </button>{' '}
-                <span className="muted">
-                  Suggestions fit each day's effort, use perishable ingredients early, and keep the same protein off back-to-back days.
-                </span>
+          {ranked.length > 0 && (
+            <Suggestions
+              ranked={ranked}
+              toFill={toFill}
+              weights={settings.weights}
+              onAdd={(id) => actions.addToPlan(id)}
+              onFill={() => actions.addMeals(fillCycle({ ...suggestContext, count: toFill, nights: nightsOf }))}
+              onWeights={(weights) => actions.updateSettings((s) => ({ ...s, weights: { ...s.weights, ...weights } }))}
+            />
+          )}
+          {looseLeftovers.length > 0 && (
+            <div className="pool-leftovers">
+              <p className="small">
+                Leftovers not on a day yet{' '}
+                {Object.keys(leftoverRec).length > 0 && (
+                  <button
+                    className="small"
+                    onClick={() =>
+                      Object.entries(leftoverRec).forEach(([id, dates]) => actions.setLeftovers(id, [...(meals.find((m) => m.id === id).leftovers ?? []), ...dates]))
+                    }
+                  >
+                    Place as suggested
+                  </button>
+                )}
               </p>
-            )}
-          </>
-        ) : (
-          <p className="muted small pool-empty">
-            {meals.length ? 'Drag a meal here to take it off its day.' : 'Pick the meals that sound good for these two weeks, then drag each onto a day.'}
-          </p>
-        )}
-      </div>
+              <div className="pool-cards">
+                {looseLeftovers.map(([m, i]) => (
+                  <LeftoverCard
+                    key={`${m.id}-${i}`}
+                    meal={m}
+                    date={null}
+                    recipe={recipesById[m.recipeId]}
+                    selected={m.id === selectedId}
+                    onSelect={() => setSelectedId(m.id === selectedId ? null : m.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {unplaced.length > 0 ? (
+            <>
+              <div className="pool-cards">{unplaced.map((m) => card(m, null))}</div>
+              {suggestions.length > 0 && (
+                <p className="small pool-actions">
+                  <button onClick={() => actions.placeMeals(Object.fromEntries(suggestions.map((m) => [m.id, suggestionFor(m)])))}>
+                    Place {suggestions.length === unplaced.length ? 'all' : suggestions.length} as suggested
+                  </button>{' '}
+                  <span className="muted">
+                    Suggestions fit each day's effort, use perishable ingredients early, and keep the same protein off back-to-back days.
+                  </span>
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="muted small pool-empty">
+              {meals.length ? 'Drag a meal here to take it off its day.' : 'Pick the meals that sound good for these two weeks, then drag each onto a day.'}
+            </p>
+          )}
+        </div>
 
-      {[0, 1].map(week)}
+        {calendar}
+      </div>
 
       <p className="muted small">
         Changes save automatically. Drag meals between days, or click one for more options.
@@ -362,6 +374,8 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   )
 }
 
+const WEEKDAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
 const WEIGHTS = [
   ['cost', 'Shared ingredients', 'Prefer meals that need little you aren’t already buying'],
   ['variety', 'Variety', 'Avoid repeating a meal or a protein'],
@@ -370,8 +384,10 @@ const WEIGHTS = [
   ['freshness', 'Freshness', 'Use perishable ingredients before they go off'],
 ]
 
+// Only the best few: more is noise. The rest come up as these get picked.
+const SHOWN_SUGGESTIONS = 3
+
 function Suggestions({ ranked, toFill, weights, onAdd, onFill, onWeights }) {
-  const [shown, setShown] = useState(6)
   return (
     <div className="suggestions">
       <div className="suggestions-head small">
@@ -405,13 +421,12 @@ function Suggestions({ ranked, toFill, weights, onAdd, onFill, onWeights }) {
         </details>
       </div>
       <div className="suggestion-list">
-        {ranked.slice(0, shown).map((s) => (
+        {ranked.slice(0, SHOWN_SUGGESTIONS).map((s) => (
           <button key={s.recipe.id} className="suggestion-card" onClick={() => onAdd(s.recipe.id)} title={`Add ${s.recipe.name}`}>
             <span className="meal-name">+ {s.recipe.name}</span>
             <span className="meal-meta muted">
               {[
                 s.rating != null ? `★ ${formatRating(s.rating)}` : 'not rated',
-                s.extra === 0 ? 'nothing new to buy' : `${s.extra} new to buy`,
                 s.shared.length > 0 && `shares ${s.shared.slice(0, 2).join(', ')}${s.shared.length > 2 ? '…' : ''}`,
                 s.lastMade != null && s.lastMade < 28 && `made ${s.lastMade} day${s.lastMade === 1 ? '' : 's'} ago`,
               ]
@@ -420,11 +435,6 @@ function Suggestions({ ranked, toFill, weights, onAdd, onFill, onWeights }) {
             </span>
           </button>
         ))}
-        {ranked.length > shown && (
-          <button className="link small" onClick={() => setShown((n) => n + 6)}>
-            More…
-          </button>
-        )}
       </div>
     </div>
   )

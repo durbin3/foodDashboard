@@ -296,6 +296,7 @@ As built:
 - **Leftovers.** A meal makes `floor(servings × scale / 2)` dinners; the extra ones are leftover nights, stored as `meal.leftovers: [dates]` after the cooking day. They show as dotted ↺ cards that drag between days (and back to the Meals section to unplace), or are picked from the meal panel. Unplaced ones wait in the Meals section, with "Place as suggested".
 - **Scheduling.** Days with leftovers aren't free for meal suggestions. Leftover nights are suggested for the earliest empty day within 4 days of cooking, no-cook days first, after the meal suggestions. Moving a meal moves its leftovers by the same number of days; taking it off its day drops them. Warnings flag more leftover nights than a batch makes, and leftovers more than 4 days old.
 - **Counting dinners.** The Meals heading shows how many dinners the picks cover with leftovers, and "Fill the open days" counts each pick's leftover nights.
+- **Layout.** The plan page is two columns: the Meals list on the left, and a calendar on the right with one row per weekday (named once) holding that day in week 1 and week 2, rows separated by a bar. On narrow screens the list sits above the calendar. Meal suggestions show only the top 3, without the count of things to buy.
 - **Not done.** Meal suggestions for days don't reserve room for the leftovers of meals not yet on a day; with leftovers, picking fewer meals is up to us (the dinner count in the heading helps).
 
 ---
