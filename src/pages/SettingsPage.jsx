@@ -10,35 +10,29 @@ export default function SettingsPage({ settings, actions }) {
 
   return (
     <section className="settings">
-      <h2>Shopping cycle</h2>
-      <p className="small">
-        You shop every other Sunday, and a cycle is the two weeks (Monday to Sunday) after each trip. This cycle runs{' '}
-        <strong>
-          {formatDay(current)} – {formatDay(addDays(current, CYCLE_DAYS - 1))}
-        </strong>
-        , after shopping on {formatDay(shopping)}. Next shopping trip: <strong>{formatDay(nextShopping)}</strong>.
-      </p>
-      <label className="small inline-form">
-        A cycle starts on
-        <input
-          type="date"
-          value={settings.cycleStart}
-          onChange={(e) => isISODate(e.target.value) && update({ cycleStart: weekStart(e.target.value) })}
-        />
-        <span className="muted">Pick the Monday after any shopping trip. Other dates move to the Monday of their week.</span>
-      </label>
+      <h2>Shopping</h2>
+      {/* Shopping is every other Sunday; the cycle is the two weeks from the Monday after. */}
+      <div className="shopping-dates small">
+        <label>
+          Last trip
+          <input
+            type="date"
+            value={shopping}
+            onChange={(e) => isISODate(e.target.value) && update({ cycleStart: weekStart(addDays(e.target.value, 1)) })}
+          />
+        </label>
+        <span>
+          Next trip <strong>{formatDay(nextShopping)}</strong>
+        </span>
+      </div>
 
-      <h2>Usual effort by weekday</h2>
-      <p className="muted small">
-        The most effort you're up for on each weekday, and whether you usually cook. Every day on the meal plan starts from these; change a
-        single day's effort or cooking right on the plan. Meal recommendations put harder meals on days that allow them.
-      </p>
+      <h2 title="Each day on the meal plan starts from these">Usual week</h2>
       <table className="day-settings">
         <thead>
           <tr>
-            <th>Day</th>
+            <th />
+            <th>Cook</th>
             <th>Effort up to</th>
-            <th>Cook?</th>
           </tr>
         </thead>
         <tbody>
@@ -47,6 +41,14 @@ export default function SettingsPage({ settings, actions }) {
             return (
               <tr key={d} className={noCook ? 'muted' : ''}>
                 <td>{WEEKDAY_LABELS[d]}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    aria-label={`Cook on ${WEEKDAY_LABELS[d]}`}
+                    checked={!noCook}
+                    onChange={(e) => update((s) => ({ noCookDays: e.target.checked ? s.noCookDays.filter((x) => x !== d) : [...s.noCookDays, d] }))}
+                  />
+                </td>
                 <td>
                   <select
                     aria-label={`Effort on ${WEEKDAY_LABELS[d]}`}
@@ -61,26 +63,13 @@ export default function SettingsPage({ settings, actions }) {
                     ))}
                   </select>
                 </td>
-                <td>
-                  <label className="small">
-                    <input
-                      type="checkbox"
-                      checked={!noCook}
-                      onChange={(e) =>
-                        update((s) => ({ noCookDays: e.target.checked ? s.noCookDays.filter((x) => x !== d) : [...s.noCookDays, d] }))
-                      }
-                    />{' '}
-                    {noCook ? "We don't cook" : 'We cook'}
-                  </label>
-                </td>
               </tr>
             )
           })}
         </tbody>
       </table>
 
-      <h2>People</h2>
-      <p className="muted small">Everyone here rates the meals you've made. A recipe's rating is the average of everyone's.</p>
+      <h2 title="Everyone here rates meals; a recipe's rating is the average">People</h2>
       <PeopleEditor people={settings.people} onChange={(people) => update({ people })} />
     </section>
   )

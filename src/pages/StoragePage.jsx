@@ -63,13 +63,9 @@ export default function StoragePage({ inventory, registry, actions }) {
           <option key={u} value={u} />
         ))}
       </datalist>
-      <p className="muted small">
-        What you already have. The grocery list uses it before buying more, and "Done shopping" on the grocery list sets each ingredient to what will be
-        left after the cycle's meals. An item without an amount is just a reminder: it counts as none.
-      </p>
       <form className="toolbar storage-add" onSubmit={add}>
         <input list="storage-ingredients" placeholder="Ingredient…" aria-label="Ingredient" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className="num" placeholder="Amount" aria-label="Amount" value={qty} onChange={(e) => setQty(e.target.value)} />
+        <input className="num" placeholder="Amount" aria-label="Amount" title="Blank counts as none" value={qty} onChange={(e) => setQty(e.target.value)} />
         <input className="unit" list="storage-units" placeholder="each" aria-label="Unit" value={unit} onChange={(e) => setUnit(e.target.value)} />
         <select aria-label="Where" value={location} onChange={(e) => setLocation(e.target.value)}>
           {LOCATIONS.map(([v, label]) => (
@@ -85,7 +81,7 @@ export default function StoragePage({ inventory, registry, actions }) {
       </form>
 
       {items.length === 0 ? (
-        <p className="muted">Nothing on hand yet.</p>
+        <p className="muted">Nothing on hand.</p>
       ) : (
         <table className="storage-table">
           <thead>

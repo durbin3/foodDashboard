@@ -74,6 +74,11 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
             Original recipe ↗
           </a>
         )}
+        {issues.length > 0 && (
+          <a className="badge warn-badge" href={`#/recipe/${recipe.id}/edit`} title="Edit to fill in">
+            ⚠ {issues.join(', ')}
+          </a>
+        )}
         {recipe.effort && (
           <span>
             Effort {recipe.effort}/5 ({EFFORT_LABELS[recipe.effort]})
@@ -118,12 +123,6 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
       <p className="view-servings">
         <ServingsEditor recipe={recipe} actions={actions} />
       </p>
-
-      {issues.length > 0 && (
-        <p className="notice small">
-          This recipe has {issues.join(', ')}. <a href={`#/recipe/${recipe.id}/edit`}>Edit it</a> to fill that in.
-        </p>
-      )}
 
       {recipe.notes?.trim() && (
         <aside className="notes-callout">
@@ -254,7 +253,9 @@ function RateForm({ meal, people, onSave }) {
   const any = Object.keys(ratings).length > 0
   return (
     <div className="rate-form small">
-      <span>{meal ? `How was it on ${formatDay(meal.date)}?` : 'Made it this week? Rate it:'}</span>
+      <span className="muted" title={meal ? undefined : 'Saving counts it as made today'}>
+        {meal ? formatDay(meal.date) : 'Today'}
+      </span>
       {people.map((p) => (
         <span key={p} className="rating-input" role="group" aria-label={`${p}'s rating`}>
           <span className="rating-person">{p}</span>
@@ -277,7 +278,7 @@ function RateForm({ meal, people, onSave }) {
           ))}
         </span>
       ))}
-      <input className="rating-note" aria-label="Note about this meal" placeholder="Note (e.g. needed more salt)" value={note} onChange={(e) => setNote(e.target.value)} />
+      <input className="rating-note" aria-label="Note about this meal" placeholder="Note" value={note} onChange={(e) => setNote(e.target.value)} />
       <button className="primary" disabled={!changed || (!any && !meal)} onClick={() => onSave(ratings, note.trim())}>
         Save rating
       </button>

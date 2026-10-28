@@ -119,7 +119,7 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
 
       <div className="toolbar">
         <input type="search" placeholder="Filter ingredients…" aria-label="Filter ingredients" value={query} onChange={(e) => setQuery(e.target.value)} />
-        <span className="muted small">{index.length} ingredients · changes save automatically</span>
+        <span className="muted small">{index.length} ingredients</span>
       </div>
       <div className="tags" role="group" aria-label="Show">
         {FILTERS.map(([key, label, test]) => {
@@ -309,10 +309,10 @@ function IngredientRow({ entry, open, index, registry, allUnits, onToggleOpen, o
               <form className="inline-form" onSubmit={rename}>
                 <h4>Name</h4>
                 <input aria-label={`Rename ${info.name}`} value={newName} onChange={(e) => setNewName(e.target.value)} />
-                <button disabled={!newName.trim() || newName.trim() === info.name || !!clash}>Rename</button>
-                <span className="muted small">
-                  {clash ? `"${clash.info.name}" already exists. To combine them, use Merge below.` : 'Changes the name in every recipe.'}
-                </span>
+                <button disabled={!newName.trim() || newName.trim() === info.name || !!clash} title="Renames it in every recipe">
+                  Rename
+                </button>
+                {clash && <span className="field-warning">Already exists: use Merge</span>}
               </form>
               <form
                 className="inline-form"
@@ -329,29 +329,28 @@ function IngredientRow({ entry, open, index, registry, allUnits, onToggleOpen, o
                   value={mergeName}
                   onChange={(e) => setMergeName(e.target.value)}
                 />
-                <button disabled={!mergeTarget}>Merge</button>
-                <span className="muted small">Points recipes using “{info.name}” at the other ingredient, then removes this one.</span>
+                <button disabled={!mergeTarget} title={`Recipes using “${info.name}” switch to the other ingredient, and this one is removed`}>
+                  Merge
+                </button>
               </form>
               <div>
                 <h4>Storage</h4>
                 <div className="storage-fields small">
-                  <label>
-                    Keeps <ShelfLifeInput name={info.name} value={info.shelfLifeDays} onChange={(shelfLifeDays) => onUpdate({ shelfLifeDays })} /> days after shopping
+                  <label title="Blank: doesn't go off">
+                    Keeps <ShelfLifeInput name={info.name} value={info.shelfLifeDays} onChange={(shelfLifeDays) => onUpdate({ shelfLifeDays })} /> days
                   </label>
-                  <label>
-                    <input type="checkbox" checked={!!info.thaw} onChange={(e) => onUpdate({ thaw: e.target.checked || undefined })} /> Frozen unless used within that
-                    time; needs a day to thaw
+                  <label title="Frozen unless used within its shelf life, so it needs a day to thaw">
+                    <input type="checkbox" checked={!!info.thaw} onChange={(e) => onUpdate({ thaw: e.target.checked || undefined })} /> Needs thawing
                   </label>
                   <PurchaseInput purchase={info.purchase} onChange={(purchase) => onUpdate({ purchase })} />
                 </div>
-                <p className="muted small">Blank shelf life means it doesn't go off. No pack size means buy exactly what recipes use.</p>
               </div>
               <div>
                 <h4>Also called</h4>
                 <AliasEditor id={id} info={info} registry={registry} onChange={(aliases) => onUpdate({ aliases: aliases.length ? aliases : undefined })} />
               </div>
               <div>
-                <h4>Conversions for {info.name}</h4>
+                <h4 title="For units that don't combine, e.g. 1 each = 1/2 lb">Conversions</h4>
                 <ConversionEditor
                   conversions={conversions}
                   allUnits={allUnits}
@@ -412,11 +411,11 @@ function PurchaseInput({ purchase, onChange }) {
   }
   const bad = String(qty).trim() && !(parseQuantity(qty) > 0)
   return (
-    <label onBlur={commit}>
-      Sold in packs of{' '}
+    <label onBlur={commit} title="Blank: buy exactly what recipes use">
+      Packs of{' '}
       <input className={`num ${bad ? 'invalid' : ''}`} aria-label="Pack amount" placeholder="any" value={qty} onChange={(e) => setQty(e.target.value)} />{' '}
       <input className="unit" list="unit-options" aria-label="Pack unit" placeholder="each" value={unit} onChange={(e) => setUnit(e.target.value)} />
-      {bad && <span className="field-warning">Use a number, e.g. 2 or 1/2</span>}
+      {bad && <span className="field-warning">Not a number</span>}
     </label>
   )
 }
@@ -429,7 +428,7 @@ function AliasEditor({ id, info, registry, onChange }) {
   return (
     <div>
       <div className="tags compact">
-        {aliases.length === 0 && <span className="muted small">No other names yet.</span>}
+        {aliases.length === 0 && <span className="muted small">None</span>}
         {aliases.map((a) => (
           <span key={a} className="tag static">
             {a}
@@ -448,9 +447,11 @@ function AliasEditor({ id, info, registry, onChange }) {
           setText('')
         }}
       >
-        <input aria-label={`Another name for ${info.name}`} placeholder="e.g. how a recipe site writes it" value={text} onChange={(e) => setText(e.target.value)} />
-        <button disabled={!text.trim() || !!problem}>Add name</button>
-        <span className="muted small">{problem ?? 'Recipes and imports using this name will link here.'}</span>
+        <input aria-label={`Another name for ${info.name}`} placeholder="Another name" value={text} onChange={(e) => setText(e.target.value)} />
+        <button disabled={!text.trim() || !!problem} title="Recipes and imports using this name will link here">
+          Add
+        </button>
+        {problem && <span className="field-warning">{problem}</span>}
       </form>
     </div>
   )
@@ -471,7 +472,7 @@ function ConversionEditor({ conversions, onSave }) {
   const changed = JSON.stringify(draft) !== JSON.stringify(conversions)
   return (
     <div className="conversions">
-      {draft.length === 0 && <p className="muted small">None yet. Add one for units that don't combine, e.g. 1 each = 1/2 lb.</p>}
+      {draft.length === 0 && <p className="muted small">None</p>}
       {draft.map((c, i) => (
         <div key={i} className="conversion-row">
           <input className={`num ${problems[i] && !(parseQuantity(c.qty) > 0) ? 'invalid' : ''}`} aria-label="Amount" value={c.qty} onChange={(e) => set(i, { qty: e.target.value })} />

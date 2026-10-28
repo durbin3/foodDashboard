@@ -90,7 +90,7 @@ test('warnings: stale perishables on the meal, thawing the day before', () => {
   const meals = [meal('a', 'tacos', '2026-11-03'), meal('b', 'stirfry', '2026-10-31'), meal('c', 'stirfry', '2026-10-27')]
   const { byMeal, thaw } = cycleWarnings(ctx(meals))
   assert.equal(byMeal.a.length, 1)
-  assert.match(byMeal.a[0], /Cilantro bought .* is 9 days old .* \(keeps 5\)/)
+  assert.match(byMeal.a[0], /Cilantro: 9 days old, keeps 5/)
   assert.deepEqual(thaw['2026-10-30'], ['Thaw chicken breast for stirfry'])
   // Day 2 is within the chicken's 2-day shelf life: still in the fridge.
   assert.equal(thaw['2026-10-26'], undefined)
@@ -119,6 +119,6 @@ test('leftover nights take their day and are suggested soon after cooking', () =
 
   const tooMany = { ...cooked, leftovers: ['2026-10-28', '2026-10-29', '2026-11-02'] }
   const { byMeal } = cycleWarnings({ ...ctx([tooMany]), recipesById: byId })
-  assert.match(byMeal.a[0], /3 nights, but it only makes enough for 2/)
-  assert.match(byMeal.a[1], /more than 4 days old/)
+  assert.match(byMeal.a[0], /3 nights planned, makes 2/)
+  assert.match(byMeal.a[1], /over 4 days old/)
 })

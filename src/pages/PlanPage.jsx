@@ -178,7 +178,7 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
             onClick={() => moveLeftover(leftoverSuggested, null, d)}
           >
             <span className="meal-name">↺ {recipesById[leftoverSuggested.recipeId]?.name ?? leftoverSuggested.recipeId}</span>
-            <span className="meal-meta">Leftovers suggested · click to place</span>
+            <span className="meal-meta">Suggested</span>
           </button>
         )}
         {suggested && (
@@ -188,7 +188,7 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
             onClick={() => actions.updateMeal(suggested.id, { date: d })}
           >
             <span className="meal-name">{recipesById[suggested.recipeId]?.name ?? suggested.recipeId}</span>
-            <span className="meal-meta">Suggested · click to place</span>
+            <span className="meal-meta">Suggested</span>
           </button>
         )}
       </div>
@@ -244,15 +244,10 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
             <h3>
               Meals{' '}
               <span className="muted small">
-                {meals.length === 0
-                  ? 'none picked yet'
-                  : [
-                      `${meals.length} picked`,
-                      dinners > meals.length && `${dinners} dinners with leftovers`,
-                      unplaced.length ? `${unplaced.length} not on a day yet` : 'all on a day',
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
+                {meals.length > 0 &&
+                  [`${meals.length} picked`, dinners > meals.length && `${dinners} dinners`, unplaced.length > 0 && `${unplaced.length} to place`]
+                    .filter(Boolean)
+                    .join(' · ')}
               </span>
             </h3>
             <form className="toolbar" onSubmit={add}>
@@ -287,16 +282,17 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
           )}
           {looseLeftovers.length > 0 && (
             <div className="pool-leftovers">
-              <p className="small">
-                Leftovers not on a day yet{' '}
+              <p className="small pool-label">
+                Leftovers
                 {Object.keys(leftoverRec).length > 0 && (
                   <button
                     className="small"
+                    title="Put each on its suggested day"
                     onClick={() =>
                       Object.entries(leftoverRec).forEach(([id, dates]) => actions.setLeftovers(id, [...(meals.find((m) => m.id === id).leftovers ?? []), ...dates]))
                     }
                   >
-                    Place as suggested
+                    Place all
                   </button>
                 )}
               </p>
@@ -314,41 +310,35 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
               </div>
             </div>
           )}
-          {unplaced.length > 0 ? (
+          {unplaced.length > 0 && (
             <>
+              <p className="small pool-label">
+                To place
+                {suggestions.length > 0 && (
+                  <button
+                    className="small"
+                    title="Put each on its suggested day: fits the day's effort, uses perishables early, varies the protein"
+                    onClick={() => actions.placeMeals(Object.fromEntries(suggestions.map((m) => [m.id, suggestionFor(m)])))}
+                  >
+                    Place {suggestions.length === unplaced.length ? 'all' : suggestions.length}
+                  </button>
+                )}
+              </p>
               <div className="pool-cards">{unplaced.map((m) => card(m, null))}</div>
-              {suggestions.length > 0 && (
-                <p className="small pool-actions">
-                  <button onClick={() => actions.placeMeals(Object.fromEntries(suggestions.map((m) => [m.id, suggestionFor(m)])))}>
-                    Place {suggestions.length === unplaced.length ? 'all' : suggestions.length} as suggested
-                  </button>{' '}
-                  <span className="muted">
-                    Suggestions fit each day's effort, use perishable ingredients early, and keep the same protein off back-to-back days.
-                  </span>
-                </p>
-              )}
             </>
-          ) : (
-            <p className="muted small pool-empty">
-              {meals.length ? 'Drag a meal here to take it off its day.' : 'Pick the meals that sound good for these two weeks, then drag each onto a day.'}
-            </p>
           )}
         </div>
 
         {calendar}
       </div>
 
-      <p className="muted small">
-        Changes save automatically. Drag meals between days, or click one for more options.
-        {meals.length > 0 && (
-          <>
-            {' '}
-            <button className="link small" onClick={() => actions.clearMeals(meals)}>
-              Clear these two weeks ({meals.length})
-            </button>
-          </>
-        )}
-      </p>
+      {meals.length > 0 && (
+        <p className="small">
+          <button className="link small" onClick={() => actions.clearMeals(meals)}>
+            Clear these two weeks
+          </button>
+        </p>
+      )}
 
       {selected && (
         <MealPanel
@@ -392,7 +382,6 @@ function Suggestions({ ranked, toFill, weights, onAdd, onFill, onWeights }) {
     <div className="suggestions">
       <div className="suggestions-head small">
         <strong>Suggested</strong>
-        <span className="muted">best first: liked, uses what you're already buying, not made lately</span>
         <span className="spacer" />
         {toFill > 0 && (
           <button className="small" onClick={onFill} title="Add the top suggestion, then the best one given that, and so on">
@@ -416,7 +405,6 @@ function Suggestions({ ranked, toFill, weights, onAdd, onFill, onWeights }) {
                 <span className="muted">{weights[key] ?? 1}×</span>
               </label>
             ))}
-            <p className="muted">The first three rank these suggestions; variety, effort and freshness also decide which day each meal is suggested for.</p>
           </div>
         </details>
       </div>
@@ -683,46 +671,42 @@ function ServingsRow({ meal, recipe, servings, days, budget, madeIt, leftoverSug
   const later = days.filter((d) => meal.date && d > meal.date && !leftovers.includes(d))
   return (
     <div className="panel-row servings-row small">
-      <ServingsEditor recipe={recipe} actions={actions} />
+      {/* Once it's been made, a recipe still on its stated count asks for the real one. */}
+      <ServingsEditor recipe={recipe} attention={madeIt && servings?.guessed} actions={actions} />
       {servings && meal.scale !== 1 && (
         <span className="muted">
           ×{formatQuantity(meal.scale)}: {formatQuantity(servings.servings)} servings, {servings.nights} dinner{servings.nights === 1 ? '' : 's'}
         </span>
       )}
-      {servings?.spare > 0 && <span className="muted">+ {formatQuantity(servings.spare)} spare (lunch?)</span>}
-      {madeIt && servings?.guessed && <span className="warn">How many did it really make? Fill in Makes so leftovers plan right.</span>}
-      {meal.date ? (
-        (servings?.leftovers > 0 || leftovers.length > 0) && (
-          <span className="leftover-days">
-            Leftovers
-            {leftovers.map((d) => (
-              <span key={d} className="tag static">
-                {formatShortDay(d)}
-                <button className="link" aria-label={`Take leftovers off ${formatDay(d)}`} onClick={() => onLeftover(d, null)}>
-                  ×
-                </button>
-              </span>
-            ))}
-            {toPlace > 0 && leftoverSuggestion?.length > 0 && (
-              <button className="tag suggestion" title="Suggested: the next free day while they keep" onClick={() => onLeftover(null, leftoverSuggestion[0])}>
-                + {formatShortDay(leftoverSuggestion[0])}
+      {servings?.spare > 0 && <span className="muted">+{formatQuantity(servings.spare)} spare</span>}
+      {meal.date && (servings?.leftovers > 0 || leftovers.length > 0) && (
+        <span className="leftover-days">
+          Leftovers
+          {leftovers.map((d) => (
+            <span key={d} className="tag static">
+              {formatShortDay(d)}
+              <button className="link" aria-label={`Take leftovers off ${formatDay(d)}`} onClick={() => onLeftover(d, null)}>
+                ×
               </button>
-            )}
-            {toPlace > 0 && later.length > 0 && (
-              <select aria-label="Put leftovers on a day" value="" onChange={(e) => e.target.value && onLeftover(null, e.target.value)}>
-                <option value="">{toPlace} more night{toPlace === 1 ? '' : 's'}: pick a day…</option>
-                {later.map((d) => (
-                  <option key={d} value={d}>
-                    {formatDay(d)}
-                    {budget(d) == null ? ' (no cooking)' : ''}
-                  </option>
-                ))}
-              </select>
-            )}
-          </span>
-        )
-      ) : (
-        servings?.leftovers > 0 && <span className="muted">Put it on a day to plan its leftover nights.</span>
+            </span>
+          ))}
+          {toPlace > 0 && leftoverSuggestion?.length > 0 && (
+            <button className="tag suggestion" title="Suggested: the next free day while they keep" onClick={() => onLeftover(null, leftoverSuggestion[0])}>
+              + {formatShortDay(leftoverSuggestion[0])}
+            </button>
+          )}
+          {toPlace > 0 && later.length > 0 && (
+            <select aria-label="Put leftovers on a day" value="" onChange={(e) => e.target.value && onLeftover(null, e.target.value)}>
+              <option value="">+ {toPlace} more…</option>
+              {later.map((d) => (
+                <option key={d} value={d}>
+                  {formatDay(d)}
+                  {budget(d) == null ? ' (no cooking)' : ''}
+                </option>
+              ))}
+            </select>
+          )}
+        </span>
       )}
     </div>
   )
@@ -765,7 +749,7 @@ function NoteInput({ meal, actions }) {
     <input
       className="rating-note"
       aria-label="Note about this meal"
-      placeholder="Note (e.g. needed more salt)"
+      placeholder="Note"
       value={text}
       onChange={(e) => setText(e.target.value)}
       onBlur={commit}

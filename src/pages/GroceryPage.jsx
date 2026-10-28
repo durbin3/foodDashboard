@@ -197,7 +197,7 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
         </button>
       </div>
       {section('Groceries', list.groceries)}
-      {section('Pantry', list.pantry, '— check you have these')}
+      {section('Pantry', list.pantry)}
       {list.stored.length > 0 && section('In storage', list.stored, '— already have enough')}
       {list.notListed.length > 0 && (
         <p className="muted small">

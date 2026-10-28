@@ -249,7 +249,6 @@ export function recommendationStillFits(rec, { meals, days, now, recipesById, se
  */
 export function cycleWarnings({ meals, days, recipesById, registry, settings }) {
   const byDate = new Map(days.map((d) => [d.date, d]))
-  const shopping = days.length ? addDays(days[0].date, -1) : null
   const byMeal = {}
   const thaw = {}
   for (const m of meals) {
@@ -257,14 +256,14 @@ export function cycleWarnings({ meals, days, recipesById, registry, settings }) 
     if (!day) continue
     const facts = mealFacts(m, recipesById, registry)
     const stale = facts.perishables.filter((p) => day.age > p.shelf)
-    const notes = stale.map((p) => `${capitalize(p.name)} bought ${formatDay(shopping)} is ${day.age} days old by ${formatDay(m.date)} (keeps ${p.shelf}).`)
+    const notes = stale.map((p) => `${capitalize(p.name)}: ${day.age} days old, keeps ${p.shelf}`)
     const leftovers = m.leftovers ?? []
     if (leftovers.length) {
       const made = mealServings(m, recipesById[m.recipeId])?.leftovers ?? 0
       if (leftovers.length > made)
-        notes.push(`Leftovers are planned for ${leftovers.length} night${leftovers.length === 1 ? '' : 's'}, but it only makes enough for ${made}.`)
+        notes.push(`Leftovers: ${leftovers.length} nights planned, makes ${made}`)
       const old = leftovers.filter((d) => daysBetween(m.date, d) > LEFTOVER_DAYS)
-      if (old.length) notes.push(`Leftovers on ${old.map(formatDay).join(', ')} are more than ${LEFTOVER_DAYS} days old.`)
+      if (old.length) notes.push(`Leftovers on ${old.map(formatDay).join(', ')}: over ${LEFTOVER_DAYS} days old`)
     }
     if (notes.length) byMeal[m.id] = notes
     const frozen = facts.thaws.filter((t) => day.age > t.shelf)

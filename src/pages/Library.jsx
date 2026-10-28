@@ -124,7 +124,7 @@ export default function Library({ recipes, plan, anchor, query, actions }) {
       <div className="toolbar">
         <input
           type="search"
-          placeholder="Search names, ingredients, tags, notes…"
+          placeholder="Search…" title="Names, ingredients, tags and notes"
           aria-label="Search recipes"
           value={search}
           onChange={(e) => set({ q: e.target.value })}
@@ -149,23 +149,20 @@ export default function Library({ recipes, plan, anchor, query, actions }) {
       )}
 
       {recipes.length === 0 ? (
-        <p className="muted">No recipes yet. Add one with "+ New recipe", or ask Claude to import one with the import-recipe skill.</p>
+        <p className="muted">No recipes yet.</p>
       ) : inTab.length === 0 ? (
-        <p className="muted">None of this kind yet. Set a recipe's Kind in its editor to file it here.</p>
+        <p className="muted" title="A recipe's Kind, set in its editor, files it here">None yet.</p>
       ) : (
         <>
-          <p className="muted small">
-            Showing {visible.length} of {inTab.length} {CATEGORIES.find(([c]) => c === cat)[1].toLowerCase()}
-            {activeTags.length > 1 && ` tagged ${activeTags.join(' and ')}`}
-            {filtered && (
-              <>
-                {' · '}
-                <button className="link small" onClick={() => set({ q: '', tags: [], attention: false })}>
-                  Clear filters
-                </button>
-              </>
-            )}
-          </p>
+          {/* The tab already counts the recipes; a count here is only news while filtering. */}
+          {filtered && (
+            <p className="muted small">
+              {visible.length} of {inTab.length} ·{' '}
+              <button className="link small" onClick={() => set({ q: '', tags: [], attention: false })}>
+                Clear
+              </button>
+            </p>
+          )}
           <table className="recipe-table">
             <thead>
               <tr>

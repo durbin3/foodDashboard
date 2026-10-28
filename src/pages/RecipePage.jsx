@@ -226,8 +226,8 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
             )}
           </span>
         </label>
-        <label className="field">
-          Servings <span className="muted small">(as the recipe states)</span>
+        <label className="field" title="As the recipe states">
+          Servings
           <input
             type="number"
             min="1"
@@ -235,8 +235,8 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
             onChange={(e) => update({ servings: e.target.value === '' ? null : Number(e.target.value) })}
           />
         </label>
-        <label className="field">
-          Really makes <span className="muted small">(servings as you eat them; a dinner is 2)</span>
+        <label className="field" title="Servings a batch really makes as you eat them; a dinner is 2">
+          Really makes
           <input
             type="number"
             min="0.5"
@@ -284,10 +284,6 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
       )}
 
       <h2>Ingredients</h2>
-      <p className="muted small">
-        {hasOriginals && 'Edit the right-hand fields to make your version; the imported original stays on the left. '}
-        Item picks an ingredient by name: a name that isn't known yet becomes a new ingredient when you save.
-      </p>
       {groups.map((group) => {
         const rows = draft.ingredients.filter((i) => (i.group ?? '') === group)
         return (
@@ -427,7 +423,7 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
           setNewGroup('')
         }}
       >
-        <input placeholder="New group, e.g. Sauce" aria-label="New group name" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} />
+        <input placeholder="New group" aria-label="New group name" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} />
         <button disabled={!newGroup.trim()}>+ Add group</button>
       </form>
 
@@ -497,7 +493,12 @@ function StepUsesEditor({ step, uses, ingredients, guessed, onChange }) {
   const label = (i) => [i.item, i.group && `(${i.group})`].filter(Boolean).join(' ')
   return (
     <div className="step-uses-edit" role="group" aria-label={`Ingredients for step ${step}`}>
-      <span className="muted small">Uses{guessed && shown.length > 0 ? ' (guessed from the text)' : ''}:</span>
+      <span className="muted small">Uses</span>
+      {guessed && shown.length > 0 && (
+        <span className="pill" title="Read from the step's text; editing confirms them">
+          guessed
+        </span>
+      )}
       {shown.map((u) => (
         <span key={u.id} className="tag static">
           {label(byId[u.id])}
@@ -533,7 +534,7 @@ function SidePicker({ picked, sides, onChange }) {
   const byId = Object.fromEntries(sides.map((s) => [s.id, s]))
   const shown = picked.filter((id) => byId[id])
   const rest = sides.filter((s) => !picked.includes(s.id))
-  if (!sides.length) return <p className="muted small">No sides yet. Set a recipe's Kind to Side to pair it with mains.</p>
+  if (!sides.length) return <p className="muted small" title="Set a recipe's Kind to Side to pair it here">No sides yet.</p>
   return (
     <div className="tag-input" role="group" aria-labelledby="pairs-label">
       {shown.map((id) => (
