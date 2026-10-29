@@ -164,6 +164,7 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .group-label { margin: 14px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
 .ingredient-list { list-style: none; padding: 0; margin: 0; }
 .ingredient-list li { padding: 5px 0; border-bottom: 1px solid var(--border); }
+.ingredient-list li:last-child { border-bottom: none; }
 .read-steps { padding-left: 22px; margin: 0; font-size: 16px; line-height: 1.6; }
 .read-steps li { margin-bottom: 14px; padding-left: 4px; }
 .read-steps p { margin: 0; }
