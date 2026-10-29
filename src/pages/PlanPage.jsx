@@ -141,6 +141,14 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
       suggestion={suggestionFor(m)}
       selected={m.id === selectedId}
       onSelect={() => setSelectedId(m.id === selectedId ? null : m.id)}
+      onRemove={
+        date
+          ? null
+          : () => {
+              if (m.id === selectedId) setSelectedId(null)
+              actions.removeMeal(m)
+            }
+      }
     />
   )
 
@@ -284,7 +292,6 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
               ranked={ranked}
               toFill={toFill}
               weights={settings.weights}
-              onAdd={(id) => actions.addToPlan(id)}
               onFill={() => actions.addMeals(fillCycle({ ...suggestContext, count: toFill, nights: nightsOf }))}
               onWeights={(weights) => actions.updateSettings((s) => ({ ...s, weights: { ...s.weights, ...weights } }))}
             />
@@ -392,7 +399,7 @@ const WEIGHTS = [
 // Only the best few: more is noise. The rest come up as these get picked.
 const SHOWN_SUGGESTIONS = 3
 
-function Suggestions({ ranked, toFill, weights, onAdd, onFill, onWeights }) {
+function Suggestions({ ranked, toFill, weights, onFill, onWeights }) {
   return (
     <div className="suggestions">
       <div className="suggestions-head small">
@@ -425,15 +432,8 @@ function Suggestions({ ranked, toFill, weights, onAdd, onFill, onWeights }) {
       </div>
       <div className="suggestion-list">
         {ranked.slice(0, SHOWN_SUGGESTIONS).map((s) => (
-          <button
-            key={s.recipe.id}
-            className="suggestion-card"
-            draggable
-            onDragStart={(e) => dragData(e, `recipe:${s.recipe.id}`)}
-            onClick={() => onAdd(s.recipe.id)}
-            title={`Add ${s.recipe.name}, or drag it onto a day`}
-          >
-            <span className="meal-name">+ {s.recipe.name}</span>
+          <div key={s.recipe.id} className="suggestion-card" draggable onDragStart={(e) => dragData(e, `recipe:${s.recipe.id}`)} title="Drag onto a day">
+            <span className="meal-name">{s.recipe.name}</span>
             <span className="meal-meta muted">
               {[
                 s.rating != null ? `★ ${formatRating(s.rating)}` : 'not rated',
@@ -443,7 +443,7 @@ function Suggestions({ ranked, toFill, weights, onAdd, onFill, onWeights }) {
                 .filter(Boolean)
                 .join(' · ')}
             </span>
-          </button>
+          </div>
         ))}
       </div>
     </div>
@@ -505,7 +505,7 @@ function LeftoverCard({ meal, date, recipe, selected, onSelect }) {
   )
 }
 
-function MealCard({ meal, recipe, recipesById, budget, noCook, needsRating, warnings, servings, suggestion, selected, onSelect }) {
+function MealCard({ meal, recipe, recipesById, budget, noCook, needsRating, warnings, servings, suggestion, selected, onSelect, onRemove }) {
   const effort = mealEffort(meal, recipesById)
   const over = budget != null && effort > budget
   const minutes = recipe && totalMinutes(recipe)
@@ -535,6 +535,20 @@ function MealCard({ meal, recipe, recipesById, budget, noCook, needsRating, warn
         }
       }}
     >
+      {onRemove && (
+        <button
+          className="link meal-remove"
+          aria-label={`Remove ${recipe?.name ?? meal.recipeId} from the plan`}
+          title="Remove from the plan"
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemove()
+          }}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          ×
+        </button>
+      )}
       <span className="meal-name">{recipe?.name ?? `Missing recipe: ${meal.recipeId}`}</span>
       {sideNames.length > 0 && <span className="meal-sides">+ {sideNames.join(', ')}</span>}
       <span className="meal-meta muted">

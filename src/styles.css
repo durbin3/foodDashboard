@@ -324,7 +324,9 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .pool-head h3, .cal-head h3 { margin: 0; font-size: 15px; }
 .pool-head .toolbar { margin: 0; }
 .pool-cards { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-.pool-cards .meal-card { margin: 0; }
+.pool-cards .meal-card { margin: 0; position: relative; padding-right: 26px; }
+.meal-remove { position: absolute; top: 2px; right: 4px; padding: 0 4px; font-size: 16px; line-height: 1.2; color: var(--muted); text-decoration: none; }
+.meal-remove:hover { color: var(--danger); }
 .meals-pool.drop, .slot.drop { outline: 2px dashed var(--accent); outline-offset: -2px; }
 
 /* One row per weekday: its name, then that day in week 1 and in week 2, with a bar between rows. */
@@ -538,7 +540,7 @@ a.button.primary { background: var(--accent); color: var(--accent-text); border-
 .suggestions { border-top: 1px solid var(--border); margin-top: 10px; padding-top: 8px; }
 .suggestions-head { display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; }
 .suggestion-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-.suggestion-card { text-align: left; border: 1px dashed var(--accent); background: transparent; border-radius: 6px; padding: 4px 8px; font-size: 13px; line-height: 1.35; }
+.suggestion-card { text-align: left; border: 1px dashed var(--accent); background: transparent; border-radius: 6px; padding: 4px 8px; font-size: 13px; line-height: 1.35; cursor: grab; user-select: none; }
 .suggestion-card:hover { background: var(--bg); }
 .suggestion-card .meal-name { display: block; font-weight: 500; }
 .suggestion-card .meal-meta { display: block; font-size: 12px; }
