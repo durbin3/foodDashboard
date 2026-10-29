@@ -2,6 +2,8 @@
 
 A local dashboard for the meals I know how to make: a recipe library, a weekly meal plan, and a combined grocery list.
 
+UI changes follow [DESIGN.md](DESIGN.md).
+
 ## Running
 
 ```sh
