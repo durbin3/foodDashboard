@@ -351,6 +351,7 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .meal-card:hover { border-color: var(--muted); }
 .meal-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .meal-card.over { border-left: 3px solid var(--warn); }
+.effort-over { background: var(--warn-bg); color: var(--warn); font-weight: 600; border-radius: 4px; padding: 0 4px; }
 .meal-card .meal-name { display: block; font-weight: 500; overflow-wrap: anywhere; }
 .meal-card .meal-meta { display: block; font-size: 12px; }
 .meal-card .warn { color: var(--warn); }

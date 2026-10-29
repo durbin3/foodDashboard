@@ -186,8 +186,8 @@ export default function App() {
       }))
     },
     /** Adds a meal to the cycle being planned (the one last shown on the plan page), not on a day yet. Returns its id. */
-    addToPlan: (recipeId, scale = 1, { quiet = false } = {}) => {
-      const meal = { id: crypto.randomUUID(), recipeId, cycle, date: null, scale }
+    addToPlan: (recipeId, scale = 1, { quiet = false, date = null } = {}) => {
+      const meal = { id: crypto.randomUUID(), recipeId, cycle, date, scale }
       if (!quiet)
         notify(`Added ${recipeName(recipeId)} to the ${formatCycle(cycle)} plan.`, {
           undo: () => removeMeals([meal.id]),

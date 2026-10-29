@@ -110,8 +110,13 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
     onDrop: (e) => {
       e.preventDefault()
       setDropTarget(null)
-      // A meal is dragged as its id; a leftover night as "leftover:<meal id>:<its date, or blank>".
+      // A meal is dragged as its id; a leftover night as "leftover:<meal id>:<its date, or blank>";
+      // a suggested recipe not in the plan yet as "recipe:<recipe id>".
       const [kind, id, from] = e.dataTransfer.getData('text/plain').split(':')
+      if (kind === 'recipe') {
+        actions.addToPlan(id, 1, { date })
+        return
+      }
       if (kind === 'leftover') {
         const meal = meals.find((m) => m.id === id)
         if (meal && (from || null) !== date) moveLeftover(meal, from || null, date)
@@ -174,7 +179,9 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
         {leftoverSuggested && (
           <button
             className="meal-card suggested leftover"
-            title="Leftovers suggested for this day. Click to put them here."
+            title="Leftovers suggested for this day. Click to put them here, or drag to another day."
+            draggable
+            onDragStart={(e) => dragData(e, `leftover:${leftoverSuggested.id}:`)}
             onClick={() => moveLeftover(leftoverSuggested, null, d)}
           >
             <span className="meal-name">↺ {recipesById[leftoverSuggested.recipeId]?.name ?? leftoverSuggested.recipeId}</span>
@@ -184,7 +191,9 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
         {suggested && (
           <button
             className="meal-card suggested"
-            title="Suggested for this day. Click to put it here."
+            title="Suggested for this day. Click to put it here, or drag to another day."
+            draggable
+            onDragStart={(e) => dragData(e, suggested.id)}
             onClick={() => actions.updateMeal(suggested.id, { date: d })}
           >
             <span className="meal-name">{recipesById[suggested.recipeId]?.name ?? suggested.recipeId}</span>
@@ -364,6 +373,12 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   )
 }
 
+/** Starts dragging something onto a day; see the drop handler for what `data` can be. */
+function dragData(e, data) {
+  e.dataTransfer.setData('text/plain', data)
+  e.dataTransfer.effectAllowed = 'move'
+}
+
 const WEEKDAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 const WEIGHTS = [
@@ -410,7 +425,14 @@ function Suggestions({ ranked, toFill, weights, onAdd, onFill, onWeights }) {
       </div>
       <div className="suggestion-list">
         {ranked.slice(0, SHOWN_SUGGESTIONS).map((s) => (
-          <button key={s.recipe.id} className="suggestion-card" onClick={() => onAdd(s.recipe.id)} title={`Add ${s.recipe.name}`}>
+          <button
+            key={s.recipe.id}
+            className="suggestion-card"
+            draggable
+            onDragStart={(e) => dragData(e, `recipe:${s.recipe.id}`)}
+            onClick={() => onAdd(s.recipe.id)}
+            title={`Add ${s.recipe.name}, or drag it onto a day`}
+          >
             <span className="meal-name">+ {s.recipe.name}</span>
             <span className="meal-meta muted">
               {[
@@ -468,10 +490,7 @@ function LeftoverCard({ meal, date, recipe, selected, onSelect }) {
       tabIndex={0}
       aria-pressed={selected}
       title={`Leftovers from ${formatDay(meal.date)}. Drag to another day, or click for options.`}
-      onDragStart={(e) => {
-        e.dataTransfer.setData('text/plain', `leftover:${meal.id}:${date ?? ''}`)
-        e.dataTransfer.effectAllowed = 'move'
-      }}
+      onDragStart={(e) => dragData(e, `leftover:${meal.id}:${date ?? ''}`)}
       onClick={onSelect}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -491,7 +510,6 @@ function MealCard({ meal, recipe, recipesById, budget, noCook, needsRating, warn
   const over = budget != null && effort > budget
   const minutes = recipe && totalMinutes(recipe)
   const meta = [
-    effort && `effort ${effort}`,
     minutes != null && formatMinutes(minutes),
     meal.scale !== 1 && `×${formatQuantity(meal.scale)}`,
     // "~" when it's from the recipe's stated servings, which are often off.
@@ -508,10 +526,7 @@ function MealCard({ meal, recipe, recipesById, budget, noCook, needsRating, warn
       tabIndex={0}
       aria-pressed={selected}
       title={[over && `Effort ${effort} is more than this day's ${budget}.`, ...(warnings ?? []), 'Drag to a day, or click for options.'].filter(Boolean).join('\n')}
-      onDragStart={(e) => {
-        e.dataTransfer.setData('text/plain', meal.id)
-        e.dataTransfer.effectAllowed = 'move'
-      }}
+      onDragStart={(e) => dragData(e, meal.id)}
       onClick={onSelect}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -523,8 +538,9 @@ function MealCard({ meal, recipe, recipesById, budget, noCook, needsRating, warn
       <span className="meal-name">{recipe?.name ?? `Missing recipe: ${meal.recipeId}`}</span>
       {sideNames.length > 0 && <span className="meal-sides">+ {sideNames.join(', ')}</span>}
       <span className="meal-meta muted">
+        {effort > 0 && <span className={over ? 'effort-over' : undefined}>effort {effort}</span>}
+        {effort > 0 && meta.some(Boolean) && ' · '}
         {meta.filter(Boolean).join(' · ')}
-        {over && <span className="warn"> · over</span>}
         {noCook && <span className="warn"> · no-cook day</span>}
         {warnings && <span className="warn"> · ⚠ freshness</span>}
         {needsRating && <span className="pill">rate</span>}
