@@ -15,15 +15,6 @@ const STANDARD_EDGES = unitGraph(BUILTIN_CONVERSIONS)
 /** The recipe for reading and cooking from; editing is one click away. */
 export default function RecipeView({ recipe, recipes, recipesById, plan, registry, people, actions }) {
   const [scale, setScale] = useState(1)
-  // Units picked to show amounts in (the tablespoon's dirty, so teaspoons): per
-  // ingredient, and per amount written in a step's text. Just for this cook.
-  const [units, setUnits] = useState({})
-  const [textUnits, setTextUnits] = useState({})
-  const edgesById = useMemo(
-    () => Object.fromEntries((recipe?.ingredients ?? []).map((ing) => [ing.id, edgesFor(effectiveIngredient(ing) ?? {}, registry)])),
-    [recipe, registry],
-  )
-  const edgesOf = (ing) => edgesById[ing.id] ?? STANDARD_EDGES
 
   if (!recipe)
     return (
@@ -32,17 +23,6 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
       </p>
     )
 
-  const ingredients = activeIngredients(recipe)
-  const groups = [...new Set(ingredients.map((i) => i.group ?? ''))]
-  const allUses = stepIngredientsOf(recipe, ingredients, registry)
-  const shownSteps = recipe.steps.map((text, i) => ({ text, uses: allUses[i] ?? [] })).filter((s) => s.text.trim())
-  const steps = shownSteps.map((s) => s.text)
-  const usesByStep = stepLines(
-    shownSteps.map((s) => s.uses),
-    ingredients,
-    { scale, edgesOf },
-  )
-  const pickUnit = (id, unit) => setUnits((u) => ({ ...u, [id]: unit }))
   const issues = recipeIssues(recipe)
   const minutes = totalMinutes(recipe)
   const category = categoryOf(recipe)
@@ -102,7 +82,7 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
             </button>
           )
         )}
-        {goesWith.length > 0 && (
+        {isSide && goesWith.length > 0 && (
           <span>
             Goes with{' '}
             {goesWith.map((r, i) => (
@@ -131,91 +111,35 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
         </aside>
       )}
 
-      <div className="view-columns">
-        <section className="view-ingredients">
-          <div className="section-head">
-            <h2>Ingredients</h2>
-            <label className="small scale-picker">
-              Make
-              <select value={scale} onChange={(e) => setScale(Number(e.target.value))}>
-                {SCALES.map((s) => (
-                  <option key={s} value={s}>
-                    ×{formatQuantity(s)}
-                    {realServings(recipe) ? ` (${formatQuantity(realServings(recipe) * s)} servings)` : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          {ingredients.length === 0 && <p className="muted small">No ingredients yet.</p>}
-          {groups.map((group) => (
-            <div key={group}>
-              {group && <h3 className="group-label">{group}</h3>}
-              <ul className="ingredient-list">
-                {ingredients
-                  .filter((i) => (i.group ?? '') === group)
-                  .map((i) => (
-                    <li key={i.id}>
-                      <strong>
-                        <IngredientAmount ing={i} scale={scale} edges={edgesOf(i)} picked={units[i.id]} onPick={(u) => pickUnit(i.id, u)} />
-                      </strong>{' '}
-                      {i.item}
-                      {i.note && <span className="muted">, {i.note}</span>}
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          ))}
-        </section>
-
-        <section className="view-steps">
-          <div className="steps-head">
-            <h2>Steps</h2>
-            {usesByStep.some((u) => u.length) && <span className="muted small steps-uses-label">For this step</span>}
-          </div>
-          {steps.length === 0 ? (
-            <p className="muted small">
-              No steps yet. <a href={`/recipe/${recipe.id}/edit`}>Add some</a>.
-            </p>
-          ) : (
-            <ol className="read-steps">
-              {steps.map((s, i) => (
-                <li key={i}>
-                  <div className="step-body">
-                    <p>
-                      {splitAmounts(s).map((part, k) =>
-                        typeof part === 'string' ? (
-                          part
-                        ) : (
-                          <Amount
-                            key={k}
-                            qty={part.qty}
-                            unit={part.unit}
-                            label={part.text}
-                            edges={STANDARD_EDGES}
-                            picked={textUnits[`${i}:${k}`]}
-                            onPick={(u) => setTextUnits((t) => ({ ...t, [`${i}:${k}`]: u }))}
-                          />
-                        ),
-                      )}
-                    </p>
-                    {usesByStep[i].length > 0 && (
-                      <ul className="step-uses" aria-label={`Ingredients for step ${i + 1}`}>
-                        {usesByStep[i].map((line) => (
-                          <li key={line.id}>
-                            <StepUse line={line} edges={edgesOf(line)} picked={units[line.id]} onPick={(u) => pickUnit(line.id, u)} />
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </li>
+      <RecipeBody
+        recipe={recipe}
+        registry={registry}
+        scale={scale}
+        scalePicker={
+          <label className="small scale-picker">
+            Make
+            <select value={scale} onChange={(e) => setScale(Number(e.target.value))}>
+              {SCALES.map((s) => (
+                <option key={s} value={s}>
+                  ×{formatQuantity(s)}
+                  {realServings(recipe) ? ` (${formatQuantity(realServings(recipe) * s)} servings)` : ''}
+                </option>
               ))}
-            </ol>
-          )}
-          {scale !== 1 && <p className="muted small">Amounts in the steps are as written, not scaled.</p>}
-        </section>
-      </div>
+            </select>
+          </label>
+        }
+      />
+
+      {/* A main's sides follow it, each under a rule, at the same scale. */}
+      {!isSide &&
+        goesWith.map((side) => (
+          <section key={side.id} className="side-section">
+            <h2 className="side-title">
+              <a href={`/recipe/${side.id}`}>{side.name}</a>
+            </h2>
+            <RecipeBody recipe={side} registry={registry} scale={scale} />
+          </section>
+        ))}
 
       {(rating.times > 0 || !isSide) && (
         <section id="ratings" className="rating-history">
@@ -235,6 +159,108 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
         </section>
       )}
     </article>
+  )
+}
+
+/** A recipe's ingredients beside its steps, at `scale`. */
+function RecipeBody({ recipe, registry, scale, scalePicker = null }) {
+  // Units picked to show amounts in (the tablespoon's dirty, so teaspoons): per
+  // ingredient, and per amount written in a step's text. Just for this cook.
+  const [units, setUnits] = useState({})
+  const [textUnits, setTextUnits] = useState({})
+  const edgesById = useMemo(
+    () => Object.fromEntries((recipe.ingredients ?? []).map((ing) => [ing.id, edgesFor(effectiveIngredient(ing) ?? {}, registry)])),
+    [recipe, registry],
+  )
+  const edgesOf = (ing) => edgesById[ing.id] ?? STANDARD_EDGES
+  const ingredients = activeIngredients(recipe)
+  const groups = [...new Set(ingredients.map((i) => i.group ?? ''))]
+  const allUses = stepIngredientsOf(recipe, ingredients, registry)
+  const shownSteps = recipe.steps.map((text, i) => ({ text, uses: allUses[i] ?? [] })).filter((s) => s.text.trim())
+  const steps = shownSteps.map((s) => s.text)
+  const usesByStep = stepLines(
+    shownSteps.map((s) => s.uses),
+    ingredients,
+    { scale, edgesOf },
+  )
+  const pickUnit = (id, unit) => setUnits((u) => ({ ...u, [id]: unit }))
+
+  return (
+    <div className="view-columns">
+      <section className="view-ingredients">
+        <div className="section-head">
+          <h2>Ingredients</h2>
+          {scalePicker}
+        </div>
+        {ingredients.length === 0 && <p className="muted small">No ingredients yet.</p>}
+        {groups.map((group) => (
+          <div key={group}>
+            {group && <h3 className="group-label">{group}</h3>}
+            <ul className="ingredient-list">
+              {ingredients
+                .filter((i) => (i.group ?? '') === group)
+                .map((i) => (
+                  <li key={i.id}>
+                    <strong>
+                      <IngredientAmount ing={i} scale={scale} edges={edgesOf(i)} picked={units[i.id]} onPick={(u) => pickUnit(i.id, u)} />
+                    </strong>{' '}
+                    {i.item}
+                    {i.note && <span className="muted">, {i.note}</span>}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section className="view-steps">
+        <div className="steps-head">
+          <h2>Steps</h2>
+          {usesByStep.some((u) => u.length) && <span className="muted small steps-uses-label">For this step</span>}
+        </div>
+        {steps.length === 0 ? (
+          <p className="muted small">
+            No steps yet. <a href={`/recipe/${recipe.id}/edit`}>Add some</a>.
+          </p>
+        ) : (
+          <ol className="read-steps">
+            {steps.map((s, i) => (
+              <li key={i}>
+                <div className="step-body">
+                  <p>
+                    {splitAmounts(s).map((part, k) =>
+                      typeof part === 'string' ? (
+                        part
+                      ) : (
+                        <Amount
+                          key={k}
+                          qty={part.qty}
+                          unit={part.unit}
+                          label={part.text}
+                          edges={STANDARD_EDGES}
+                          picked={textUnits[`${i}:${k}`]}
+                          onPick={(u) => setTextUnits((t) => ({ ...t, [`${i}:${k}`]: u }))}
+                        />
+                      ),
+                    )}
+                  </p>
+                  {usesByStep[i].length > 0 && (
+                    <ul className="step-uses" aria-label={`Ingredients for step ${i + 1}`}>
+                      {usesByStep[i].map((line) => (
+                        <li key={line.id}>
+                          <StepUse line={line} edges={edgesOf(line)} picked={units[line.id]} onPick={(u) => pickUnit(line.id, u)} />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+        {scalePicker && scale !== 1 && <p className="muted small">Amounts in the steps are as written, not scaled.</p>}
+      </section>
+    </div>
   )
 }
 
