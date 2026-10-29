@@ -212,7 +212,7 @@ const RecipeLinks = ({ recipes, limit = Infinity }) => {
       {shown.map(([id, name], i) => (
         <span key={id}>
           {i > 0 && ', '}
-          <a href={`#/recipe/${id}`}>{name}</a>
+          <a href={`/recipe/${id}`}>{name}</a>
         </span>
       ))}
       {list.length > shown.length && <span className="muted"> +{list.length - shown.length} more</span>}

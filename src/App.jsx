@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './api.js'
 import { cycleStart, formatCycle, formatDay, moveMeal, normalizePlan, today } from './lib/plan.js'
 import { recentMeal } from './lib/ratings.js'
+import { currentUrl, onLinkClick, upgradeHashUrl } from './lib/route.js'
 import { categoryOf, newRecipe, withNames } from './lib/recipe.js'
 import { DEFAULT_SETTINGS, normalizeSettings } from './lib/settings.js'
 import Library from './pages/Library.jsx'
@@ -13,26 +14,32 @@ import IngredientsPage from './pages/IngredientsPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
 import StoragePage from './pages/StoragePage.jsx'
 
+upgradeHashUrl()
+
 /**
- * The current hash as path parts plus query, e.g. "#/recipe/x/edit" → ['recipe', 'x', 'edit'].
+ * The current address as path parts plus query, e.g. "/recipe/x/edit" → ['recipe', 'x', 'edit'].
  * `leaveGuard` can veto navigation (the recipe editor uses it when there are unsaved changes).
  */
-function useHashRoute(leaveGuard) {
-  const [hash, setHash] = useState(window.location.hash)
-  const current = useRef(window.location.hash)
+function useRoute(leaveGuard) {
+  const [url, setUrl] = useState(currentUrl)
+  const current = useRef(url)
   useEffect(() => {
     const onChange = () => {
       if (leaveGuard.current?.() && !confirm('You have unsaved changes. Leave without saving?')) {
-        history.replaceState(null, '', current.current || '#/')
+        history.replaceState(null, '', current.current)
         return
       }
-      current.current = window.location.hash
-      setHash(window.location.hash)
+      current.current = currentUrl()
+      setUrl(current.current)
     }
-    window.addEventListener('hashchange', onChange)
-    return () => window.removeEventListener('hashchange', onChange)
+    window.addEventListener('popstate', onChange)
+    document.addEventListener('click', onLinkClick)
+    return () => {
+      window.removeEventListener('popstate', onChange)
+      document.removeEventListener('click', onLinkClick)
+    }
   }, [leaveGuard])
-  const [path, query = ''] = hash.replace(/^#\/?/, '').split('?')
+  const [path, query = ''] = url.replace(/^\//, '').split('?')
   return { parts: path.split('/').map(decodeURIComponent), query: new URLSearchParams(query) }
 }
 
@@ -90,7 +97,7 @@ export default function App() {
   const [settings, updateSettings, replaceSettings] = usePersisted(DEFAULT_SETTINGS, (s) => run(api.saveSettings(s)), onSaving)
   const [inventory, updateInventory, replaceInventory, latestInventory] = usePersisted({ items: [] }, (i) => run(api.saveInventory(i)), onSaving)
   const leaveGuard = useRef(null)
-  const { parts, query } = useHashRoute(leaveGuard)
+  const { parts, query } = useRoute(leaveGuard)
   const [page, param, sub] = parts
   // Recipe pages belong under the Recipes tab.
   const section = page === 'new' || page === 'recipe' ? '' : page || ''
@@ -184,7 +191,7 @@ export default function App() {
       if (!quiet)
         notify(`Added ${recipeName(recipeId)} to the ${formatCycle(cycle)} plan.`, {
           undo: () => removeMeals([meal.id]),
-          link: page === 'plan' ? null : { href: `#/plan/${cycle}`, label: 'Pick a day' },
+          link: page === 'plan' ? null : { href: `/plan/${cycle}`, label: 'Pick a day' },
         })
       updatePlan((p) => ({ ...p, meals: [...p.meals, meal] }))
       return meal.id
@@ -363,7 +370,7 @@ export default function App() {
         <span className="brand">Food Dashboard</span>
         <nav>
           {NAV.map(([path, label]) => (
-            <a key={path} href={`#/${path}`} className={section === path ? 'active' : ''} aria-current={section === path ? 'page' : undefined}>
+            <a key={path} href={`/${path}`} className={section === path ? 'active' : ''} aria-current={section === path ? 'page' : undefined}>
               {label}
             </a>
           ))}

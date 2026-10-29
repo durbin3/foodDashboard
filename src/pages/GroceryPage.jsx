@@ -69,7 +69,7 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
     }))
     actions.notify("Storage updated to what's left after this cycle's meals.", {
       undo: () => actions.updateInventory(() => before),
-      link: { href: '#/storage', label: 'See it' },
+      link: { href: '/storage', label: 'See it' },
     })
   }
 
@@ -85,16 +85,16 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
 
   const weekNav = (
     <div className="week-nav">
-      <a className="button" href={`#/grocery/${addDays(cycle, -CYCLE_DAYS)}`} aria-label="Previous shopping trip">
+      <a className="button" href={`/grocery/${addDays(cycle, -CYCLE_DAYS)}`} aria-label="Previous shopping trip">
         ‹
       </a>
       <h2>Shopping on {formatDay(addDays(cycle, -1))}</h2>
-      <a className="button" href={`#/grocery/${addDays(cycle, CYCLE_DAYS)}`} aria-label="Next shopping trip">
+      <a className="button" href={`/grocery/${addDays(cycle, CYCLE_DAYS)}`} aria-label="Next shopping trip">
         ›
       </a>
       <span className="muted small">for {formatCycle(cycle)}</span>
       {cycle !== cycleStart(anchor) && (
-        <a className="small" href={`#/grocery/${cycleStart(anchor)}`}>
+        <a className="small" href={`/grocery/${cycleStart(anchor)}`}>
           Current cycle
         </a>
       )}
@@ -106,7 +106,7 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
       <section>
         {weekNav}
         <p className="muted">
-          Nothing planned for these two weeks. <a href={`#/plan/${cycle}`}>Plan some meals</a> to build a grocery list.
+          Nothing planned for these two weeks. <a href={`/plan/${cycle}`}>Plan some meals</a> to build a grocery list.
         </p>
       </section>
     )
@@ -138,7 +138,7 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
                 </option>
               ))}
             </select>
-            <a href={`#/ingredients/${encodeURIComponent(l.id)}`}>{l.unconverted ? 'Add conversion' : 'Settings'}</a>
+            <a href={`/ingredients/${encodeURIComponent(l.id)}`}>{l.unconverted ? 'Add conversion' : 'Settings'}</a>
           </span>
         )}
       </li>

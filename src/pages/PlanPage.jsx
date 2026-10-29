@@ -219,21 +219,21 @@ export default function PlanPage({ plan, cycle, settings, recipes, recipesById, 
   return (
     <section className="plan">
       <div className="week-nav">
-        <a className="button" href={`#/plan/${addDays(cycle, -CYCLE_DAYS)}`} aria-label="Previous two weeks">
+        <a className="button" href={`/plan/${addDays(cycle, -CYCLE_DAYS)}`} aria-label="Previous two weeks">
           ‹
         </a>
         <h2>{formatCycle(cycle)}</h2>
-        <a className="button" href={`#/plan/${addDays(cycle, CYCLE_DAYS)}`} aria-label="Next two weeks">
+        <a className="button" href={`/plan/${addDays(cycle, CYCLE_DAYS)}`} aria-label="Next two weeks">
           ›
         </a>
         <span className="muted small">Shopping {formatDay(addDays(cycle, -1))}</span>
         {cycle !== current && (
-          <a className="small" href={`#/plan/${current}`}>
+          <a className="small" href={`/plan/${current}`}>
             Current cycle
           </a>
         )}
         <span className="spacer" />
-        <a className="button primary" href={`#/grocery/${cycle}`}>
+        <a className="button primary" href={`/grocery/${cycle}`}>
           Grocery list →
         </a>
       </div>
@@ -539,7 +539,7 @@ function MealPanel({ meal, recipe, recipesById, sides, days, budget, warnings, s
   return (
     <div className="meal-panel" role="region" aria-label={`Options for ${name}`}>
       <div className="panel-row">
-        <strong>{recipe ? <a href={`#/recipe/${recipe.id}`}>{name}</a> : name}</strong>
+        <strong>{recipe ? <a href={`/recipe/${recipe.id}`}>{name}</a> : name}</strong>
         <label className="small">
           Day{' '}
           <select value={meal.date ?? ''} onChange={(e) => actions.updateMeal(meal.id, { date: e.target.value || null })}>

@@ -5,6 +5,7 @@ import { activeIngredients, CATEGORIES, categoryOf, effectiveIngredient, newReci
 import { stepIngredientsOf } from '../lib/steps.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 import { KNOWN_UNITS } from '../lib/units.js'
+import { navigate } from '../lib/route.js'
 
 const FIELDS = [
   ['quantity', 'Qty', 'qty'],
@@ -75,7 +76,7 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
   if (!recipe || !draft)
     return (
       <p className="muted">
-        Recipe not found. <a href="#/">Back to recipes</a>
+        Recipe not found. <a href="/">Back to recipes</a>
       </p>
     )
 
@@ -149,7 +150,7 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
         actions.setLeaveGuard(null)
         actions.notify(`Created ${draft.name.trim()}.`)
         const cat = categoryOf(draft)
-        window.location.hash = cat === 'main' ? `#/?new=${id}` : `#/?cat=${cat}&new=${id}`
+        navigate(cat === 'main' ? `/?new=${id}` : `/?cat=${cat}&new=${id}`)
         return
       }
       await actions.saveRecipe(cleaned(draft))
@@ -164,7 +165,7 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
     if (!confirm(`Delete "${recipe.name}"? This removes recipes/${recipe.id}.json and takes it out of the meal plan.`)) return
     await actions.deleteRecipe(recipe.id)
     actions.setLeaveGuard(null)
-    window.location.hash = '#/'
+    navigate('/')
   }
 
   return (
@@ -181,7 +182,7 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
       </datalist>
 
       <div className="editor-head">
-        <a href={isNew ? '#/' : `#/recipe/${recipe.id}`} className="small back-link">
+        <a href={isNew ? '/' : `/recipe/${recipe.id}`} className="small back-link">
           ← {isNew ? 'Recipes' : 'Back to recipe'}
         </a>
         <div className="recipe-head">
@@ -198,7 +199,7 @@ export default function RecipePage({ recipe, isNew = false, takenIds, knownItems
               {dirty ? 'Unsaved changes' : status}
             </span>
             {isNew ? (
-              <a href="#/">Cancel</a>
+              <a href="/">Cancel</a>
             ) : (
               dirty && <button onClick={() => setDraft(recipe)}>Discard changes</button>
             )}

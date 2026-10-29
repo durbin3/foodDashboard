@@ -40,7 +40,7 @@ function useUrlState(query) {
     if (state.sort.key !== 'name') p.set('sort', state.sort.key)
     if (state.sort.dir < 0) p.set('dir', 'desc')
     const qs = p.toString()
-    history.replaceState(null, '', qs ? `#/?${qs}` : '#/')
+    history.replaceState(null, '', qs ? `/?${qs}` : '/')
   }, [state])
   return [state, (patch) => setState((s) => ({ ...s, ...(typeof patch === 'function' ? patch(s) : patch) }))]
 }
@@ -129,7 +129,7 @@ export default function Library({ recipes, plan, anchor, query, actions }) {
           value={search}
           onChange={(e) => set({ q: e.target.value })}
         />
-        <a className="button primary" href="#/new">
+        <a className="button primary" href="/new">
           + New recipe
         </a>
       </div>
@@ -178,7 +178,7 @@ export default function Library({ recipes, plan, anchor, query, actions }) {
               {visible.map((r) => (
                 <tr key={r.id} id={`recipe-${r.id}`} className={r.id === highlight ? 'highlight' : ''}>
                   <td className="col-name">
-                    <a href={`#/recipe/${r.id}`} className="recipe-link">
+                    <a href={`/recipe/${r.id}`} className="recipe-link">
                       {r.name}
                     </a>
                     <div className="muted small meta-line">
@@ -222,7 +222,7 @@ export default function Library({ recipes, plan, anchor, query, actions }) {
                     {/* Always takes a line, so adding a meal doesn't shift the button under the cursor. */}
                     <div className="planned small">
                       {r.upcoming.length > 0 ? (
-                        <a className="muted" href={`#/plan/${r.upcoming[0].cycle}`}>
+                        <a className="muted" href={`/plan/${r.upcoming[0].cycle}`}>
                           {r.upcoming[0].date ? formatDay(r.upcoming[0].date) : 'not on a day'}
                           {r.upcoming.length > 1 && ` +${r.upcoming.length - 1}`}
                         </a>

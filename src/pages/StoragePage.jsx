@@ -98,7 +98,7 @@ export default function StoragePage({ inventory, registry, actions }) {
             {items.map(({ item, index, info }) => (
               <tr key={`${item.ingredientId}-${index}`}>
                 <td>
-                  <a href={`#/ingredients/${encodeURIComponent(item.ingredientId)}`}>{capitalize(info.name)}</a>
+                  <a href={`/ingredients/${encodeURIComponent(item.ingredientId)}`}>{capitalize(info.name)}</a>
                 </td>
                 <td>
                   <AmountInput item={item} onChange={(patch) => update(index, patch)} />

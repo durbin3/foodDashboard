@@ -28,7 +28,7 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
   if (!recipe)
     return (
       <p className="muted">
-        Recipe not found. <a href="#/">Back to recipes</a>
+        Recipe not found. <a href="/">Back to recipes</a>
       </p>
     )
 
@@ -55,14 +55,14 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
 
   return (
     <article className="recipe-view">
-      <a href={category === 'main' ? '#/' : `#/?cat=${category}`} className="small back-link">
+      <a href={category === 'main' ? '/' : `/?cat=${category}`} className="small back-link">
         ← Recipes
       </a>
       <div className="recipe-head">
         <h1>{recipe.name}</h1>
         <div className="head-actions">
           {!isSide && <button onClick={(e) => e.detail <= 1 && actions.addToPlan(recipe.id, scale)}>+ Add to plan</button>}
-          <a className="button primary" href={`#/recipe/${recipe.id}/edit`}>
+          <a className="button primary" href={`/recipe/${recipe.id}/edit`}>
             Edit
           </a>
         </div>
@@ -75,7 +75,7 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
           </a>
         )}
         {issues.length > 0 && (
-          <a className="badge warn-badge" href={`#/recipe/${recipe.id}/edit`} title="Edit to fill in">
+          <a className="badge warn-badge" href={`/recipe/${recipe.id}/edit`} title="Edit to fill in">
             ⚠ {issues.join(', ')}
           </a>
         )}
@@ -108,13 +108,13 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
             {goesWith.map((r, i) => (
               <span key={r.id}>
                 {i > 0 && ', '}
-                <a href={`#/recipe/${r.id}`}>{r.name}</a>
+                <a href={`/recipe/${r.id}`}>{r.name}</a>
               </span>
             ))}
           </span>
         )}
         {upcoming.length > 0 && (
-          <a href={`#/plan/${upcoming[0].cycle}`}>
+          <a href={`/plan/${upcoming[0].cycle}`}>
             Planned: {upcoming.map((m) => (m.date ? formatDay(m.date) : `${formatCycle(m.cycle)}, not on a day`)).join('; ')}
           </a>
         )}
@@ -175,7 +175,7 @@ export default function RecipeView({ recipe, recipes, recipesById, plan, registr
           </div>
           {steps.length === 0 ? (
             <p className="muted small">
-              No steps yet. <a href={`#/recipe/${recipe.id}/edit`}>Add some</a>.
+              No steps yet. <a href={`/recipe/${recipe.id}/edit`}>Add some</a>.
             </p>
           ) : (
             <ol className="read-steps">
