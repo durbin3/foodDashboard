@@ -16,6 +16,9 @@
         }
       ]
     },
+    "broccoli": {
+      "name": "broccoli"
+    },
     "brown-sugar": {
       "name": "brown sugar",
       "staple": true,
@@ -70,7 +73,11 @@
     "chicken-breast": {
       "name": "chicken breast",
       "shelfLifeDays": 2,
-      "thaw": true
+      "thaw": true,
+      "purchase": {
+        "qty": "6",
+        "unit": ""
+      }
     },
     "chicken-broth": {
       "name": "chicken broth"
@@ -113,6 +120,13 @@
       "name": "cornstarch",
       "staple": true
     },
+    "cottage-cheese": {
+      "name": "cottage cheese",
+      "purchase": {
+        "qty": "24",
+        "unit": "oz"
+      }
+    },
     "cream-cheese": {
       "name": "cream cheese",
       "shelfLifeDays": 21
@@ -124,12 +138,12 @@
       "name": "cumin",
       "staple": true
     },
-    "double-pie-crust": {
-      "name": "double pie crust"
-    },
     "dried-basil": {
       "name": "dried basil",
       "staple": true
+    },
+    "dried-mashed-potatoes": {
+      "name": "dried mashed potatoes"
     },
     "dried-oregano": {
       "name": "dried oregano",
@@ -150,6 +164,9 @@
     "egg": {
       "name": "egg",
       "shelfLifeDays": 28
+    },
+    "egg-noodles": {
+      "name": "egg noodles"
     },
     "flour": {
       "name": "flour",
@@ -225,10 +242,6 @@
       "name": "ketchup",
       "staple": true
     },
-    "large-tortilla": {
-      "name": "large tortilla",
-      "shelfLifeDays": 14
-    },
     "lasagna-noodle": {
       "name": "lasagna noodle"
     },
@@ -294,8 +307,18 @@
     "pesto": {
       "name": "pesto"
     },
+    "pie-crust": {
+      "name": "pie-crust",
+      "aliases": [
+        "double pie crust"
+      ],
+      "conversions": []
+    },
     "plain-breadcrumbs": {
       "name": "breadcrumbs"
+    },
+    "polish-sausage": {
+      "name": "polish sausage"
     },
     "popov": {
       "name": "popov"
@@ -438,8 +461,11 @@
     },
     "tortilla": {
       "name": "tortilla",
+      "shelfLifeDays": 14,
       "conversions": [],
-      "shelfLifeDays": 14
+      "aliases": [
+        "large tortilla"
+      ]
     },
     "turmeric": {
       "name": "turmeric"

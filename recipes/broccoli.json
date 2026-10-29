@@ -1,0 +1,29 @@
+{
+  "id": "broccoli",
+  "name": "Broccoli",
+  "source": "",
+  "servings": 2,
+  "category": "side",
+  "effort": 1,
+  "prepMinutes": 5,
+  "cookMinutes": 10,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "custom-mvu2nrp9",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "head",
+        "ingredientId": "broccoli",
+        "note": ""
+      }
+    }
+  ],
+  "steps": [
+    "Cut broccoli head into florretts",
+    "Fry in pan for a little bit before adding a little water and covering to steam cook the broccoli"
+  ],
+  "notes": ""
+}

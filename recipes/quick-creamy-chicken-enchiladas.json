@@ -45,7 +45,12 @@
         "ingredientId": "chicken-breast",
         "note": "shredded, cooked"
       },
-      "modified": null
+      "modified": {
+        "quantity": "2",
+        "unit": "",
+        "ingredientId": "chicken-breast",
+        "note": "shredded, cooked"
+      }
     },
     {
       "id": "shredded-cheese",

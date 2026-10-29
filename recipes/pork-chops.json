@@ -1,0 +1,33 @@
+{
+  "id": "pork-chops",
+  "name": "Pork Chops",
+  "source": "",
+  "servings": 2,
+  "category": "main",
+  "effort": 2,
+  "prepMinutes": 5,
+  "cookMinutes": 25,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "custom-mvu2lgey",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "2",
+        "unit": "",
+        "ingredientId": "pork-chop",
+        "note": ""
+      }
+    }
+  ],
+  "steps": [
+    "Cook the pork chops"
+  ],
+  "notes": "",
+  "pairsWith": [
+    "broccoli",
+    "mashed-potatoes"
+  ],
+  "trueServings": 2
+}

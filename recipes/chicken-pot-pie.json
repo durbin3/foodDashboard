@@ -4,7 +4,7 @@
   "source": "https://www.budgetbytes.com/chicken-pot-pie/",
   "servings": 8,
   "category": "main",
-  "effort": null,
+  "effort": 4,
   "prepMinutes": null,
   "cookMinutes": null,
   "tags": [
@@ -151,7 +151,7 @@
       "original": {
         "quantity": "1",
         "unit": "",
-        "ingredientId": "double-pie-crust",
+        "ingredientId": "pie-crust",
         "note": "store-bought or homemade"
       },
       "modified": null

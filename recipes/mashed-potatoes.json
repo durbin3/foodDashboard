@@ -1,0 +1,35 @@
+{
+  "id": "mashed-potatoes",
+  "name": "Mashed Potatoes",
+  "source": "",
+  "servings": 4,
+  "category": "side",
+  "effort": 1,
+  "prepMinutes": 0,
+  "cookMinutes": 10,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "custom-mvu2mqej",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1",
+        "unit": "packet",
+        "ingredientId": "dried-mashed-potatoes",
+        "note": ""
+      }
+    }
+  ],
+  "steps": [
+    "Cook according to directions"
+  ],
+  "notes": "",
+  "stepIngredients": [
+    [
+      {
+        "id": "custom-mvu2mqej"
+      }
+    ]
+  ]
+}

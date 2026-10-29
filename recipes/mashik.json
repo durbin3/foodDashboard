@@ -1,0 +1,89 @@
+{
+  "id": "mashik",
+  "name": "Mashik",
+  "source": "",
+  "servings": 2,
+  "category": "main",
+  "effort": 1,
+  "prepMinutes": 0,
+  "cookMinutes": 20,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "custom-mvr9gmax",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1/2",
+        "unit": "bag",
+        "ingredientId": "egg-noodles",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvr9heg5",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "1/2",
+        "unit": "",
+        "ingredientId": "polish-sausage",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvr9hkni",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "2",
+        "unit": "tbsp",
+        "ingredientId": "butter",
+        "note": ""
+      }
+    },
+    {
+      "id": "custom-mvr9hotb",
+      "group": "",
+      "original": null,
+      "modified": {
+        "quantity": "8",
+        "unit": "oz",
+        "ingredientId": "cottage-cheese",
+        "note": ""
+      }
+    }
+  ],
+  "steps": [
+    "Boil egg noodles for 8 minutes",
+    "When egg noodles are halfway done, start cooking sausage",
+    "Drain the noodles when done and put into a pan with butter on medium high heat",
+    "When noodles are crispy add cottage cheese and reduce to medium low",
+    "When cheese is warm salt + pepper to taste"
+  ],
+  "notes": "",
+  "trueServings": 2,
+  "stepIngredients": [
+    [
+      {
+        "id": "custom-mvr9gmax"
+      }
+    ],
+    [
+      {
+        "id": "custom-mvr9heg5"
+      }
+    ],
+    [
+      {
+        "id": "custom-mvr9hkni"
+      }
+    ],
+    [
+      {
+        "id": "custom-mvr9hotb"
+      }
+    ],
+    []
+  ]
+}
