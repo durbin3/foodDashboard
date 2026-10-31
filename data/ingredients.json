@@ -2,7 +2,8 @@
   "ingredients": {
     "2-greek-yogurt": {
       "name": "greek yogurt",
-      "shelfLifeDays": 14
+      "shelfLifeDays": 14,
+      "section": "dairy"
     },
     "black-pepper": {
       "name": "pepper",
@@ -14,10 +15,12 @@
           "equals": "16",
           "toUnit": "pinch"
         }
-      ]
+      ],
+      "section": "spices"
     },
     "broccoli": {
-      "name": "broccoli"
+      "name": "broccoli",
+      "section": "produce"
     },
     "brown-sugar": {
       "name": "brown sugar",
@@ -29,12 +32,12 @@
           "equals": "16",
           "toUnit": "tbsp"
         }
-      ]
+      ],
+      "section": "baking"
     },
     "butter": {
       "name": "butter",
       "staple": true,
-      "buyUnit": "stick",
       "conversions": [
         {
           "qty": "1/2",
@@ -54,21 +57,29 @@
           "equals": "",
           "toUnit": ""
         }
-      ]
+      ],
+      "section": "dairy",
+      "purchase": {
+        "unit": "stick"
+      }
     },
     "canned-tomatoes": {
-      "name": "canned tomatoes"
+      "name": "canned tomatoes",
+      "section": "canned"
     },
     "carrot": {
       "name": "carrot",
-      "shelfLifeDays": 21
+      "shelfLifeDays": 21,
+      "section": "produce"
     },
     "celery": {
       "name": "celery",
-      "shelfLifeDays": 14
+      "shelfLifeDays": 14,
+      "section": "produce"
     },
     "chicken-bouillon": {
-      "name": "chicken bouillon"
+      "name": "chicken bouillon",
+      "section": "canned"
     },
     "chicken-breast": {
       "name": "chicken breast",
@@ -77,73 +88,92 @@
       "purchase": {
         "qty": "6",
         "unit": ""
-      }
+      },
+      "section": "meat"
     },
     "chicken-broth": {
-      "name": "chicken broth"
+      "name": "chicken broth",
+      "section": "canned"
     },
     "chili-powder": {
-      "name": "chili powder"
+      "name": "chili powder",
+      "section": "spices"
     },
     "chipotle-pepper-powder": {
       "name": "chipotle pepper powder",
-      "staple": true
+      "staple": true,
+      "section": "spices"
     },
     "cilantro": {
       "name": "cilantro",
-      "shelfLifeDays": 7
+      "shelfLifeDays": 7,
+      "section": "produce"
     },
     "cinnamon": {
-      "name": "cinnamon"
+      "name": "cinnamon",
+      "section": "spices"
     },
     "cinnamon-stick": {
-      "name": "cinnamon stick"
+      "name": "cinnamon stick",
+      "section": "spices"
     },
     "cocoa-powder": {
       "name": "cocoa powder",
-      "staple": true
+      "staple": true,
+      "section": "baking"
     },
     "cooked-chicken": {
-      "name": "cooked chicken"
+      "name": "cooked chicken",
+      "section": "meat"
     },
     "cooked-steak": {
-      "name": "cooked steak"
+      "name": "cooked steak",
+      "section": "meat"
     },
     "cooking-oil": {
       "name": "cooking oil",
-      "staple": true
+      "staple": true,
+      "section": "condiments"
     },
     "corn": {
-      "name": "corn"
+      "name": "corn",
+      "section": "canned"
     },
     "cornstarch": {
       "name": "cornstarch",
-      "staple": true
+      "staple": true,
+      "section": "baking"
     },
     "cottage-cheese": {
       "name": "cottage cheese",
       "purchase": {
         "qty": "24",
         "unit": "oz"
-      }
+      },
+      "section": "dairy"
     },
     "cream-cheese": {
       "name": "cream cheese",
-      "shelfLifeDays": 21
+      "shelfLifeDays": 21,
+      "section": "dairy"
     },
     "cream-of-chicken-soup": {
-      "name": "cream of chicken soup"
+      "name": "cream of chicken soup",
+      "section": "canned"
     },
     "cumin": {
       "name": "cumin",
-      "staple": true
+      "staple": true,
+      "section": "spices"
     },
     "dried-basil": {
       "name": "dried basil",
-      "staple": true
+      "staple": true,
+      "section": "spices"
     },
     "dried-mashed-potatoes": {
-      "name": "dried mashed potatoes"
+      "name": "dried mashed potatoes",
+      "section": "dry"
     },
     "dried-oregano": {
       "name": "dried oregano",
@@ -155,18 +185,22 @@
           "equals": "3",
           "toUnit": "tsp"
         }
-      ]
+      ],
+      "section": "spices"
     },
     "dried-thyme": {
       "name": "dried thyme",
-      "staple": true
+      "staple": true,
+      "section": "spices"
     },
     "egg": {
       "name": "egg",
-      "shelfLifeDays": 28
+      "shelfLifeDays": 28,
+      "section": "dairy"
     },
     "egg-noodles": {
-      "name": "egg noodles"
+      "name": "egg noodles",
+      "section": "dry"
     },
     "flour": {
       "name": "flour",
@@ -178,182 +212,230 @@
           "equals": "16",
           "toUnit": "tbsp"
         }
-      ]
+      ],
+      "section": "baking"
     },
     "fresh-parsley": {
       "name": "fresh parsley",
       "staple": true,
-      "shelfLifeDays": 7
+      "shelfLifeDays": 7,
+      "section": "produce"
     },
     "frozen-mixed-vegetables": {
-      "name": "frozen mixed vegetables"
+      "name": "frozen mixed vegetables",
+      "section": "frozen"
     },
     "garlic": {
       "name": "garlic",
-      "staple": true
+      "staple": true,
+      "section": "produce"
     },
     "garlic-powder": {
       "name": "garlic powder",
-      "staple": true
+      "staple": true,
+      "section": "spices"
     },
     "granulated-sugar": {
       "name": "sugar",
-      "staple": true
+      "staple": true,
+      "section": "baking"
     },
     "grape-tomato": {
       "name": "grape tomato",
-      "shelfLifeDays": 7
+      "shelfLifeDays": 7,
+      "section": "produce"
     },
     "green-onion": {
       "name": "green onion",
-      "shelfLifeDays": 7
+      "shelfLifeDays": 7,
+      "section": "produce"
     },
     "green-pepper": {
       "name": "green pepper",
-      "shelfLifeDays": 7
+      "shelfLifeDays": 7,
+      "section": "produce"
     },
     "ground-beef": {
       "name": "ground beef",
       "shelfLifeDays": 2,
-      "thaw": true
+      "thaw": true,
+      "section": "meat"
     },
     "heavy-cream": {
       "name": "heavy cream",
       "staple": true,
-      "shelfLifeDays": 14
+      "shelfLifeDays": 14,
+      "section": "dairy"
     },
     "honey": {
-      "name": "honey"
+      "name": "honey",
+      "section": "condiments"
     },
     "instant-dry-yeast": {
-      "name": "instant dry yeast"
+      "name": "instant dry yeast",
+      "section": "baking"
     },
     "italian-seasoning": {
-      "name": "italian seasoning"
+      "name": "italian seasoning",
+      "section": "spices"
     },
     "jalapeno": {
       "name": "jalapeno",
-      "shelfLifeDays": 10
+      "shelfLifeDays": 10,
+      "section": "produce"
     },
     "jolly-rancher-blue-raspberry": {
-      "name": "jolly rancher blue raspberry"
+      "name": "jolly rancher blue raspberry",
+      "section": "snacks"
     },
     "ketchup": {
       "name": "ketchup",
-      "staple": true
+      "staple": true,
+      "section": "condiments"
     },
     "lasagna-noodle": {
-      "name": "lasagna noodle"
+      "name": "lasagna noodle",
+      "section": "dry"
     },
     "lemon": {
       "name": "lemon",
-      "shelfLifeDays": 21
+      "shelfLifeDays": 21,
+      "section": "produce"
     },
     "macaroni": {
-      "name": "macaroni"
+      "name": "macaroni",
+      "section": "dry"
     },
     "maple-extract": {
-      "name": "maple extract"
+      "name": "maple extract",
+      "section": "baking"
     },
     "meatballs": {
-      "name": "meatballs"
+      "name": "meatballs",
+      "section": "frozen"
     },
     "mexican-cheese": {
       "name": "mexican cheese",
-      "shelfLifeDays": 21
+      "shelfLifeDays": 21,
+      "section": "dairy"
     },
     "mikes-hard-lemonade": {
-      "name": "mikes hard lemonade"
+      "name": "mikes hard lemonade",
+      "section": "drinks"
     },
     "milk": {
       "name": "milk",
       "staple": true,
       "conversions": [],
-      "shelfLifeDays": 10
+      "shelfLifeDays": 10,
+      "section": "dairy"
     },
     "navy-beans": {
-      "name": "navy beans"
+      "name": "navy beans",
+      "section": "canned"
     },
     "olive-oil": {
       "name": "olive oil",
-      "staple": true
+      "staple": true,
+      "section": "condiments"
     },
     "onion": {
-      "name": "onion"
+      "name": "onion",
+      "section": "produce"
     },
     "onion-powder": {
-      "name": "onion powder"
+      "name": "onion powder",
+      "section": "spices"
     },
     "orange": {
       "name": "orange",
-      "shelfLifeDays": 14
+      "shelfLifeDays": 14,
+      "section": "produce"
     },
     "orange-sparkling-water": {
-      "name": "orange sparkling water"
+      "name": "orange sparkling water",
+      "section": "drinks"
     },
     "orzo": {
-      "name": "orzo"
+      "name": "orzo",
+      "section": "dry"
     },
     "paprika": {
       "name": "paprika",
-      "staple": true
+      "staple": true,
+      "section": "spices"
     },
     "parmesan-cheese": {
-      "name": "parmesan cheese"
+      "name": "parmesan cheese",
+      "section": "dairy"
     },
     "peanut-butter": {
-      "name": "peanut butter"
+      "name": "peanut butter",
+      "section": "condiments"
     },
     "pesto": {
-      "name": "pesto"
+      "name": "pesto",
+      "section": "canned"
     },
     "pie-crust": {
       "name": "pie-crust",
       "aliases": [
         "double pie crust"
       ],
-      "conversions": []
+      "conversions": [],
+      "section": "dairy"
     },
     "plain-breadcrumbs": {
-      "name": "breadcrumbs"
+      "name": "breadcrumbs",
+      "section": "baking"
     },
     "polish-sausage": {
-      "name": "polish sausage"
+      "name": "polish sausage",
+      "section": "meat"
     },
     "popov": {
-      "name": "popov"
+      "name": "popov",
+      "section": "drinks"
     },
     "pork-butt-roast": {
       "name": "pork butt roast",
       "shelfLifeDays": 3,
-      "thaw": true
+      "thaw": true,
+      "section": "meat"
     },
     "pork-chop": {
       "name": "pork chop",
       "shelfLifeDays": 3,
-      "thaw": true
+      "thaw": true,
+      "section": "meat"
     },
     "pork-tenderloin": {
       "name": "pork tenderloin",
       "shelfLifeDays": 3,
-      "thaw": true
+      "thaw": true,
+      "section": "meat"
     },
     "potato": {
-      "name": "potato"
+      "name": "potato",
+      "section": "produce"
     },
     "powdered-sugar": {
       "name": "powdered sugar",
-      "staple": true
+      "staple": true,
+      "section": "baking"
     },
     "quick-oats": {
-      "name": "quick oats"
+      "name": "quick oats",
+      "section": "dry"
     },
     "red-onion": {
-      "name": "red onion"
+      "name": "red onion",
+      "section": "produce"
     },
     "red-pepper": {
       "name": "red bell pepper",
-      "shelfLifeDays": 7
+      "shelfLifeDays": 7,
+      "section": "produce"
     },
     "red-pepper-flakes": {
       "name": "red pepper flakes",
@@ -365,25 +447,31 @@
           "toUnit": "pinch"
         }
       ],
-      "staple": true
+      "staple": true,
+      "section": "spices"
     },
     "rice": {
-      "name": "rice"
+      "name": "rice",
+      "section": "dry"
     },
     "rice-vinegar": {
       "name": "rice vinegar",
-      "staple": true
+      "staple": true,
+      "section": "condiments"
     },
     "ricotta-cheese": {
       "name": "ricotta cheese",
-      "shelfLifeDays": 7
+      "shelfLifeDays": 7,
+      "section": "dairy"
     },
     "rubbed-sage": {
       "name": "rubbed sage",
-      "staple": true
+      "staple": true,
+      "section": "spices"
     },
     "salmon-fillet": {
-      "name": "salmon fillet"
+      "name": "salmon fillet",
+      "section": "meat"
     },
     "salt": {
       "name": "salt",
@@ -395,61 +483,76 @@
           "equals": "16",
           "toUnit": "pinch"
         }
-      ]
+      ],
+      "section": "spices"
     },
     "seasoning-salt": {
-      "name": "seasoning salt"
+      "name": "seasoning salt",
+      "section": "spices"
     },
     "sharp-cheddar-cheese": {
       "name": "sharp cheddar cheese",
-      "shelfLifeDays": 21
+      "shelfLifeDays": 21,
+      "section": "dairy"
     },
     "shredded-cheese": {
       "name": "shredded cheese",
       "conversions": [],
-      "shelfLifeDays": 21
+      "shelfLifeDays": 21,
+      "section": "dairy"
     },
     "sierra-mist": {
-      "name": "sierra mist"
+      "name": "sierra mist",
+      "section": "drinks"
     },
     "smoked-paprika": {
       "name": "smoked paprika",
-      "staple": true
+      "staple": true,
+      "section": "spices"
     },
     "sour-cream": {
       "name": "sour cream",
-      "shelfLifeDays": 14
+      "shelfLifeDays": 14,
+      "section": "dairy"
     },
     "soy-sauce": {
       "name": "soy sauce",
-      "staple": true
+      "staple": true,
+      "section": "condiments"
     },
     "spaghetti": {
-      "name": "spaghetti pasta"
+      "name": "spaghetti pasta",
+      "section": "dry"
     },
     "spaghetti-sauce": {
-      "name": "spaghetti sauce"
+      "name": "spaghetti sauce",
+      "section": "canned"
     },
     "spinach": {
       "name": "spinach",
       "conversions": [],
-      "shelfLifeDays": 5
+      "shelfLifeDays": 5,
+      "section": "produce"
     },
     "sriracha": {
       "name": "sriracha",
-      "staple": true
+      "staple": true,
+      "section": "condiments"
     },
     "steak": {
       "name": "steak",
       "shelfLifeDays": 3,
-      "thaw": true
+      "thaw": true,
+      "section": "meat"
     },
     "steak-seasoning": {
       "name": "steak seasoning",
-      "staple": true
+      "staple": true,
+      "section": "spices"
     },
     "sundried-tomatoes": {
-      "name": "sundried tomatoes"
+      "name": "sundried tomatoes",
+      "section": "canned"
     },
     "taco-toppings": {
       "name": "taco toppings",
@@ -457,7 +560,8 @@
     },
     "toasted-sesame-oil": {
       "name": "toasted sesame oil",
-      "staple": true
+      "staple": true,
+      "section": "condiments"
     },
     "tortilla": {
       "name": "tortilla",
@@ -465,14 +569,17 @@
       "conversions": [],
       "aliases": [
         "large tortilla"
-      ]
+      ],
+      "section": "bakery"
     },
     "turmeric": {
-      "name": "turmeric"
+      "name": "turmeric",
+      "section": "spices"
     },
     "vanilla-extract": {
       "name": "vanilla extract",
-      "staple": true
+      "staple": true,
+      "section": "baking"
     },
     "water": {
       "name": "water",
@@ -488,16 +595,20 @@
           "toUnit": "tsp"
         }
       ],
-      "staple": true
+      "staple": true,
+      "section": "condiments"
     },
     "yeast": {
-      "name": "yeast"
+      "name": "yeast",
+      "section": "baking"
     },
     "yellow-mustard": {
-      "name": "yellow mustard"
+      "name": "yellow mustard",
+      "section": "condiments"
     },
     "yellow-onion": {
-      "name": "yellow onion"
+      "name": "yellow onion",
+      "section": "produce"
     }
   }
 }

@@ -25,11 +25,18 @@
       "scale": 1
     },
     {
-      "id": "395dd63d-a49c-42f4-b337-e885bdb83a6e",
-      "recipeId": "creamy-pesto-chicken",
+      "id": "f1af85f4-e9c2-4734-bc91-0c56026bb2da",
+      "recipeId": "crockpot-taco-meat",
       "cycle": "2026-10-26",
-      "date": null,
-      "scale": 1
+      "date": "2026-10-31",
+      "scale": 1,
+      "leftovers": [
+        "2026-11-03"
+      ],
+      "ratings": {
+        "Sarah": 5,
+        "Eric": 5
+      }
     }
   ],
   "recommendations": {
@@ -38,14 +45,14 @@
       "meals": {
         "bd13f7bb-7da7-4848-99c5-0b2ef18b6728": "[\"mashik\",[],1]",
         "e3e2c44e-974e-4047-b570-4971cc11a7c5": "[\"pork-chops\",[],2]",
-        "395dd63d-a49c-42f4-b337-e885bdb83a6e": "[\"creamy-pesto-chicken\",[],null]"
+        "f1af85f4-e9c2-4734-bc91-0c56026bb2da": "[\"crockpot-taco-meat\",[],1]"
       },
       "placed": {
         "bd13f7bb-7da7-4848-99c5-0b2ef18b6728": "2026-10-27",
         "e3e2c44e-974e-4047-b570-4971cc11a7c5": "2026-10-30"
       },
       "days": {
-        "395dd63d-a49c-42f4-b337-e885bdb83a6e": "2026-10-31"
+        "f1af85f4-e9c2-4734-bc91-0c56026bb2da": "2026-11-06"
       }
     }
   },
