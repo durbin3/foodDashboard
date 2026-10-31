@@ -3,8 +3,8 @@
 // much to buy once rounded up to the pack size it's sold in, and how much will
 // be left over.
 //
-// The arithmetic happens in one base unit per ingredient (its pack unit, else
-// its "buy as" unit, else the unit the recipes use), so it only applies when
+// The arithmetic happens in one base unit per ingredient (the unit it's sold
+// in, else the unit the recipes use), so it only applies when
 // every amount converts to that unit. When an ingredient has no pack size and
 // nothing in storage, there's nothing to subtract or round, and it's listed
 // exactly as the recipes add up.
@@ -52,7 +52,7 @@ const EPS = 1e-9
 
 /**
  * One entry per ingredient the meals use:
- *   { id, name, sources, staple, notListed, used, unconverted, storedOther,
+ *   { id, name, sources, section, staple, notListed, used, unconverted, storedOther,
  *     math: null | { base, usedQty, haveQty, buyQty, leftoverQty, packs, pack } }
  * `used` is the recipes' total as text. `math` is set when there's a pack size
  * or storage to account for and everything converts to one unit.
@@ -63,12 +63,13 @@ export function computeNeeds(meals, recipesById, registry, inventory) {
     const info = registry?.ingredients?.[agg.id] ?? {}
     // Standard conversions always apply, so 3 tsp can read as 1 tbsp even for an ingredient only ever used in teaspoons.
     const edges = unitGraph([...BUILTIN_CONVERSIONS, ...(info.conversions ?? [])])
-    const preferred = info.buyUnit == null ? null : normalizeUnit(info.buyUnit)
+    const preferred = info.purchase?.unit == null ? null : normalizeUnit(info.purchase.unit)
     const usedAmounts = combineAmounts(agg.amounts, edges, preferred)
     const entry = {
       id: agg.id,
       name: agg.name,
       sources: [...agg.sources],
+      section: info.section ?? null,
       staple: !!info.staple,
       notListed: !!info.notListed,
       thaw: !!info.thaw,

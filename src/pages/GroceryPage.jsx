@@ -1,19 +1,9 @@
 import { useEffect, useState } from 'react'
 import { buildGroceryList, groceryListText } from '../lib/grocery.js'
+import { bySection, STORE_SECTIONS } from '../lib/ingredients.js'
 import { computeNeeds, inventoryAfterShopping } from '../lib/needs.js'
 import { addDays, CYCLE_DAYS, cycleStart, formatCycle, formatDay, mealsForCycle } from '../lib/plan.js'
 import { cycleDays, cycleWarnings } from '../lib/schedule.js'
-
-const LIST_AS = [
-  ['grocery', 'Groceries'],
-  ['pantry', 'Pantry staple'],
-  ['none', "Don't list"],
-]
-const listAsPatch = {
-  grocery: { staple: undefined, notListed: undefined },
-  pantry: { staple: true, notListed: undefined },
-  none: { staple: undefined, notListed: true },
-}
 
 /**
  * Ticks are kept in this browser only, per shopping cycle, as { ingredientId: amount }.
@@ -112,7 +102,7 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
     )
 
   const line = (l) => {
-    const listAs = l.notListed ? 'none' : l.staple ? 'pantry' : 'grocery'
+    const registered = !!registry.ingredients[l.id]
     return (
       <li key={l.id} className={isTicked(l) ? 'done' : ''}>
         <label className="g-check">
@@ -127,17 +117,24 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
         {editing && (
           <span className="g-edit small">
             <select
-              aria-label={`List ${l.name} as`}
-              value={listAs}
-              onChange={(e) => actions.updateIngredient(l.id, listAsPatch[e.target.value])}
-              disabled={!registry.ingredients[l.id]}
+              aria-label={`Store section for ${l.name}`}
+              value={l.section ?? ''}
+              onChange={(e) => actions.updateIngredient(l.id, { section: e.target.value || undefined })}
+              disabled={!registered}
             >
-              {LIST_AS.map(([v, label]) => (
+              <option value="">Section…</option>
+              {STORE_SECTIONS.map(([v, label]) => (
                 <option key={v} value={v}>
                   {label}
                 </option>
               ))}
             </select>
+            <label title="Usually have it: listed under Pantry to check before buying">
+              <input type="checkbox" checked={l.staple} disabled={!registered || l.notListed} onChange={(e) => actions.updateIngredient(l.id, { staple: e.target.checked || undefined })} /> Staple
+            </label>
+            <label title="Leave it off the grocery list">
+              <input type="checkbox" checked={l.notListed} disabled={!registered} onChange={(e) => actions.updateIngredient(l.id, { notListed: e.target.checked || undefined })} /> Hide
+            </label>
             <a href={`/ingredients/${encodeURIComponent(l.id)}`}>{l.unconverted ? 'Add conversion' : 'Settings'}</a>
           </span>
         )}
@@ -145,12 +142,13 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
     )
   }
 
+  const lineList = (lines) => <ul className={`grocery ${editing ? 'editing' : ''}`}>{lines.map(line)}</ul>
   const section = (title, lines, hint) => (
     <div className="grocery-section">
       <h3>
         {title} {hint && <span className="muted small">{hint}</span>}
       </h3>
-      {lines.length === 0 ? <p className="muted small">Nothing here.</p> : <ul className={`grocery ${editing ? 'editing' : ''}`}>{lines.map(line)}</ul>}
+      {lines.length === 0 ? <p className="muted small">Nothing here.</p> : lineList(lines)}
     </div>
   )
 
@@ -196,7 +194,14 @@ export default function GroceryPage({ plan, cycle, settings, recipesById, regist
           {editing ? 'Done editing' : 'Edit list'}
         </button>
       </div>
-      {section('Groceries', list.groceries)}
+      <div className="grocery-section">
+        {bySection(list.groceries).map((g) => (
+          <div key={g.key} className="store-section">
+            <h3>{g.label}</h3>
+            {lineList(g.lines)}
+          </div>
+        ))}
+      </div>
       {section('Pantry', list.pantry)}
       {list.stored.length > 0 && section('In storage', list.stored, '— already have enough')}
       {list.notListed.length > 0 && (

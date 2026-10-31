@@ -1,24 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
-import { normalizeUnit, parseQuantity } from '../lib/quantity.js'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { STORE_SECTIONS } from '../lib/ingredients.js'
 import { aliasProblem, likelyDuplicates } from '../lib/match.js'
+import { normalizeUnit, parseQuantity } from '../lib/quantity.js'
 import { activeIngredients } from '../lib/recipe.js'
+import { navigate } from '../lib/route.js'
 import { KNOWN_UNITS, unitGroupCount } from '../lib/units.js'
 
-const unitLabel = (u) => (u === '' ? 'each' : u)
-const formatConversion = (c) => `${c.qty} ${unitLabel(c.unit)} = ${c.equals} ${unitLabel(c.toUnit)}`
-const sameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase()
+// Every ingredient we've seen, and the one place to configure each: a list of
+// names on the left, the selected ingredient's settings on the right (its own
+// screen on phones). The selection is the URL: /ingredients/<id>.
 
-const LIST_AS = [
-  ['grocery', 'Groceries'],
-  ['pantry', 'Pantry staple'],
-  ['none', "Don't list"],
-]
-const listAsOf = (info) => (info.notListed ? 'none' : info.staple ? 'pantry' : 'grocery')
-const listAsPatch = {
-  grocery: { staple: undefined, notListed: undefined },
-  pantry: { staple: true, notListed: undefined },
-  none: { staple: undefined, notListed: true },
-}
+const unitLabel = (u) => (u === '' ? 'each' : u)
+const sameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase()
 
 function useDismissedPairs() {
   const key = 'ingredients:not-duplicates'
@@ -44,26 +37,18 @@ function useDismissedPairs() {
 export default function IngredientsPage({ recipes, registry, focus, actions }) {
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('all')
-  const [expanded, setExpanded] = useState(focus || null)
   const [dismissed, dismissPair] = useDismissedPairs()
-  useEffect(() => {
-    if (focus) {
-      setExpanded(focus)
-      setFilter('all')
-      setQuery('')
-      requestAnimationFrame(() => document.getElementById(`ing-${focus}`)?.scrollIntoView({ block: 'center' }))
-    }
-  }, [focus])
+  const listRef = useRef(null)
 
-  // Registry entries plus where each is used.
+  // Registry entries, plus how many recipes use each and the units they use it in.
   const index = useMemo(() => {
     const usage = new Map()
     for (const r of recipes) {
       for (const ing of activeIngredients(r)) {
         if (!ing.ingredientId) continue
-        if (!usage.has(ing.ingredientId)) usage.set(ing.ingredientId, { recipes: new Map(), units: new Set() })
+        if (!usage.has(ing.ingredientId)) usage.set(ing.ingredientId, { recipes: new Set(), units: new Set() })
         const u = usage.get(ing.ingredientId)
-        u.recipes.set(r.id, r.name)
+        u.recipes.add(r.id)
         if (parseQuantity(ing.quantity) != null) u.units.add(normalizeUnit(ing.unit))
       }
     }
@@ -72,40 +57,44 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
     const unregistered = [...usage.keys()].filter((id) => !registry.ingredients[id]).map((id) => [id, { name: id, unregistered: true }])
     return [...Object.entries(registry.ingredients), ...unregistered]
       .map(([id, info]) => {
-        const use = usage.get(id) ?? { recipes: new Map(), units: new Set() }
+        const use = usage.get(id) ?? { recipes: new Set(), units: new Set() }
         const units = [...use.units].sort()
-        return { id, info, ...use, units, needsConversion: unitGroupCount(units, info.conversions ?? []) > 1 }
+        return { id, info, uses: use.recipes.size, units, needsConversion: unitGroupCount(units, info.conversions ?? []) > 1 }
       })
       .sort((a, b) => a.info.name.localeCompare(b.info.name))
   }, [recipes, registry])
 
-  const duplicates = useMemo(
-    () => likelyDuplicates(index).filter(([a, b]) => !dismissed.has(`${a.id}|${b.id}`)),
-    [index, dismissed],
-  )
+  const duplicates = useMemo(() => likelyDuplicates(index).filter(([a, b]) => !dismissed.has(`${a.id}|${b.id}`)), [index, dismissed])
   const inDuplicates = new Set(duplicates.flat().map((e) => e.id))
+  const needsAttention = (e) => e.needsConversion || inDuplicates.has(e.id) || e.info.unregistered
 
   const allUnits = useMemo(() => [...new Set([...KNOWN_UNITS, ...index.flatMap((e) => e.units)])].filter(Boolean).sort(), [index])
 
   const FILTERS = [
     ['all', 'All', () => true],
-    ['grocery', 'Groceries', (e) => listAsOf(e.info) === 'grocery'],
-    ['pantry', 'Pantry', (e) => listAsOf(e.info) === 'pantry'],
-    ['none', 'Not listed', (e) => listAsOf(e.info) === 'none'],
-    ['perishable', 'Perishable', (e) => e.info.shelfLifeDays != null],
-    ['thaw', 'Thaw first', (e) => e.info.thaw],
+    ['nosection', 'No section', (e) => !e.info.section],
+    ['staple', 'Staples', (e) => e.info.staple && !e.info.notListed],
+    ['hidden', 'Hidden', (e) => e.info.notListed],
     ['convert', 'Needs conversion', (e) => e.needsConversion],
     ['duplicates', 'Possible duplicates', (e) => inDuplicates.has(e.id)],
-    ['unused', 'Unused', (e) => e.recipes.size === 0],
     ['unregistered', 'Not registered', (e) => e.info.unregistered],
+    ['unused', 'Unused', (e) => e.uses === 0],
   ]
+  const ATTENTION = ['convert', 'duplicates', 'unregistered']
   const q = query.trim().toLowerCase()
   const visible = index
     .filter(FILTERS.find(([k]) => k === filter)[2])
     .filter((e) => !q || e.info.name.toLowerCase().includes(q) || e.id.includes(q) || (e.info.aliases ?? []).some((a) => a.toLowerCase().includes(q)))
 
+  const selected = focus ? index.find((e) => e.id === focus) : null
+  useEffect(() => {
+    listRef.current?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' })
+  }, [focus])
+
+  const open = (id) => navigate(id ? `/ingredients/${encodeURIComponent(id)}` : '/ingredients')
+
   return (
-    <section>
+    <section className={`ing-browser ${selected ? 'has-selection' : ''}`}>
       <datalist id="unit-options">
         {allUnits.map((u) => (
           <option key={u} value={u} />
@@ -117,263 +106,227 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
         ))}
       </datalist>
 
-      <div className="toolbar">
-        <input type="search" placeholder="Filter ingredients…" aria-label="Filter ingredients" value={query} onChange={(e) => setQuery(e.target.value)} />
-        <span className="muted small">{index.length} ingredients</span>
-      </div>
-      <div className="tags" role="group" aria-label="Show">
-        {FILTERS.map(([key, label, test]) => {
-          const n = key === 'all' ? index.length : index.filter(test).length
-          if (key !== 'all' && !n) return null
-          return (
-            <button key={key} className={`tag ${filter === key ? 'on' : ''} ${['convert', 'duplicates', 'unregistered'].includes(key) ? 'attention' : ''}`} aria-pressed={filter === key} onClick={() => setFilter(key)}>
-              {label} ({n})
-            </button>
-          )
-        })}
-      </div>
+      <div className="ing-list-pane">
+        <input type="search" placeholder={`Filter ${index.length} ingredients…`} aria-label="Filter ingredients" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <div className="tags compact" role="group" aria-label="Show">
+          {FILTERS.map(([key, label, test]) => {
+            const n = key === 'all' ? index.length : index.filter(test).length
+            if (key !== 'all' && !n && filter !== key) return null
+            return (
+              <button key={key} className={`tag ${filter === key ? 'on' : ''} ${ATTENTION.includes(key) ? 'attention' : ''}`} aria-pressed={filter === key} onClick={() => setFilter(key)}>
+                {label} {key !== 'all' && n}
+              </button>
+            )
+          })}
+        </div>
 
-      {duplicates.length > 0 && filter === 'duplicates' && (
-        <div className="notice">
-          <p className="small">These look like the same ingredient. Merging points every recipe at one of them.</p>
-          <ul className="dup-list">
+        {filter === 'duplicates' && duplicates.length > 0 && (
+          <ul className="dup-list notice small">
             {duplicates.map(([a, b]) => (
               <li key={`${a.id}|${b.id}`}>
-                <strong>{a.info.name}</strong> ({a.recipes.size}) and <strong>{b.info.name}</strong> ({b.recipes.size})
-                <button className="small" onClick={() => confirmMerge(b, a, actions)}>
-                  Merge into “{a.info.name}”
-                </button>
-                <button className="small" onClick={() => confirmMerge(a, b, actions)}>
-                  Merge into “{b.info.name}”
-                </button>
-                <button className="link small" onClick={() => dismissPair(`${a.id}|${b.id}`)}>
-                  Not duplicates
-                </button>
+                <strong>{a.info.name}</strong> / <strong>{b.info.name}</strong>
+                <span className="dup-actions">
+                  <button className="link small" onClick={() => confirmMerge(b, a, actions, () => open(a.id))}>
+                    Keep “{a.info.name}”
+                  </button>
+                  <button className="link small" onClick={() => confirmMerge(a, b, actions, () => open(b.id))}>
+                    Keep “{b.info.name}”
+                  </button>
+                  <button className="link small muted" onClick={() => dismissPair(`${a.id}|${b.id}`)}>
+                    Not the same
+                  </button>
+                </span>
               </li>
             ))}
           </ul>
-        </div>
-      )}
+        )}
 
-      {visible.length === 0 ? (
-        <p className="muted small">No ingredients match.</p>
-      ) : (
-        <table className="ing-index">
-          <thead>
-            <tr>
-              <th>Ingredient</th>
-              <th>Used in</th>
-              <th>Units seen</th>
-              <th title="Where it goes on the grocery list">List as</th>
-              <th title="The unit the grocery list totals it in">Buy as</th>
-              <th title="Days it keeps after shopping. Blank = doesn't go off">Keeps</th>
-              <th title="Kept frozen unless used within its shelf life, so it needs a day to thaw">Thaw</th>
-              <th title="How its units relate, e.g. 1 each = 1/2 lb">Conversions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((e) => {
-              const open = expanded === e.id
-              return (
-                <IngredientRow
-                  key={e.id}
-                  entry={e}
-                  open={open}
-                  index={index}
-                  registry={registry}
-                  allUnits={allUnits}
-                  onToggleOpen={() => setExpanded(open ? null : e.id)}
-                  onUpdate={(patch) => actions.updateIngredient(e.id, patch)}
-                  onMerge={(target) => confirmMerge(e, target, actions, () => setExpanded(target.id))}
-                  onDelete={() => actions.deleteIngredient(e.id)}
-                />
-              )
-            })}
-          </tbody>
-        </table>
-      )}
+        <ul className="ing-names" ref={listRef}>
+          {visible.map((e) => (
+            <li key={e.id}>
+              <a
+                href={`/ingredients/${encodeURIComponent(e.id)}`}
+                aria-current={e.id === focus ? 'true' : undefined}
+                className={[e.info.notListed && 'hidden-item', needsAttention(e) && 'warn'].filter(Boolean).join(' ')}
+                title={e.info.notListed ? 'Hidden from the grocery list' : undefined}
+              >
+                {e.info.name}
+              </a>
+            </li>
+          ))}
+          {visible.length === 0 && <li className="muted small">No matches</li>}
+        </ul>
+      </div>
+
+      <div className="ing-detail-pane">
+        {selected && (
+          <>
+            <a className="back-link small" href="/ingredients">
+              ‹ Ingredients
+            </a>
+            <IngredientDetail
+              key={selected.id}
+              entry={selected}
+              index={index}
+              registry={registry}
+              inDuplicates={inDuplicates.has(selected.id)}
+              onUpdate={(patch) => actions.updateIngredient(selected.id, patch)}
+              onMerge={(target) => confirmMerge(selected, target, actions, () => open(target.id))}
+              onDelete={() => {
+                if (!confirm(`Delete "${selected.info.name}"?`)) return
+                actions.deleteIngredient(selected.id)
+                open(null)
+              }}
+            />
+          </>
+        )}
+      </div>
     </section>
   )
 }
 
 function confirmMerge(from, into, actions, then) {
-  const n = from.recipes.size
+  const n = from.uses
   if (!confirm(`Merge "${from.info.name}" into "${into.info.name}"? ${n} recipe${n === 1 ? '' : 's'} will switch to "${into.info.name}" and "${from.info.name}" goes away. You can undo right after.`))
     return
   actions.mergeIngredient(from.id, into.id).then(then, () => {})
 }
 
-const RecipeLinks = ({ recipes, limit = Infinity }) => {
-  const list = [...recipes].sort((a, b) => a[1].localeCompare(b[1]))
-  if (!list.length) return <span className="muted">none</span>
-  const shown = list.slice(0, limit)
-  return (
-    <>
-      {shown.map(([id, name], i) => (
-        <span key={id}>
-          {i > 0 && ', '}
-          <a href={`/recipe/${id}`}>{name}</a>
-        </span>
-      ))}
-      {list.length > shown.length && <span className="muted"> +{list.length - shown.length} more</span>}
-    </>
-  )
-}
-
-function IngredientRow({ entry, open, index, registry, allUnits, onToggleOpen, onUpdate, onMerge, onDelete }) {
+function IngredientDetail({ entry, index, registry, inDuplicates, onUpdate, onMerge, onDelete }) {
   const { id, info, units } = entry
-  const conversions = info.conversions ?? []
-  const [newName, setNewName] = useState(info.name)
   const [mergeName, setMergeName] = useState('')
-  useEffect(() => setNewName(info.name), [info.name])
-  const buyOptions = [...new Set(['', ...units, ...conversions.flatMap((c) => [normalizeUnit(c.unit), normalizeUnit(c.toUnit)]), 'lb', 'oz', 'cup'])]
-
-  const clash = newName.trim() && !sameName(newName, info.name) ? index.find((x) => x.id !== id && sameName(x.info.name, newName)) : null
   const mergeTarget = index.find((x) => x.id !== id && mergeName.trim() && sameName(x.info.name, mergeName))
 
-  function rename(e) {
-    e.preventDefault()
-    const to = newName.trim()
-    if (!to || to === info.name || clash) return
-    // The old name stays findable: imports using it still link here.
-    const aliases = [...(info.aliases ?? []).filter((a) => !sameName(a, to)), info.name]
-    onUpdate({ name: to, aliases })
-  }
-
   return (
-    <>
-      <tr id={`ing-${id}`} className={open ? 'open' : ''}>
-        <td>
-          <button className="link" onClick={onToggleOpen} aria-expanded={open}>
-            {open ? '▾' : '▸'} {info.name}
-          </button>
-          {info.unregistered && (
-            <span className="pill" title="A recipe uses this id but it isn't in data/ingredients.json. Merge it into the right ingredient, or rename it to register it.">
-              not registered
+    <div className="ing-detail">
+      <header className="ing-detail-head">
+        <NameInput entry={entry} index={index} onRename={onUpdate} />
+        <span className="muted small" title="Recipes refer to it by this; it doesn't change on rename">
+          {id}
+        </span>
+        {info.unregistered && (
+          <span className="pill warn" title="A recipe uses this id but it isn't in data/ingredients.json. Merge it into the right ingredient, or change any setting to register it.">
+            not registered
+          </span>
+        )}
+        {inDuplicates && (
+          <span className="pill warn" title="Looks like another ingredient; see the Possible duplicates filter">
+            possible duplicate
+          </span>
+        )}
+      </header>
+
+      <div className="ing-groups">
+        <fieldset className="ing-group">
+          <legend>Grocery list</legend>
+          <div className="field-grid">
+            <span>Section</span>
+            <select aria-label="Store section" value={info.section ?? ''} onChange={(e) => onUpdate({ section: e.target.value || undefined })}>
+              <option value="">—</option>
+              {STORE_SECTIONS.map(([v, label]) => (
+                <option key={v} value={v}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <span title="How the store sells it. An amount means whole packs of that size; a unit alone totals it in that unit. Blank: as the recipes add up.">Sold as</span>
+            <SoldAsInput purchase={info.purchase} onChange={(purchase) => onUpdate({ purchase })} />
+            <span />
+            <span className="toggles">
+              <label title="Usually on hand: listed under Pantry, to check before buying">
+                <input type="checkbox" checked={!!info.staple && !info.notListed} disabled={!!info.notListed} onChange={(e) => onUpdate({ staple: e.target.checked || undefined })} /> Staple
+              </label>
+              <label title="Left off the grocery list (e.g. water, taco toppings)">
+                <input type="checkbox" checked={!!info.notListed} onChange={(e) => onUpdate({ notListed: e.target.checked || undefined })} /> Hide
+              </label>
             </span>
-          )}
-        </td>
-        <td className="small">
-          <RecipeLinks recipes={entry.recipes} limit={2} />
-        </td>
-        <td className="small">{units.map(unitLabel).join(', ')}</td>
-        <td>
-          <select aria-label={`List ${info.name} as`} value={listAsOf(info)} onChange={(e) => onUpdate(listAsPatch[e.target.value])}>
-            {LIST_AS.map(([v, label]) => (
-              <option key={v} value={v}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </td>
-        <td>
-          <select
-            aria-label={`Buy ${info.name} as`}
-            value={info.buyUnit ?? '__auto'}
-            onChange={(e) => onUpdate({ buyUnit: e.target.value === '__auto' ? undefined : e.target.value })}
-          >
-            <option value="__auto">auto</option>
-            {buyOptions.map((u) => (
-              <option key={u} value={u}>
-                {unitLabel(u)}
-              </option>
-            ))}
-          </select>
-        </td>
-        <td>
-          <ShelfLifeInput name={info.name} value={info.shelfLifeDays} onChange={(shelfLifeDays) => onUpdate({ shelfLifeDays })} />
-        </td>
-        <td>
-          <input type="checkbox" aria-label={`${info.name} needs thawing`} checked={!!info.thaw} onChange={(e) => onUpdate({ thaw: e.target.checked || undefined })} />
-        </td>
-        <td className="small">
-          {conversions.length ? conversions.map(formatConversion).join('; ') : <span className="muted">—</span>}
-          {entry.needsConversion && (
-            <button className="link small warn" onClick={onToggleOpen} title={`Used as ${units.map(unitLabel).join(' and ')}, which don't combine yet`}>
-              ⚠ needs conversion
-            </button>
-          )}
-        </td>
-      </tr>
-      {open && (
-        <tr className="detail">
-          <td colSpan={8}>
-            <div className="detail-panel">
-              <div>
-                <h4>Used in</h4>
-                <p className="small">
-                  <RecipeLinks recipes={entry.recipes} />
-                </p>
-                <p className="muted small">id: {id}</p>
-              </div>
-              <form className="inline-form" onSubmit={rename}>
-                <h4>Name</h4>
-                <input aria-label={`Rename ${info.name}`} value={newName} onChange={(e) => setNewName(e.target.value)} />
-                <button disabled={!newName.trim() || newName.trim() === info.name || !!clash} title="Renames it in every recipe">
-                  Rename
-                </button>
-                {clash && <span className="field-warning">Already exists: use Merge</span>}
-              </form>
-              <form
-                className="inline-form"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  if (mergeTarget) onMerge(mergeTarget)
-                }}
-              >
-                <h4>Merge</h4>
-                <input
-                  list="known-ingredient-names"
-                  aria-label={`Merge ${info.name} into`}
-                  placeholder="Into ingredient…"
-                  value={mergeName}
-                  onChange={(e) => setMergeName(e.target.value)}
-                />
-                <button disabled={!mergeTarget} title={`Recipes using “${info.name}” switch to the other ingredient, and this one is removed`}>
-                  Merge
-                </button>
-              </form>
-              <div>
-                <h4>Storage</h4>
-                <div className="storage-fields small">
-                  <label title="Blank: doesn't go off">
-                    Keeps <ShelfLifeInput name={info.name} value={info.shelfLifeDays} onChange={(shelfLifeDays) => onUpdate({ shelfLifeDays })} /> days
-                  </label>
-                  <label title="Frozen unless used within its shelf life, so it needs a day to thaw">
-                    <input type="checkbox" checked={!!info.thaw} onChange={(e) => onUpdate({ thaw: e.target.checked || undefined })} /> Needs thawing
-                  </label>
-                  <PurchaseInput purchase={info.purchase} onChange={(purchase) => onUpdate({ purchase })} />
-                </div>
-              </div>
-              <div>
-                <h4>Also called</h4>
-                <AliasEditor id={id} info={info} registry={registry} onChange={(aliases) => onUpdate({ aliases: aliases.length ? aliases : undefined })} />
-              </div>
-              <div>
-                <h4 title="For units that don't combine, e.g. 1 each = 1/2 lb">Conversions</h4>
-                <ConversionEditor
-                  conversions={conversions}
-                  allUnits={allUnits}
-                  onSave={(next) => onUpdate({ conversions: next.length ? next : undefined })}
-                />
-              </div>
-              {entry.recipes.size === 0 && (
-                <div>
-                  <button className="danger" onClick={() => confirm(`Delete "${info.name}"?`) && onDelete()}>
-                    Delete unused ingredient
-                  </button>
-                </div>
-              )}
-            </div>
-          </td>
-        </tr>
-      )}
-    </>
+          </div>
+        </fieldset>
+
+        <fieldset className="ing-group">
+          <legend>Storage</legend>
+          <div className="field-grid">
+            <span>Keeps</span>
+            <span>
+              <ShelfLifeInput value={info.shelfLifeDays} onChange={(shelfLifeDays) => onUpdate({ shelfLifeDays })} /> days
+            </span>
+            <span />
+            <label className={info.shelfLifeDays ? '' : 'muted'} title="Bought fresh, frozen if not used within its shelf life, so a later meal needs it thawed the day before">
+              <input type="checkbox" checked={!!info.thaw} disabled={!info.shelfLifeDays && !info.thaw} onChange={(e) => onUpdate({ thaw: e.target.checked || undefined })} /> Freezes after that
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset className={`ing-group ${entry.needsConversion ? 'needs-attention' : ''}`}>
+          <legend title={entry.needsConversion ? `Recipes use it as ${units.map(unitLabel).join(' and ')}, which don't combine yet` : 'For units that don\'t combine on their own, e.g. 1 each = 1/2 lb'}>
+            Units
+          </legend>
+          <ConversionEditor conversions={info.conversions ?? []} units={units} onSave={(next) => onUpdate({ conversions: next.length ? next : undefined })} />
+        </fieldset>
+
+        <fieldset className="ing-group">
+          <legend title="Recipes and imports using any of these names link here">Other names</legend>
+          <AliasEditor id={id} info={info} registry={registry} onChange={(aliases) => onUpdate({ aliases: aliases.length ? aliases : undefined })} />
+        </fieldset>
+      </div>
+
+      <footer className="ing-detail-foot">
+        <form
+          className="inline-form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (mergeTarget) onMerge(mergeTarget)
+          }}
+        >
+          <input list="known-ingredient-names" aria-label={`Merge ${info.name} into`} placeholder="Merge into…" value={mergeName} onChange={(e) => setMergeName(e.target.value)} />
+          <button disabled={!mergeTarget} title={`Recipes using “${info.name}” switch to the other ingredient, and this one is removed`}>
+            Merge
+          </button>
+        </form>
+        {entry.uses === 0 && (
+          <button className="danger" onClick={onDelete} title="No recipe uses it">
+            Delete
+          </button>
+        )}
+      </footer>
+    </div>
   )
 }
 
-/** Days as a whole number, saved on blur; blank clears it (non-perishable). */
-function ShelfLifeInput({ name, value, onChange }) {
+/** The name, edited in place; saved on Enter or leaving the field. The old name stays as another name, so imports using it still link here. */
+function NameInput({ entry, index, onRename }) {
+  const { id, info } = entry
+  const [text, setText] = useState(info.name)
+  useEffect(() => setText(info.name), [info.name])
+  const to = text.trim()
+  const clash = to && !sameName(to, info.name) ? index.find((x) => x.id !== id && sameName(x.info.name, to)) : null
+  const commit = () => {
+    if (!to) return setText(info.name)
+    if (to === info.name || clash) return
+    const aliases = [...(info.aliases ?? []).filter((a) => !sameName(a, to)), info.name]
+    onRename({ name: to, aliases })
+  }
+  return (
+    <span className="name-edit">
+      <input
+        className={`name-input ${clash ? 'invalid' : ''}`}
+        aria-label="Name"
+        size={Math.max(4, text.length)}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur()
+          if (e.key === 'Escape') setText(info.name)
+        }}
+      />
+      {clash && <span className="field-warning">“{clash.info.name}” exists: merge instead</span>}
+    </span>
+  )
+}
+
+/** Days as a whole number, saved on blur; blank clears it (doesn't go off). */
+function ShelfLifeInput({ value, onChange }) {
   const [text, setText] = useState(value == null ? '' : String(value))
   useEffect(() => setText(value == null ? '' : String(value)), [value])
   const commit = () => {
@@ -383,10 +336,10 @@ function ShelfLifeInput({ name, value, onChange }) {
   }
   return (
     <input
-      className="days-input"
+      className="num"
       type="number"
       min="1"
-      aria-label={`Days ${name} keeps`}
+      aria-label="Days it keeps"
       placeholder="—"
       value={text}
       onChange={(e) => setText(e.target.value)}
@@ -396,27 +349,31 @@ function ShelfLifeInput({ name, value, onChange }) {
   )
 }
 
-/** The smallest amount you can buy, e.g. 2 lb. Saved once the amount is a number. */
-function PurchaseInput({ purchase, onChange }) {
+/**
+ * How it's sold: an optional pack amount and a unit. "2" "lb" is 2 lb packs,
+ * "" "lb" is any amount in pounds, "6" "" is packs of 6. Both blank: as the
+ * recipes add up. Saved when focus leaves the pair.
+ */
+function SoldAsInput({ purchase, onChange }) {
   const [qty, setQty] = useState(purchase?.qty ?? '')
   const [unit, setUnit] = useState(purchase?.unit ?? '')
   useEffect(() => {
     setQty(purchase?.qty ?? '')
     setUnit(purchase?.unit ?? '')
   }, [purchase?.qty, purchase?.unit])
-  const commit = () => {
-    if (!String(qty).trim()) return purchase && onChange(undefined)
-    if (!(parseQuantity(qty) > 0)) return
-    if (qty !== purchase?.qty || unit !== (purchase?.unit ?? '')) onChange({ qty: String(qty).trim(), unit: unit.trim() })
+  const q = String(qty).trim()
+  const u = unit.trim()
+  const bad = q && !(parseQuantity(q) > 0)
+  const commit = (e) => {
+    if (e.currentTarget.contains(e.relatedTarget) || bad) return
+    const next = !q && !u ? undefined : { ...(q ? { qty: q } : {}), unit: u }
+    if (JSON.stringify(next) !== JSON.stringify(purchase)) onChange(next)
   }
-  const bad = String(qty).trim() && !(parseQuantity(qty) > 0)
   return (
-    <label onBlur={commit} title="Blank: buy exactly what recipes use">
-      Packs of{' '}
-      <input className={`num ${bad ? 'invalid' : ''}`} aria-label="Pack amount" placeholder="any" value={qty} onChange={(e) => setQty(e.target.value)} />{' '}
-      <input className="unit" list="unit-options" aria-label="Pack unit" placeholder="each" value={unit} onChange={(e) => setUnit(e.target.value)} />
-      {bad && <span className="field-warning">Not a number</span>}
-    </label>
+    <span className="sold-as" onBlur={commit}>
+      <input className={`num ${bad ? 'invalid' : ''}`} aria-label="Pack amount" placeholder="any" value={qty} onChange={(e) => setQty(e.target.value)} />
+      <input className="unit" list="unit-options" aria-label="Unit sold in" placeholder={q ? 'each' : 'unit'} value={unit} onChange={(e) => setUnit(e.target.value)} />
+    </span>
   )
 }
 
@@ -425,34 +382,37 @@ function AliasEditor({ id, info, registry, onChange }) {
   const [text, setText] = useState('')
   const aliases = info.aliases ?? []
   const problem = text.trim() ? aliasProblem(text, id, registry) : null
+  const add = () => {
+    if (!text.trim() || problem) return
+    onChange([...aliases, text.trim().toLowerCase()])
+    setText('')
+  }
   return (
-    <div>
-      <div className="tags compact">
-        {aliases.length === 0 && <span className="muted small">None</span>}
-        {aliases.map((a) => (
-          <span key={a} className="tag static">
-            {a}
-            <button className="link" aria-label={`Remove name ${a}`} onClick={() => onChange(aliases.filter((x) => x !== a))}>
-              ×
-            </button>
-          </span>
-        ))}
-      </div>
-      <form
-        className="inline-form"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!text.trim() || problem) return
-          onChange([...aliases, text.trim().toLowerCase()])
-          setText('')
+    <div className="tag-input">
+      {aliases.map((a) => (
+        <span key={a} className="tag static">
+          {a}
+          <button className="link" aria-label={`Remove name ${a}`} onClick={() => onChange(aliases.filter((x) => x !== a))}>
+            ×
+          </button>
+        </span>
+      ))}
+      <input
+        aria-label={`Another name for ${info.name}`}
+        className={problem ? 'invalid' : ''}
+        title={problem ?? undefined}
+        placeholder="Add a name"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={add}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            add()
+          }
         }}
-      >
-        <input aria-label={`Another name for ${info.name}`} placeholder="Another name" value={text} onChange={(e) => setText(e.target.value)} />
-        <button disabled={!text.trim() || !!problem} title="Recipes and imports using this name will link here">
-          Add
-        </button>
-        {problem && <span className="field-warning">{problem}</span>}
-      </form>
+      />
+      {problem && <span className="field-warning">{problem}</span>}
     </div>
   )
 }
@@ -463,40 +423,49 @@ const conversionProblem = (c) => {
   return null
 }
 
-/** Edits a draft; nothing is saved until every row is valid and Save is pressed. */
-function ConversionEditor({ conversions, onSave }) {
+/**
+ * Conversions as "1 each = 1/2 lb" rows. Saved when focus leaves the editor
+ * and every row is complete; a removed row is saved at once.
+ */
+function ConversionEditor({ conversions, units, onSave }) {
   const [draft, setDraft] = useState(conversions)
+  const [showProblems, setShowProblems] = useState(false)
   useEffect(() => setDraft(conversions), [JSON.stringify(conversions)])
   const set = (i, patch) => setDraft((d) => d.map((c, j) => (j === i ? { ...c, ...patch } : c)))
   const problems = draft.map(conversionProblem)
-  const changed = JSON.stringify(draft) !== JSON.stringify(conversions)
+  const save = (next) => {
+    if (next.some(conversionProblem)) return setShowProblems(true)
+    setShowProblems(false)
+    if (JSON.stringify(next) !== JSON.stringify(conversions)) onSave(next)
+  }
+  // Start a new row from the units recipes use, so the common case needs only the amounts.
+  const blank = { qty: '1', unit: units[0] ?? '', equals: '', toUnit: units[1] ?? '' }
   return (
-    <div className="conversions">
-      {draft.length === 0 && <p className="muted small">None</p>}
+    <div className="conversions" onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && save(draft)}>
       {draft.map((c, i) => (
         <div key={i} className="conversion-row">
-          <input className={`num ${problems[i] && !(parseQuantity(c.qty) > 0) ? 'invalid' : ''}`} aria-label="Amount" value={c.qty} onChange={(e) => set(i, { qty: e.target.value })} />
+          <input className={`num ${showProblems && !(parseQuantity(c.qty) > 0) ? 'invalid' : ''}`} aria-label="Amount" value={c.qty} onChange={(e) => set(i, { qty: e.target.value })} />
           <input className="unit" list="unit-options" aria-label="Unit" placeholder="each" value={c.unit} onChange={(e) => set(i, { unit: e.target.value })} />
           <span>=</span>
-          <input className={`num ${problems[i] && !(parseQuantity(c.equals) > 0) ? 'invalid' : ''}`} aria-label="Equals amount" value={c.equals} onChange={(e) => set(i, { equals: e.target.value })} />
+          <input className={`num ${showProblems && !(parseQuantity(c.equals) > 0) ? 'invalid' : ''}`} aria-label="Equals amount" value={c.equals} onChange={(e) => set(i, { equals: e.target.value })} />
           <input className="unit" list="unit-options" aria-label="Equals unit" placeholder="each" value={c.toUnit} onChange={(e) => set(i, { toUnit: e.target.value })} />
-          <button onClick={() => setDraft((d) => d.filter((_, j) => j !== i))}>Remove</button>
-          {problems[i] && <span className="field-warning">{problems[i]}</span>}
+          <button
+            className="link muted"
+            aria-label="Remove conversion"
+            onClick={() => {
+              const next = draft.filter((_, j) => j !== i)
+              setDraft(next)
+              save(next)
+            }}
+          >
+            ×
+          </button>
+          {showProblems && problems[i] && <span className="field-warning">{problems[i]}</span>}
         </div>
       ))}
-      <div className="inline-form">
-        <button className="link" onClick={() => setDraft((d) => [...d, { qty: '1', unit: '', equals: '', toUnit: '' }])}>
-          + Add conversion
-        </button>
-        {changed && (
-          <>
-            <button className="primary" disabled={problems.some(Boolean)} onClick={() => onSave(draft)}>
-              Save conversions
-            </button>
-            <button onClick={() => setDraft(conversions)}>Cancel</button>
-          </>
-        )}
-      </div>
+      <button className="link" onClick={() => setDraft((d) => [...d, blank])}>
+        + Add
+      </button>
     </div>
   )
 }

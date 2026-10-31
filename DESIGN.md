@@ -10,6 +10,8 @@ Before adding any descriptive, explanatory or flavor text, try to make the desig
 - **Layout over labels.** A rule between a main and its sides says "these are separate parts". A heading that names the weekday once per row says "these two days share a weekday".
 - **Controls over instructions.** A checkbox and a dropdown on a day say what that day can be. Don't write sentences explaining how to use them.
 - **Show the few that matter.** Three meal suggestions, not a long list with a "More…" link.
+- **A list and a panel, not a wide table.** When each thing has many settings and none needs comparing across rows (the Ingredients tab), list just the names and show the selected one's settings beside it.
+- **Group settings by what they're for.** Put fields under the question they answer (Grocery list, Storage), in a label–control grid, not one long stack.
 
 ## When text is needed
 

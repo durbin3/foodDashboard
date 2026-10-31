@@ -1,12 +1,13 @@
 // The ingredient registry (data/ingredients.json) and linking recipe
 // ingredients to it. Recipes reference ingredients by id; the registry holds
-// each ingredient's display name, other names it goes by (aliases), staple and
-// not-listed flags, "buy as" unit, conversions, and storage (days it keeps,
-// whether it's frozen and thawed, pack size):
-//   { ingredients: { "<id>": { name, aliases?, staple?, notListed?, buyUnit?, conversions?, shelfLifeDays?, thaw?, purchase? } } }
+// each ingredient's display name, other names it goes by (aliases), store
+// section, staple and not-listed flags, how it's sold, conversions, and
+// storage (days it keeps, whether it's frozen and thawed); see src/lib/ingredients.js:
+//   { ingredients: { "<id>": { name, aliases?, section?, staple?, notListed?, purchase?, conversions?, shelfLifeDays?, thaw? } } }
 // Shared by the dev-server API and the import skill's link script.
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { normalizeRegistry } from '../src/lib/ingredients.js'
 import { matchIngredient } from '../src/lib/match.js'
 import { parseQuantity } from '../src/lib/quantity.js'
 import { knownConversionsFor } from '../src/lib/units.js'
@@ -40,7 +41,7 @@ export async function writeJson(file, value) {
   await fs.writeFile(file, JSON.stringify(value, null, 2) + '\n')
 }
 
-export const readRegistry = () => readJson(REGISTRY_FILE, { ingredients: {} })
+export const readRegistry = async () => normalizeRegistry(await readJson(REGISTRY_FILE, { ingredients: {} }))
 export const writeRegistry = (registry) => writeJson(REGISTRY_FILE, sortRegistry(registry))
 
 function sortRegistry(registry) {
@@ -158,7 +159,7 @@ export async function mergeIngredient(from, into) {
     ...target,
     aliases: aliases.length ? aliases : undefined,
     staple: !!(source.staple || target.staple) || undefined,
-    buyUnit: target.buyUnit ?? source.buyUnit,
+    section: target.section ?? source.section,
     shelfLifeDays: target.shelfLifeDays ?? source.shelfLifeDays,
     thaw: !!(source.thaw || target.thaw) || undefined,
     purchase: target.purchase ?? source.purchase,

@@ -1,3 +1,4 @@
+import { bySection } from './ingredients.js'
 import { amountText, computeNeeds } from './needs.js'
 
 /**
@@ -6,7 +7,8 @@ import { amountText, computeNeeds } from './needs.js'
  * list, less what's in storage, rounded up to pack sizes. Lines fully covered
  * by storage are listed separately so they can be checked rather than bought.
  * Ingredients marked "not listed" (e.g. "taco toppings") are returned
- * separately so the list can mention them.
+ * separately so the list can mention them. Lines carry their store section,
+ * so the list can be grouped by it (see bySection in ingredients.js).
  */
 export function buildGroceryList(meals, recipesById, registry, inventory) {
   const lines = computeNeeds(meals, recipesById, registry, inventory)
@@ -18,6 +20,7 @@ export function buildGroceryList(meals, recipesById, registry, inventory) {
       covered: !!n.math && n.math.buyQty <= 0,
       unconverted: n.unconverted,
       sources: n.sources,
+      section: n.section,
       staple: n.staple,
       notListed: n.notListed,
     }))
@@ -54,7 +57,7 @@ export function groceryListText({ groceries, pantry }, checked = () => false) {
   const sections = []
   const toBuy = groceries.filter((l) => !checked(l))
   const toCheck = pantry.filter((l) => !checked(l))
-  if (toBuy.length) sections.push(['Groceries', ...toBuy.map(line)].join('\n'))
+  for (const group of bySection(toBuy)) sections.push([group.label, ...group.lines.map(line)].join('\n'))
   if (toCheck.length) sections.push(['Pantry (check before buying)', ...toCheck.map(line)].join('\n'))
   return sections.join('\n\n')
 }

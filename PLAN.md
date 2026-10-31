@@ -323,6 +323,20 @@ As built (`src/lib/calendar.js`, tested in `calendar.test.js`; `server/googleCal
 4. Paste the calendar ID into Settings → Shared calendar. It should show "Synced" within a few seconds.
 5. Sarah accepts the share. On her iPhone, the calendar appears once her Google account is added under Settings → Calendar → Accounts (with Calendars switched on).
 
+---
+
+## Phase 9: Ingredients page as a list and settings panel (done)
+
+The Ingredients tab is the database of every ingredient we've seen and the one place to configure them; it isn't used while shopping or cooking.
+
+As built (`src/pages/IngredientsPage.jsx`, `src/lib/ingredients.js`, tested in `ingredients.test.js`):
+
+- **Layout.** Names only on the left (A–Z, search, filter chips: No section, Staples, Hidden, Needs conversion, Possible duplicates, Not registered, Unused). Hidden ones are muted; ones needing attention are caution yellow. The selected ingredient's settings are on the right, and the selection is the URL (`/ingredients/<id>`). On phones the list and the settings are separate screens with a ‹ back link.
+- **Settings, grouped by what they're for.** Name (edited in place; the old name becomes another name) and id. *Grocery list:* store section, sold as, Staple and Hide (separate toggles; Hide wins and greys out Staple). *Storage:* keeps N days, freezes after that (only with a shelf life). *Units:* conversions, saved when you leave the rows and they're complete. *Other names.* Then Merge into…, and Delete for unused ones.
+- **Dropped** from the page: the recipes each ingredient is used in, and the units seen.
+- **Sold as** replaces "Buy as" and the pack size: `purchase: { qty?, unit }`. An amount means whole packs; a unit alone totals the list in that unit. The server reads an old `buyUnit` as `{ unit }`, so files convert as they're saved.
+- **Store sections** (`section`, a fixed list in `ingredients.js`, in store-walk order). The grocery list groups what to buy under them; staples stay together under Pantry, and anything without a section goes under Other. The grocery list's Edit mode has the section menu and the Staple and Hide toggles. All ingredients got a first-pass section to review.
+
 ## Order and dependencies
 
 | Phase | Depends on | Delivers |
@@ -335,6 +349,7 @@ As built (`src/lib/calendar.js`, tested in `calendar.test.js`; `server/googleCal
 | 5 Suggestions | 4 | Ingredient-aware meal suggestions |
 | 6 Discover | 5 (for ranking) | Finding new recipes, ingredient matching |
 | 8 Shared calendar | 1, 3 (thaw reminders), 7 (leftovers) | The plan in a shared Google Calendar |
+| 9 Ingredients page | 0 | List and settings panel, sold as, store sections on the grocery list |
 
 Phase 6.3 (ingredient matching) doesn't depend on anything else and can be done early to clean up the current imports. Testing whether sites can be fetched (6.1) is also worth doing early, because it decides whether the crawler approach works at all.
 
