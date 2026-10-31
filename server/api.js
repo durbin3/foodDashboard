@@ -121,7 +121,10 @@ async function handle(req, res) {
     if (req.method === 'GET') return send(res, 200, await readJson(file, dataFile.fallback))
     if (req.method === 'PUT') {
       const value = await readBody(req)
+      // The shared calendar follows the meal plan; it also syncs once when it's first connected or changed.
+      const calendarChanged = resource === 'settings' && (await readJson(file, dataFile.fallback)).calendarId !== value.calendarId
       await writeJson(file, value)
+      if (resource === 'plan' || calendarChanged) requestSync()
       return send(res, 200, value)
     }
   }
@@ -136,8 +139,6 @@ export default function apiPlugin() {
       // Catch the shared calendar up with anything changed while the server was off.
       requestSync()
       server.middlewares.use('/api', (req, res) => {
-        // Any successful write may change what the shared calendar shows.
-        if (req.method !== 'GET') res.on('finish', () => res.statusCode < 400 && requestSync())
         handle(req, res).catch((err) => {
           const status = err.status ?? (err.code === 'ENOENT' ? 404 : 500)
           send(res, status, { error: err.message })

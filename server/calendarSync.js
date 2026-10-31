@@ -1,7 +1,8 @@
-// Keeps the shared Google Calendar in step with the plan. Any save to the plan,
-// recipes, ingredients or settings asks for a sync; requests within a short
-// moment are combined, and only one sync runs at a time (a request during one
-// runs again after it).
+// Keeps the shared Google Calendar in step with the plan. Saving the plan asks
+// for a sync, as do starting the server and setting the calendar ID; there's
+// no timer. Requests within a short moment are combined, and only one sync
+// runs at a time (a request during one runs again after it). A failed sync
+// waits for the next plan save.
 //
 // Needs `calendarId` in data/settings.json and a service account key at
 // secrets/google-service-account.json, with the calendar shared to that
@@ -16,7 +17,6 @@ import { listRecipes, readJson, readRegistry, ROOT } from './ingredientStore.js'
 
 export const KEY_FILE = path.join(ROOT, 'secrets', 'google-service-account.json')
 const DEBOUNCE_MS = 1500
-const RETRY_MS = 5 * 60_000
 
 // { state: 'off' | 'syncing' | 'ok' | 'error', reason?, error?, at?, email?, changes? }
 let status = { state: 'off', reason: 'not-started' }
@@ -84,7 +84,5 @@ async function runSync() {
   } catch (err) {
     console.error('[calendar sync]', err.message)
     status = { state: 'error', at: new Date().toISOString(), error: err.message, email: client?.email }
-    // Try again later in case it was the network; the next save also retries.
-    setTimeout(() => status.state === 'error' && requestSync(), RETRY_MS)
   }
 }

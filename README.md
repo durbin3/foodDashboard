@@ -34,7 +34,7 @@ Renaming an ingredient only changes its `name` in the registry (the old name is 
 
 **Grocery list** is built per shopping trip, from all of that cycle's meals. What's on hand is used first, and ingredients with a pack size are rounded up to whole packs, with what you'll use and what's left over shown underneath. Ingredients you already have enough of are listed under "In storage". After shopping, "Done shopping" sets the On hand list to what will be left once the cycle's meals are made. Ticks are kept in your browser only, per cycle, and a tick clears itself if the amount changes. It groups items by ingredient and converts units using each ingredient's own conversion list. Standard conversions (tsp/tbsp/cup, oz/lb, metric, pinch) are added to an ingredient automatically once recipes use it in more than one unit; anything else (e.g. 1 each chicken breast = 1/2 lb) you add on the Ingredients tab, where unconvertible ingredients are flagged "needs conversion". Amounts that still can't be converted are listed side by side (`garlic: 1 + 8 clove`).
 
-**Shared calendar.** While the dev server runs, every save copies the plan's dinners, leftover nights and thaw reminders to the Google Calendar set on the Settings tab, as all-day events. Only events the app created are changed.
+**Shared calendar.** While the dev server runs, every meal plan save copies the plan's dinners, leftover nights and thaw reminders to the Google Calendar set on the Settings tab, as all-day events. Only events the app created are changed.
 
 ## Tests
 
