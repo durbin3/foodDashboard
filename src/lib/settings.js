@@ -17,6 +17,8 @@ export const DEFAULT_SETTINGS = {
   // which day a meal is suggested for; cost, variety and recency steer which
   // meals are suggested.
   weights: { effort: 1, freshness: 1, variety: 1, cost: 1, recency: 1 },
+  // The Google Calendar the plan is copied to (see server/calendarSync.js); empty = off.
+  calendarId: '',
 }
 
 /** Fill in anything missing from an older or hand-edited settings file. */

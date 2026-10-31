@@ -301,6 +301,28 @@ As built:
 
 ---
 
+## Phase 8: Shared Google Calendar (done)
+
+Copies the plan to a Google Calendar shared with Sarah, so she can see it without the repo. Read-only for her: changes are made here.
+
+As built (`src/lib/calendar.js`, tested in `calendar.test.js`; `server/googleCalendar.js`, `server/calendarSync.js`):
+
+- **Events.** All day, marked free: each dinner on a day ("Pork Chops + Mashed Potatoes", with prep and cook time and any scale in the description), each leftover night ("Leftovers: Pork Chops"), and each thaw reminder on the day before. Only the last cycle onward is synced; older events are left alone.
+- **Sync.** Any successful save (plan, recipes, ingredients, settings) asks for a sync, plus one when the dev server starts. Requests within 1.5 s are combined and one runs at a time. Each event carries a private `app=food-dashboard` tag and a key naming where it came from (`meal:<id>`, `leftovers:<id>:<n>`, `thaw:<date>`), so a sync inserts, updates or deletes only what changed and never touches other events. A failed sync tries again 5 minutes later.
+- **Auth.** A Google Cloud service account. Its JSON key goes in `secrets/google-service-account.json` (gitignored). The client signs the token request with Node's `crypto`, so there are no new dependencies.
+- **Settings.** "Shared calendar" takes the calendar ID and shows the sync state ("Synced 3:12 PM", or "Can't sync" / "No key" in caution yellow with the reason in a tooltip).
+- **Only while running.** It syncs only while the dev server is running on the laptop.
+
+### Setup
+
+1. At console.cloud.google.com, create a project. Under **APIs & Services → Library**, enable **Google Calendar API**. No billing account is needed.
+2. Under **IAM & Admin → Service Accounts**, create a service account (no roles needed). On its **Keys** tab, choose **Add key → Create new key → JSON**, and save the download as `secrets/google-service-account.json` in this repo.
+3. In Google Calendar, create a calendar (e.g. "Meals"). In its **Settings and sharing**:
+   - under **Share with specific people**, add the service account's email (`…@….iam.gserviceaccount.com`) with **Make changes to events**, and Sarah with **See all event details**;
+   - copy the **Calendar ID** from **Integrate calendar**.
+4. Paste the calendar ID into Settings → Shared calendar. It should show "Synced" within a few seconds.
+5. Sarah accepts the share. On her iPhone, the calendar appears once her Google account is added under Settings → Calendar → Accounts (with Calendars switched on).
+
 ## Order and dependencies
 
 | Phase | Depends on | Delivers |
@@ -312,6 +334,7 @@ As built:
 | 4 What to buy | 0, 1 | Storage list, buy vs use, leftovers |
 | 5 Suggestions | 4 | Ingredient-aware meal suggestions |
 | 6 Discover | 5 (for ranking) | Finding new recipes, ingredient matching |
+| 8 Shared calendar | 1, 3 (thaw reminders), 7 (leftovers) | The plan in a shared Google Calendar |
 
 Phase 6.3 (ingredient matching) doesn't depend on anything else and can be done early to clean up the current imports. Testing whether sites can be fetched (6.1) is also worth doing early, because it decides whether the crawler approach works at all.
 

@@ -16,6 +16,7 @@ export const api = {
   deleteRecipe: (id) => request('DELETE', `/api/recipes/${id}`),
   getPlan: () => request('GET', '/api/plan'),
   savePlan: (plan) => request('PUT', '/api/plan', plan),
+  getCalendarStatus: () => request('GET', '/api/calendar'),
   getSettings: () => request('GET', '/api/settings'),
   getInventory: () => request('GET', '/api/inventory'),
   saveInventory: (inventory) => request('PUT', '/api/inventory', inventory),

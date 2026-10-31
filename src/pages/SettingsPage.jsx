@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '../api.js'
 import { addDays, CYCLE_DAYS, cycleStart, formatDay, isISODate, weekStart } from '../lib/plan.js'
 import { EFFORT_LABELS, WEEKDAY_LABELS, WEEKDAYS } from '../lib/settings.js'
 
@@ -69,6 +70,9 @@ export default function SettingsPage({ settings, actions }) {
         </tbody>
       </table>
 
+      <h2 title="Meals, leftovers and thaw reminders are copied to this Google Calendar">Shared calendar</h2>
+      <CalendarSetting calendarId={settings.calendarId} onChange={(calendarId) => update({ calendarId })} />
+
       <h2 title="Everyone here rates meals; a recipe's rating is the average">People</h2>
       <PeopleEditor people={settings.people} onChange={(people) => update({ people })} />
     </section>
@@ -105,4 +109,45 @@ function PeopleEditor({ people, onChange }) {
       </div>
     </div>
   )
+}
+
+function CalendarSetting({ calendarId, onChange }) {
+  const [draft, setDraft] = useState(calendarId)
+  useEffect(() => setDraft(calendarId), [calendarId])
+  const [status, setStatus] = useState(null)
+  useEffect(() => {
+    let live = true
+    const poll = () => api.getCalendarStatus().then((s) => live && setStatus(s), () => {})
+    poll()
+    const id = setInterval(poll, 3000)
+    return () => {
+      live = false
+      clearInterval(id)
+    }
+  }, [])
+  const commit = () => draft.trim() !== calendarId && onChange(draft.trim())
+
+  return (
+    <div className="inline-form calendar-setting">
+      <input
+        aria-label="Calendar ID"
+        placeholder="Calendar ID"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => e.key === 'Enter' && commit()}
+      />
+      {calendarId && <CalendarStatus status={status} />}
+    </div>
+  )
+}
+
+function CalendarStatus({ status }) {
+  if (!status) return null
+  const time = status.at && new Date(status.at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+  if (status.state === 'syncing') return <span className="small muted">Syncing…</span>
+  if (status.state === 'ok') return <span className="small muted" title={`Writing as ${status.email}`}>Synced {time}</span>
+  if (status.state === 'error') return <span className="small field-warning" title={status.error}>Can't sync</span>
+  if (status.reason === 'no-key') return <span className="small field-warning" title="Save the service account's JSON key as secrets/google-service-account.json">No key</span>
+  return null
 }

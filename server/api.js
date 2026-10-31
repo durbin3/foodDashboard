@@ -3,6 +3,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { DEFAULT_SETTINGS } from '../src/lib/settings.js'
+import { calendarStatus, requestSync } from './calendarSync.js'
 import {
   RECIPES_DIR,
   ROOT,
@@ -62,6 +63,8 @@ async function linkAndPersistRegistry(recipe) {
 async function handle(req, res) {
   const [resource, id, ...rest] = req.url.split('?')[0].split('/').filter(Boolean)
   if (rest.length) return send(res, 404, { error: 'Not found' })
+
+  if (resource === 'calendar' && !id && req.method === 'GET') return send(res, 200, calendarStatus())
 
   if (resource === 'recipes' && !id) {
     if (req.method === 'GET') return send(res, 200, await listRecipes())
@@ -130,7 +133,11 @@ export default function apiPlugin() {
   return {
     name: 'food-dashboard-api',
     configureServer(server) {
+      // Catch the shared calendar up with anything changed while the server was off.
+      requestSync()
       server.middlewares.use('/api', (req, res) => {
+        // Any successful write may change what the shared calendar shows.
+        if (req.method !== 'GET') res.on('finish', () => res.statusCode < 400 && requestSync())
         handle(req, res).catch((err) => {
           const status = err.status ?? (err.code === 'ENOENT' ? 404 : 500)
           send(res, status, { error: err.message })
