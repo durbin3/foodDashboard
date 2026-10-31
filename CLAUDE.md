@@ -14,7 +14,8 @@ Follow [DESIGN.md](DESIGN.md) for any UI change, and update it when a new rule c
 
 ## Working here
 
-- The meal planner redesign is planned in PLAN.md and built on the `meal-planner` branch. Mark phases "(done)" there as they land, and note any as-built changes.
+- Two branches: `develop` and `main`. All work happens on `develop`. When a feature is finished (a release-worthy checkpoint, not partway through), merge `develop` into `main`, then carry on from `develop`.
+- Features are planned in PLAN.md as phases. Mark phases "(done)" there as they land, and note any as-built changes.
 - Commit as each feature finishes. Leave the user's live data out of commits: changes to `data/*.json` and `recipes/*.json` are theirs, made through the app.
 - Test UI changes with Playwright (Firefox) against a scratch copy of the repo, not the real one, so test clicks never write to the real `data/` or `recipes/`.
 - `npm test` runs the unit tests. The dev server is `npm run dev` on 127.0.0.1:5173. Only run one dev server on this folder at a time: two can overwrite each other's saves.
