@@ -1,8 +1,12 @@
 // Ingredient registry entries (data/ingredients.json), as the app works with them.
 //   { name, aliases?, section?, staple?, notListed?, purchase?: { qty?, unit },
-//     conversions?, shelfLifeDays?, thaw? }
+//     conversions?, showAs?, shelfLifeDays?, thaw?, separateFrom? }
 // `purchase` is how it's sold: { qty: '2', unit: 'lb' } for 2 lb packs, or
 // { unit: 'lb' } for any amount, totalled in pounds. Missing = the recipes' units.
+// `showAs` is the units its amounts read in, e.g. sticks from 1/2 cup and tbsp
+// below: [{ unit: 'stick', from: { qty: '1/2', unit: 'cup' } }, { unit: 'tbsp' }]
+// (see showUnitFor in units.js). `separateFrom` lists ingredient ids confirmed
+// to be different things, so they aren't flagged as possible duplicates.
 
 /** Where things are in the store, in the order the grocery list shows them. */
 export const STORE_SECTIONS = [

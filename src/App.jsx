@@ -263,6 +263,32 @@ export default function App() {
     /** Patch one ingredient's settings (registering it if a recipe used an unknown id); undefined values are dropped when saved. */
     updateIngredient: (id, patch) =>
       updateRegistry((r) => ({ ...r, ingredients: { ...r.ingredients, [id]: { name: id, ...r.ingredients[id], ...patch } } })),
+    /** Record pairs of ingredient ids ([[a, b], …]) as different things, so they aren't flagged as possible duplicates. Each side lists the other. */
+    separateIngredients: (pairs) =>
+      updateRegistry((r) => {
+        const ingredients = { ...r.ingredients }
+        const link = (id, other) => {
+          if (!ingredients[id] || !ingredients[other]) return
+          const list = ingredients[id].separateFrom ?? []
+          if (!list.includes(other)) ingredients[id] = { ...ingredients[id], separateFrom: [...list, other].sort() }
+        }
+        for (const [a, b] of pairs) {
+          link(a, b)
+          link(b, a)
+        }
+        return { ...r, ingredients }
+      }),
+    /** Take back a "separate" mark between two ingredients. */
+    unseparateIngredients: (a, b) =>
+      updateRegistry((r) => {
+        const ingredients = { ...r.ingredients }
+        for (const [id, other] of [[a, b], [b, a]]) {
+          if (!ingredients[id]) continue
+          const list = (ingredients[id].separateFrom ?? []).filter((x) => x !== other)
+          ingredients[id] = { ...ingredients[id], separateFrom: list.length ? list : undefined }
+        }
+        return { ...r, ingredients }
+      }),
     deleteIngredient: (id) =>
       updateRegistry((r) => {
         const { [id]: _, ...ingredients } = r.ingredients
@@ -281,7 +307,7 @@ export default function App() {
       )
       await run(api.mergeIngredient(from, into))
       await loadAll()
-      notify(`Merged "${before.ingredients[from]?.name}" into "${before.ingredients[into]?.name}" (${touched.length} recipe${touched.length === 1 ? '' : 's'} updated).`, {
+      notify(`Merged "${before.ingredients[from]?.name}" into "${before.ingredients[into]?.name}", which now also goes by "${before.ingredients[from]?.name}" (${touched.length} recipe${touched.length === 1 ? '' : 's'} updated).`, {
         undo: async () => {
           await run(api.saveIngredients(before))
           await run(api.saveInventory(inventoryBefore))

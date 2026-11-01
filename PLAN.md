@@ -337,6 +337,17 @@ As built (`src/pages/IngredientsPage.jsx`, `src/lib/ingredients.js`, tested in `
 - **Sold as** replaces "Buy as" and the pack size: `purchase: { qty?, unit }`. An amount means whole packs; a unit alone totals the list in that unit. The server reads an old `buyUnit` as `{ unit }`, so files convert as they're saved.
 - **Store sections** (`section`, a fixed list in `ingredients.js`, in store-walk order). The grocery list groups what to buy under them; staples stay together under Pantry, and anything without a section goes under Other. The grocery list's Edit mode has the section menu and the Staple and Hide toggles. All ingredients got a first-pass section to review.
 
+---
+
+## Phase 10: Possible duplicates and show-in units (done)
+
+As built (`src/lib/match.js`, `src/lib/units.js`, `src/pages/IngredientsPage.jsx`, tested in `match.test.js` and `units.test.js`):
+
+- **Possible duplicates.** Besides typos, size words and matching wording, a pair is flagged when one name sits inside the other and they end in the same word, with one or two extra words ("salted butter" / "butter", "yellow onion" / "onion"; not "garlic powder" / "garlic"). The Possible duplicates filter lists the pairs; the selected ingredient's panel asks "Same as …?" with **Keep "a"**, **Keep "b"** (a merge) and **Separate**.
+- **Separate** is saved in the registry, not the browser: `separateFrom: [ids]` on both ingredients. They show under "Not the same as" with × to take it back. Marks made in the browser before this are moved into the registry the first time the page opens. Merging keeps both sides' marks and repoints others' marks to the merged ingredient.
+- **Merging** (from a pair or Merge into…) says up front, and in the Undo toast, that the old name becomes another name of the one kept. The server already kept it as an alias.
+- **Show in** (`showAs: [{ unit, from?: { qty, unit } }]`, under Units). The row with the largest "from" an amount reaches wins, and a row without one covers the rest: butter as `stick from 1/2 cup` and `tbsp` reads 1 cup as 2 sticks and 1/4 cup as 4 tbsp. It applies to recipe amounts (ingredient list and step uses; clicking an amount still picks another unit) and to grocery list totals, where a Sold as unit wins. A show-in unit the recipes' units can't convert to is flagged. "sticks" now reads as the unit "stick".
+
 ## Order and dependencies
 
 | Phase | Depends on | Delivers |
@@ -350,6 +361,7 @@ As built (`src/pages/IngredientsPage.jsx`, `src/lib/ingredients.js`, tested in `
 | 6 Discover | 5 (for ranking) | Finding new recipes, ingredient matching |
 | 8 Shared calendar | 1, 3 (thaw reminders), 7 (leftovers) | The plan in a shared Google Calendar |
 | 9 Ingredients page | 0 | List and settings panel, sold as, store sections on the grocery list |
+| 10 Duplicates, show-in units | 6.3, 9 | Flag and resolve near-duplicate ingredients; per-ingredient display units |
 
 Phase 6.3 (ingredient matching) doesn't depend on anything else and can be done early to clean up the current imports. Testing whether sites can be fetched (6.1) is also worth doing early, because it decides whether the crawler approach works at all.
 

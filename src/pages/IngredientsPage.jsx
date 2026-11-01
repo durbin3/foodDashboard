@@ -4,7 +4,7 @@ import { aliasProblem, likelyDuplicates } from '../lib/match.js'
 import { normalizeUnit, parseQuantity } from '../lib/quantity.js'
 import { activeIngredients } from '../lib/recipe.js'
 import { navigate } from '../lib/route.js'
-import { KNOWN_UNITS, unitGroupCount } from '../lib/units.js'
+import { BUILTIN_CONVERSIONS, KNOWN_UNITS, reachable, unitGraph, unitGroupCount } from '../lib/units.js'
 
 // Every ingredient we've seen, and the one place to configure each: a list of
 // names on the left, the selected ingredient's settings on the right (its own
@@ -13,31 +13,25 @@ import { KNOWN_UNITS, unitGroupCount } from '../lib/units.js'
 const unitLabel = (u) => (u === '' ? 'each' : u)
 const sameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase()
 
-function useDismissedPairs() {
-  const key = 'ingredients:not-duplicates'
-  const [dismissed, setDismissed] = useState(() => {
+/** "Not duplicates" used to live in this browser only; move any to the registry's separateFrom marks, once. */
+function useMoveOldDismissals(actions) {
+  useEffect(() => {
+    const key = 'ingredients:not-duplicates'
+    let pairs = []
     try {
-      return new Set(JSON.parse(localStorage.getItem(key)) ?? [])
+      pairs = (JSON.parse(localStorage.getItem(key)) ?? []).map((k) => k.split('|')).filter((p) => p.length === 2)
+      localStorage.removeItem(key)
     } catch {
-      return new Set()
+      return
     }
-  })
-  const dismiss = (pairKey) => {
-    const next = new Set(dismissed).add(pairKey)
-    setDismissed(next)
-    try {
-      localStorage.setItem(key, JSON.stringify([...next]))
-    } catch {
-      // Not remembered across reloads without storage; harmless.
-    }
-  }
-  return [dismissed, dismiss]
+    if (pairs.length) actions.separateIngredients(pairs)
+  }, [])
 }
 
 export default function IngredientsPage({ recipes, registry, focus, actions }) {
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('all')
-  const [dismissed, dismissPair] = useDismissedPairs()
+  useMoveOldDismissals(actions)
   const listRef = useRef(null)
 
   // Registry entries, plus how many recipes use each and the units they use it in.
@@ -64,7 +58,7 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
       .sort((a, b) => a.info.name.localeCompare(b.info.name))
   }, [recipes, registry])
 
-  const duplicates = useMemo(() => likelyDuplicates(index).filter(([a, b]) => !dismissed.has(`${a.id}|${b.id}`)), [index, dismissed])
+  const duplicates = useMemo(() => likelyDuplicates(index), [index])
   const inDuplicates = new Set(duplicates.flat().map((e) => e.id))
   const needsAttention = (e) => e.needsConversion || inDuplicates.has(e.id) || e.info.unregistered
 
@@ -110,7 +104,7 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
         <input type="search" placeholder={`Filter ${index.length} ingredients…`} aria-label="Filter ingredients" value={query} onChange={(e) => setQuery(e.target.value)} />
         <div className="tags compact" role="group" aria-label="Show">
           {FILTERS.map(([key, label, test]) => {
-            const n = key === 'all' ? index.length : index.filter(test).length
+            const n = key === 'all' ? index.length : key === 'duplicates' ? duplicates.length : index.filter(test).length
             if (key !== 'all' && !n && filter !== key) return null
             return (
               <button key={key} className={`tag ${filter === key ? 'on' : ''} ${ATTENTION.includes(key) ? 'attention' : ''}`} aria-pressed={filter === key} onClick={() => setFilter(key)}>
@@ -120,29 +114,19 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
           })}
         </div>
 
-        {filter === 'duplicates' && duplicates.length > 0 && (
-          <ul className="dup-list notice small">
-            {duplicates.map(([a, b]) => (
-              <li key={`${a.id}|${b.id}`}>
-                <strong>{a.info.name}</strong> / <strong>{b.info.name}</strong>
-                <span className="dup-actions">
-                  <button className="link small" onClick={() => confirmMerge(b, a, actions, () => open(a.id))}>
-                    Keep “{a.info.name}”
-                  </button>
-                  <button className="link small" onClick={() => confirmMerge(a, b, actions, () => open(b.id))}>
-                    Keep “{b.info.name}”
-                  </button>
-                  <button className="link small muted" onClick={() => dismissPair(`${a.id}|${b.id}`)}>
-                    Not the same
-                  </button>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-
         <ul className="ing-names" ref={listRef}>
-          {visible.map((e) => (
+          {/* Possible duplicates list the pairs; the panel has Keep and Separate. */}
+          {filter === 'duplicates' &&
+            duplicates
+              .filter((pair) => pair.some((e) => visible.includes(e)))
+              .map(([a, b]) => (
+                <li key={`${a.id}|${b.id}`}>
+                  <a href={`/ingredients/${encodeURIComponent(a.id)}`} aria-current={focus === a.id || focus === b.id ? 'true' : undefined} className="warn">
+                    {a.info.name} / {b.info.name}
+                  </a>
+                </li>
+              ))}
+          {filter !== 'duplicates' && visible.map((e) => (
             <li key={e.id}>
               <a
                 href={`/ingredients/${encodeURIComponent(e.id)}`}
@@ -169,7 +153,10 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
               entry={selected}
               index={index}
               registry={registry}
-              inDuplicates={inDuplicates.has(selected.id)}
+              lookalikes={duplicates.flatMap(([a, b]) => (a.id === selected.id ? [b] : b.id === selected.id ? [a] : []))}
+              onKeep={(keep, drop) => confirmMerge(drop, keep, actions, () => open(keep.id))}
+              onSeparate={(other) => actions.separateIngredients([[selected.id, other.id]])}
+              onUnseparate={(otherId) => actions.unseparateIngredients(selected.id, otherId)}
               onUpdate={(patch) => actions.updateIngredient(selected.id, patch)}
               onMerge={(target) => confirmMerge(selected, target, actions, () => open(target.id))}
               onDelete={() => {
@@ -187,13 +174,18 @@ export default function IngredientsPage({ recipes, registry, focus, actions }) {
 
 function confirmMerge(from, into, actions, then) {
   const n = from.uses
-  if (!confirm(`Merge "${from.info.name}" into "${into.info.name}"? ${n} recipe${n === 1 ? '' : 's'} will switch to "${into.info.name}" and "${from.info.name}" goes away. You can undo right after.`))
+  if (
+    !confirm(
+      `Merge "${from.info.name}" into "${into.info.name}"? ${n} recipe${n === 1 ? '' : 's'} will switch to "${into.info.name}", and "${from.info.name}" becomes another name for it. You can undo right after.`,
+    )
+  )
     return
   actions.mergeIngredient(from.id, into.id).then(then, () => {})
 }
 
-function IngredientDetail({ entry, index, registry, inDuplicates, onUpdate, onMerge, onDelete }) {
+function IngredientDetail({ entry, index, registry, lookalikes, onKeep, onSeparate, onUnseparate, onUpdate, onMerge, onDelete }) {
   const { id, info, units } = entry
+  const nameOf = (otherId) => index.find((x) => x.id === otherId)?.info.name
   const [mergeName, setMergeName] = useState('')
   const mergeTarget = index.find((x) => x.id !== id && mergeName.trim() && sameName(x.info.name, mergeName))
 
@@ -209,12 +201,30 @@ function IngredientDetail({ entry, index, registry, inDuplicates, onUpdate, onMe
             not registered
           </span>
         )}
-        {inDuplicates && (
-          <span className="pill warn" title="Looks like another ingredient; see the Possible duplicates filter">
-            possible duplicate
-          </span>
-        )}
       </header>
+
+      {lookalikes.length > 0 && (
+        <ul className="lookalikes notice small">
+          {lookalikes.map((other) => (
+            <li key={other.id}>
+              <span>
+                Same as <a href={`/ingredients/${encodeURIComponent(other.id)}`}>{other.info.name}</a>?
+              </span>
+              <span className="dup-actions">
+                <button className="link small" title={`Merge “${other.info.name}” into this one; its name stays as another name`} onClick={() => onKeep(entry, other)}>
+                  Keep “{info.name}”
+                </button>
+                <button className="link small" title={`Merge this into “${other.info.name}”; this name stays as another name`} onClick={() => onKeep(other, entry)}>
+                  Keep “{other.info.name}”
+                </button>
+                <button className="link small muted" title="Different things: stop flagging them" onClick={() => onSeparate(other)}>
+                  Separate
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="ing-groups">
         <fieldset className="ing-group">
@@ -257,17 +267,38 @@ function IngredientDetail({ entry, index, registry, inDuplicates, onUpdate, onMe
           </div>
         </fieldset>
 
-        <fieldset className={`ing-group ${entry.needsConversion ? 'needs-attention' : ''}`}>
+        <fieldset className={`ing-group wide ${entry.needsConversion ? 'needs-attention' : ''}`}>
           <legend title={entry.needsConversion ? `Recipes use it as ${units.map(unitLabel).join(' and ')}, which don't combine yet` : 'For units that don\'t combine on their own, e.g. 1 each = 1/2 lb'}>
             Units
           </legend>
-          <ConversionEditor conversions={info.conversions ?? []} units={units} onSave={(next) => onUpdate({ conversions: next.length ? next : undefined })} />
+          <div className="field-grid top">
+            <span title="For units that don't combine on their own, e.g. 1 each = 1/2 lb">Converts</span>
+            <ConversionEditor conversions={info.conversions ?? []} units={units} onSave={(next) => onUpdate({ conversions: next.length ? next : undefined })} />
+            <span title="The unit amounts read in on recipes and the grocery list, e.g. stick from 1/2 cup, tbsp below that. Sold as wins on the grocery list.">Show in</span>
+            <ShowAsEditor rules={info.showAs ?? []} units={units} conversions={info.conversions ?? []} onSave={(next) => onUpdate({ showAs: next.length ? next : undefined })} />
+          </div>
         </fieldset>
 
         <fieldset className="ing-group">
           <legend title="Recipes and imports using any of these names link here">Other names</legend>
           <AliasEditor id={id} info={info} registry={registry} onChange={(aliases) => onUpdate({ aliases: aliases.length ? aliases : undefined })} />
         </fieldset>
+
+        {(info.separateFrom ?? []).length > 0 && (
+          <fieldset className="ing-group">
+            <legend title="Confirmed as different things, so not flagged as duplicates">Not the same as</legend>
+            <div className="tag-input">
+              {info.separateFrom.map((other) => (
+                <span key={other} className="tag static">
+                  <a href={`/ingredients/${encodeURIComponent(other)}`}>{nameOf(other) ?? other}</a>
+                  <button className="link" aria-label={`Unmark ${nameOf(other) ?? other} as different`} onClick={() => onUnseparate(other)}>
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          </fieldset>
+        )}
       </div>
 
       <footer className="ing-detail-foot">
@@ -464,6 +495,78 @@ function ConversionEditor({ conversions, units, onSave }) {
         </div>
       ))}
       <button className="link" onClick={() => setDraft((d) => [...d, blank])}>
+        + Add
+      </button>
+    </div>
+  )
+}
+
+/**
+ * The units this ingredient's amounts read in, as rows "stick from 1/2 cup":
+ * the row with the largest "from" an amount reaches wins, and a row without
+ * one covers the rest. Saved when focus leaves the editor and every row has a
+ * unit; a removed row is saved at once. A unit the recipes' units can't
+ * convert to is flagged.
+ */
+function ShowAsEditor({ rules, units, conversions, onSave }) {
+  const toRows = (rs) => rs.map((r) => ({ unit: r.unit ?? '', qty: r.from?.qty ?? '', fromUnit: r.from && normalizeUnit(r.from.unit) !== normalizeUnit(r.unit) ? r.from.unit : '' }))
+  const [draft, setDraft] = useState(() => toRows(rules))
+  useEffect(() => setDraft(toRows(rules)), [JSON.stringify(rules)])
+  const set = (i, patch) => setDraft((d) => d.map((r, j) => (j === i ? { ...r, ...patch } : r)))
+  const edges = useMemo(() => unitGraph([...BUILTIN_CONVERSIONS, ...conversions]), [JSON.stringify(conversions)])
+  const reached = useMemo(() => new Set(units.flatMap((u) => [...reachable(edges, normalizeUnit(u)).keys()])), [units, edges])
+  // Only worth flagging once recipes use it; the unit may be right ahead of them.
+  const strays = (u) => units.length > 0 && u.trim() !== '' && !reached.has(normalizeUnit(u))
+  const badQty = (r) => String(r.qty).trim() !== '' && !(parseQuantity(r.qty) > 0)
+  const toRules = (rows) =>
+    rows.map((r) => {
+      const unit = r.unit.trim()
+      const qty = String(r.qty).trim()
+      return qty ? { unit, from: { qty, unit: r.fromUnit.trim() || unit } } : { unit }
+    })
+  const save = (rows) => {
+    if (rows.some((r) => !r.unit.trim() || badQty(r))) return
+    const next = toRules(rows)
+    if (JSON.stringify(next) !== JSON.stringify(rules)) onSave(next)
+  }
+  return (
+    <div className="conversions" onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && save(draft)}>
+      {draft.map((r, i) => (
+        <div key={i} className="conversion-row">
+          <input
+            className={`unit ${strays(r.unit) ? 'invalid' : ''}`}
+            list="unit-options"
+            aria-label="Show in unit"
+            placeholder="unit"
+            title={strays(r.unit) ? `Recipes use ${units.map(unitLabel).join(', ')}, which don't convert to ${r.unit}; add a conversion` : undefined}
+            value={r.unit}
+            onChange={(e) => set(i, { unit: e.target.value })}
+          />
+          <span className="muted">from</span>
+          <input className={`num ${badQty(r) ? 'invalid' : ''}`} aria-label="From amount" placeholder="any" value={r.qty} onChange={(e) => set(i, { qty: e.target.value })} />
+          <input
+            className={`unit ${strays(r.fromUnit) ? 'invalid' : ''}`}
+            list="unit-options"
+            aria-label="From unit"
+            placeholder={r.unit || 'unit'}
+            disabled={!String(r.qty).trim()}
+            value={r.fromUnit}
+            onChange={(e) => set(i, { fromUnit: e.target.value })}
+          />
+          <button
+            className="link muted"
+            aria-label="Remove show-in unit"
+            onClick={() => {
+              const next = draft.filter((_, j) => j !== i)
+              setDraft(next)
+              save(next)
+            }}
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <button className="link" onClick={() => setDraft((d) => [...d, { unit: '', qty: '', fromUnit: '' }])}>
         + Add
       </button>
     </div>

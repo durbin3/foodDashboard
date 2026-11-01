@@ -7,7 +7,7 @@ import ServingsEditor from './ServingsEditor.jsx'
 import { activeIngredients, categoryOf, effectiveIngredient, formatMinutes, recipeIssues, scaleQuantity, totalMinutes } from '../lib/recipe.js'
 import { EFFORT_LABELS } from '../lib/settings.js'
 import { convertQty, edgesFor, formatAmount, splitAmounts, stepIngredientsOf, stepLines, unitChoices } from '../lib/steps.js'
-import { BUILTIN_CONVERSIONS, unitGraph } from '../lib/units.js'
+import { BUILTIN_CONVERSIONS, showUnitFor, unitGraph } from '../lib/units.js'
 
 const SCALES = [0.5, 1, 1.5, 2, 3]
 const STANDARD_EDGES = unitGraph(BUILTIN_CONVERSIONS)
@@ -173,6 +173,8 @@ function RecipeBody({ recipe, registry, scale, scalePicker = null }) {
     [recipe, registry],
   )
   const edgesOf = (ing) => edgesById[ing.id] ?? STANDARD_EDGES
+  // Each ingredient's "show in" rules (butter in sticks from 1/2 cup, tbsp below), by recipe ingredient id.
+  const showAsById = Object.fromEntries((recipe.ingredients ?? []).map((ing) => [ing.id, registry?.ingredients?.[effectiveIngredient(ing)?.ingredientId]?.showAs]))
   const ingredients = activeIngredients(recipe)
   const groups = [...new Set(ingredients.map((i) => i.group ?? ''))]
   const allUses = stepIngredientsOf(recipe, ingredients, registry)
@@ -202,7 +204,7 @@ function RecipeBody({ recipe, registry, scale, scalePicker = null }) {
                 .map((i) => (
                   <li key={i.id}>
                     <strong>
-                      <IngredientAmount ing={i} scale={scale} edges={edgesOf(i)} picked={units[i.id]} onPick={(u) => pickUnit(i.id, u)} />
+                      <IngredientAmount ing={i} scale={scale} edges={edgesOf(i)} showAs={showAsById[i.id]} picked={units[i.id]} onPick={(u) => pickUnit(i.id, u)} />
                     </strong>{' '}
                     {i.item}
                     {i.note && <span className="muted">, {i.note}</span>}
@@ -248,7 +250,7 @@ function RecipeBody({ recipe, registry, scale, scalePicker = null }) {
                     <ul className="step-uses" aria-label={`Ingredients for step ${i + 1}`}>
                       {usesByStep[i].map((line) => (
                         <li key={line.id}>
-                          <StepUse line={line} edges={edgesOf(line)} picked={units[line.id]} onPick={(u) => pickUnit(line.id, u)} />
+                          <StepUse line={line} edges={edgesOf(line)} showAs={showAsById[line.id]} picked={units[line.id]} onPick={(u) => pickUnit(line.id, u)} />
                         </li>
                       ))}
                     </ul>
@@ -350,7 +352,7 @@ function Amount({ qty, unit, label, edges, picked, onPick }) {
             role="menuitemradio"
             aria-checked={o.unit === current}
             onClick={() => {
-              onPick(o.unit === unit ? null : o.unit)
+              onPick(o.unit)
               setOpen(false)
             }}
           >
@@ -362,16 +364,18 @@ function Amount({ qty, unit, label, edges, picked, onPick }) {
   )
 }
 
-/** An ingredient's amount in the list, scaled; shown as written when it isn't a number. */
-function IngredientAmount({ ing, scale, edges, picked, onPick }) {
+/** An ingredient's amount in the list, scaled, in its show-in unit unless one was picked; as written when it isn't a number. */
+function IngredientAmount({ ing, scale, edges, showAs, picked, onPick }) {
   const written = scaleQuantity(ing.quantity, scale)
   const qty = parseQuantity(written)
   if (qty == null) return [written, ing.unit].filter((s) => s && String(s).trim()).join(' ')
-  return <Amount qty={qty} unit={normalizeUnit(ing.unit)} edges={edges} picked={picked} onPick={onPick} />
+  const unit = normalizeUnit(ing.unit)
+  return <Amount qty={qty} unit={unit} edges={edges} picked={picked ?? showUnitFor(qty, unit, showAs, edges)} onPick={onPick} />
 }
 
 /** "1 tbsp olive oil (2 remaining)": what a step uses of one ingredient. */
-function StepUse({ line, edges, picked, onPick }) {
+function StepUse({ line, edges, showAs, picked: pickedByHand, onPick }) {
+  const picked = pickedByHand ?? (line.qty != null ? showUnitFor(line.qty, line.unit, showAs, edges) : null)
   // The leftover reads in the same unit as the amount, and drops the unit when it matches.
   const shownUnit = picked != null && convertQty(1, line.unit, picked, edges) != null ? picked : line.unit
   const inShown = line.rest && convertQty(line.rest.qty, line.rest.unit, shownUnit, edges)

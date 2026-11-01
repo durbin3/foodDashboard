@@ -97,20 +97,33 @@ export function suggestIngredients(name, registry, { limit = 3, min = 0.5, exclu
 // Words that make a variant of the same thing you'd buy ("double pie crust" vs "pie crust").
 const QUALIFIERS = new Set(['double', 'single', 'large', 'small', 'medium', 'fresh', 'whole', 'extra', 'big'])
 
-/** Pairs of entries ({ id, info }) whose names suggest they're the same ingredient. */
+/** True when two registry entries were confirmed to be different things (`separateFrom` on either side). */
+export const confirmedSeparate = (a, b) => (a.info.separateFrom ?? []).includes(b.id) || (b.info.separateFrom ?? []).includes(a.id)
+
+/**
+ * Pairs of entries ({ id, info }) whose names suggest they're the same
+ * ingredient, or a variant worth a look: the same words, a typo, a size word,
+ * or one name inside the other ending in the same thing ("salted butter" and
+ * "butter", "yellow onion" and "onion"; not "garlic powder" and "garlic").
+ * Pairs confirmed as separate are left out.
+ */
 export function likelyDuplicates(entries) {
+  // Raw words, so a size word ("large tortilla") still counts as a qualifier.
+  const raw = (n) => String(n ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean).map(singular)
+  const words = entries.map((e) => raw(e.info.name))
   const pairs = []
   for (let i = 0; i < entries.length; i++)
     for (let j = i + 1; j < entries.length; j++) {
-      // Raw words, so a size word ("large tortilla") still counts as a qualifier.
-      const raw = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ').map(singular)
-      const [a, b] = [raw(entries[i].info.name), raw(entries[j].info.name)]
+      const [a, b] = [words[i], words[j]]
+      if (!a.length || !b.length || confirmedSeparate(entries[i], entries[j])) continue
       const [short, long] = a.length <= b.length ? [a, b] : [b, a]
       const extra = long.filter((w) => !short.includes(w))
+      const inside = short.every((w) => long.includes(w))
       const same =
         a.join('') === b.join('') ||
         normalizeName(entries[i].info.name) === normalizeName(entries[j].info.name) ||
-        (short.every((w) => long.includes(w)) && extra.length === 1 && QUALIFIERS.has(extra[0])) ||
+        (inside && extra.length === 1 && QUALIFIERS.has(extra[0])) ||
+        (inside && extra.length <= 2 && short[short.length - 1] === long[long.length - 1]) ||
         (a.join('').length >= 6 && editDistance(a.join(' '), b.join(' ')) <= 1)
       if (same) pairs.push([entries[i], entries[j]])
     }

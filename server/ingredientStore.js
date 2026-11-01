@@ -3,7 +3,7 @@
 // each ingredient's display name, other names it goes by (aliases), store
 // section, staple and not-listed flags, how it's sold, conversions, and
 // storage (days it keeps, whether it's frozen and thawed); see src/lib/ingredients.js:
-//   { ingredients: { "<id>": { name, aliases?, section?, staple?, notListed?, purchase?, conversions?, shelfLifeDays?, thaw? } } }
+//   { ingredients: { "<id>": { name, aliases?, section?, staple?, notListed?, purchase?, conversions?, showAs?, shelfLifeDays?, thaw?, separateFrom? } } }
 // Shared by the dev-server API and the import skill's link script.
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -166,6 +166,16 @@ export async function mergeIngredient(from, into) {
     conversions: [...(target.conversions ?? []), ...(source.conversions ?? [])],
   }
   delete registry.ingredients[from]
+  // "Not the same as" marks: the merged ingredient keeps both sides' marks, and others pointing at the old id now point at it.
+  const separate = new Set([...(target.separateFrom ?? []), ...(source.separateFrom ?? [])])
+  separate.delete(from)
+  separate.delete(into)
+  registry.ingredients[into].separateFrom = separate.size ? [...separate].sort() : undefined
+  for (const [id, info] of Object.entries(registry.ingredients)) {
+    if (id === into || !info.separateFrom?.includes(from)) continue
+    const list = [...new Set(info.separateFrom.map((x) => (x === from ? into : x)))].sort()
+    info.separateFrom = list
+  }
   fillKnownConversions(registry, await listRecipes())
   await writeRegistry(registry)
   return { recipesChanged, ingredients: registry }

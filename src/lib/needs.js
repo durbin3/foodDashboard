@@ -64,7 +64,8 @@ export function computeNeeds(meals, recipesById, registry, inventory) {
     // Standard conversions always apply, so 3 tsp can read as 1 tbsp even for an ingredient only ever used in teaspoons.
     const edges = unitGraph([...BUILTIN_CONVERSIONS, ...(info.conversions ?? [])])
     const preferred = info.purchase?.unit == null ? null : normalizeUnit(info.purchase.unit)
-    const usedAmounts = combineAmounts(agg.amounts, edges, preferred)
+    const showAs = info.showAs ?? null
+    const usedAmounts = combineAmounts(agg.amounts, edges, preferred, showAs)
     const entry = {
       id: agg.id,
       name: agg.name,
@@ -79,6 +80,7 @@ export function computeNeeds(meals, recipesById, registry, inventory) {
       storedOther: [],
       edges,
       preferred,
+      showAs,
     }
 
     const packQty = parseQuantity(info.purchase?.qty)
@@ -105,7 +107,7 @@ export function computeNeeds(meals, recipesById, registry, inventory) {
 
 /** An amount in an entry's base unit as kitchen-friendly text. */
 export const amountText = (entry, qty) =>
-  qty <= EPS ? '0' : formatAmounts(combineAmounts(new Map([[entry.math.base, qty]]), entry.edges, entry.math.pack ? entry.math.base : entry.preferred))
+  qty <= EPS ? '0' : formatAmounts(combineAmounts(new Map([[entry.math.base, qty]]), entry.edges, entry.math.pack ? entry.math.base : entry.preferred, entry.math.pack ? null : entry.showAs))
 
 /**
  * Storage after a shopping trip for these needs: each ingredient that had

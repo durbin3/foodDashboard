@@ -67,6 +67,7 @@ const UNIT_ALIASES = {
   clove: 'clove', cloves: 'clove',
   can: 'can', cans: 'can',
   pinch: 'pinch', pinches: 'pinch',
+  stick: 'stick', sticks: 'stick',
 }
 
 /** Normalize unit spelling so "Tbsp" and "tablespoons" combine. Unknown units pass through lowercased. */

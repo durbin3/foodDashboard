@@ -55,6 +55,22 @@ test('likely duplicates and alias checks', () => {
     likelyDuplicates(entries).map(([a, b]) => [a.id, b.id]),
     [['tortilla', 'large-tortilla']],
   )
+  const pairs = (ingredients) =>
+    likelyDuplicates(Object.entries(ingredients).map(([id, info]) => ({ id, info }))).map(([a, b]) => [a.id, b.id].sort().join('|'))
+  // A variant ending in the same thing is flagged; a different product made from it isn't.
+  assert.deepEqual(
+    pairs({
+      butter: { name: 'butter' },
+      'salted-butter': { name: 'salted butter' },
+      garlic: { name: 'garlic' },
+      'garlic-powder': { name: 'garlic powder' },
+      yeast: { name: 'yeast' },
+      'instant-dry-yeast': { name: 'instant dry yeast' },
+    }),
+    ['butter|salted-butter', 'instant-dry-yeast|yeast'],
+  )
+  // Confirmed separate on either side: not flagged.
+  assert.deepEqual(pairs({ butter: { name: 'butter' }, 'salted-butter': { name: 'salted butter', separateFrom: ['butter'] } }), [])
   assert.equal(aliasProblem('Black Pepper', 'black-pepper', registry), 'Already a name for this ingredient')
   assert.equal(aliasProblem('tortilla', 'large-tortilla', registry), 'Already used by "tortilla"')
   assert.equal(aliasProblem('flour tortilla', 'tortilla', registry), null)

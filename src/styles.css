@@ -423,10 +423,12 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .ing-names a.hidden-item { color: var(--muted); }
 .ing-names a.warn { color: var(--warn); margin-left: 0; }
 .ing-names li.muted { padding: 4px 8px; }
-.dup-list { margin: 0; padding: 8px 10px; list-style: none; }
-.dup-list li { margin: 0 0 8px; }
-.dup-list li:last-child { margin: 0; }
 .dup-actions { display: flex; flex-wrap: wrap; gap: 0 12px; }
+.lookalikes { list-style: none; margin: -4px 0 16px; }
+.lookalikes li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; }
+.lookalikes li + li { margin-top: 6px; }
+.field-grid.top { align-items: start; }
+.field-grid.top > span:nth-child(odd) { padding-top: 5px; }
 
 .ing-detail { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
 .ing-detail-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 16px; }
@@ -436,6 +438,7 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 .pill.warn { border-color: var(--warn); color: var(--warn); margin-left: 0; }
 .ing-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 32px; }
 .ing-group { border: none; margin: 0; padding: 0; min-width: 0; }
+.ing-group.wide { grid-column: 1 / -1; }
 .ing-group legend { padding: 0; margin-bottom: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
 .ing-group.needs-attention legend { color: var(--warn); cursor: help; }
 .field-grid { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 12px; align-items: center; }
@@ -464,6 +467,10 @@ input.invalid { border-color: var(--warn); background: var(--warn-bg); }
 }
 @media (max-width: 700px) {
   .detail-grid { grid-template-columns: 1fr; }
+  /* Unit rows need the full width: labels go above them. */
+  .field-grid.top { grid-template-columns: 1fr; gap: 4px; }
+  .field-grid.top > span:nth-child(odd) { padding-top: 0; }
+  .field-grid.top > div + span { margin-top: 8px; }
   /* One pane at a time: the list, or the selected ingredient with a way back. */
   .ing-browser { grid-template-columns: 1fr; }
   .ing-list-pane { position: static; max-height: none; }

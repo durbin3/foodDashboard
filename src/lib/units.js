@@ -72,13 +72,44 @@ const inRange = (u, q) => {
 const isWhole = (n) => Math.abs(n - Math.round(n)) < 0.02
 const isNiceIn = (u, q) => (u === 'cup' ? isWhole(q * 4) || isWhole(q * 3) : isNiceQuantity(q))
 
+// An ingredient's "show in" rules pick the unit its amounts read in:
+//   showAs: [{ unit: 'stick', from: { qty: '1/2', unit: 'cup' } }, { unit: 'tbsp' }]
+// The rule with the largest `from` the amount reaches wins; a rule without
+// `from` covers everything below. Rules whose units don't convert are skipped.
+
+/** The unit `total` (in root units, with `size` from reachable()) should read in, or null. */
+function pickShowUnit(total, size, rules) {
+  let best = null
+  let fallback = null
+  for (const r of rules ?? []) {
+    const unit = normalizeUnit(r.unit)
+    if (!size.has(unit)) continue
+    if (!r.from || parseQuantity(r.from.qty) == null) {
+      if (fallback == null) fallback = unit
+      continue
+    }
+    const fromUnit = normalizeUnit(r.from.unit ?? r.unit)
+    if (!size.has(fromUnit)) continue
+    const threshold = parseQuantity(r.from.qty) * size.get(fromUnit)
+    if (total >= threshold - 1e-9 && (best == null || threshold > best.threshold)) best = { unit, threshold }
+  }
+  return best?.unit ?? fallback
+}
+
+/** The unit `qty` `unit` of an ingredient should read in under its show-in rules, or null for as written. */
+export function showUnitFor(qty, unit, rules, edges) {
+  if (!rules?.length || qty == null) return null
+  const from = normalizeUnit(unit)
+  return pickShowUnit(qty, reachable(edges, from), rules)
+}
+
 /**
  * Combine per-unit totals into as few amounts as the conversions allow. Each
  * result is a list of parts that add up to one amount, e.g. [1/2 cup, 1 tbsp].
- * `preferredUnit` (an ingredient's "buy as" unit, null for automatic) is used
- * whenever it's reachable.
+ * `preferredUnit` (an ingredient's "sold as" unit, null for automatic) is used
+ * whenever it's reachable; otherwise `showAs` rules, then kitchen-friendly units.
  */
-export function combineAmounts(amounts, edges, preferredUnit = null) {
+export function combineAmounts(amounts, edges, preferredUnit = null, showAs = null) {
   const left = new Map(amounts)
   const result = []
   while (left.size) {
@@ -87,7 +118,7 @@ export function combineAmounts(amounts, edges, preferredUnit = null) {
     const members = [...left.keys()].filter((u) => size.has(u))
     const total = members.reduce((sum, u) => sum + left.get(u) * size.get(u), 0)
     members.forEach((u) => left.delete(u))
-    result.push(expressAmount(total, members, size, preferredUnit))
+    result.push(expressAmount(total, members, size, preferredUnit, showAs))
   }
   return result
 }
@@ -95,9 +126,14 @@ export function combineAmounts(amounts, edges, preferredUnit = null) {
 const roundUpTo8ths = (q) => Math.ceil(q * 8 - 1e-6) / 8
 
 /** `total` (in root units) as one or two kitchen-friendly parts. */
-function expressAmount(total, members, size, preferredUnit) {
+function expressAmount(total, members, size, preferredUnit, showAs) {
   const qtyIn = (u) => total / size.get(u)
   if (preferredUnit != null && size.has(preferredUnit)) return [{ qty: roundUpTo8ths(qtyIn(preferredUnit)), unit: preferredUnit }]
+  const shown = preferredUnit == null ? pickShowUnit(total, size, showAs) : null
+  if (shown != null) {
+    const q = qtyIn(shown)
+    return [{ qty: isNiceQuantity(q) ? q : roundUpTo8ths(q), unit: shown }]
+  }
 
   const largestFirst = (us) => [...us].sort((a, b) => size.get(b) - size.get(a))
   const extra = members.some((u) => MEASURE_UNITS.includes(u)) ? MEASURE_UNITS.filter((u) => size.has(u) && !members.includes(u)) : []
